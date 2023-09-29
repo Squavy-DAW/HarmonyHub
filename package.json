@@ -10,8 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "path": "^0.12.7",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-split": "^2.0.14",
+    "react-tabs": "^6.0.2",
+    "remixicon-react": "^1.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
