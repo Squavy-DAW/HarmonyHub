@@ -1,3 +1,4 @@
+import Split from 'react-split'
 import './App.css'
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
 import { useState } from 'react'
