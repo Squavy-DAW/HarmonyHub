@@ -10,6 +10,7 @@ export default defineConfig({
 			"@components": path.resolve("./src/components"),
 			"@models": path.resolve("./src/model"),
 			"@styles": path.resolve("./src/styles"),
+			"@network": path.resolve("./src/Network.ts"),
 			"@src": path.resolve("./src"),
 		},
 	},

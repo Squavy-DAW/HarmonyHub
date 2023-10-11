@@ -1,6 +1,6 @@
 import Split from "react-split";
 
-export default function Home() {
+export default function Music() {
     return (
         <Split
             sizes={[70, 30]}

@@ -5,31 +5,28 @@ import TabProps from './model/Tab'
 import '@styles/react-tabs.css'
 import CloseIcon from 'remixicon-react/CloseLineIcon';
 import HomeIcon from 'remixicon-react/Home2FillIcon';
+import ConnectIcon from 'remixicon-react/LinkIcon';
 import Music from '@components/Music'
+import Home from '@components/Home'
+import Connect from '@components/Connect'
 
 function App() {
 
-  const [tabs, setTabs] = useState<TabProps[]>([{
-    name: "test",
-    content: <Music />
-  },{
-    name: "test2",
-    content: <h2>test2</h2>
-  },{
-    name: "test3",
-    content: <h3>test3</h3>
-  },])
+  const [tabs, setTabs] = useState<TabProps[]>([])
 
   const [selectedTab, setSelectedTab] = useState(0);
 
   return (
     <Tabs style={{"display": "contents"}} onSelect={(index) => setSelectedTab(index)}>
       <TabList>
-        <Tab key={0}>
+        <Tab key={"home"}>
           <HomeIcon size="1.2rem" />
         </Tab>
+        <Tab key={"connect"}>
+          <ConnectIcon size="1.2rem" />
+        </Tab>
         { tabs.map((tab, i) => 
-          <Tab key={i+1}>
+          <Tab key={i+2}>
             <>
               {tab.name}
               <CloseIcon size="1.2rem" className='close-btn' role="button" onClick={() => {                
@@ -40,11 +37,14 @@ function App() {
         ) }
       </TabList>
       
-      <TabPanel hidden={selectedTab != 0} key={0}>
-        <h1>Home</h1>
+      <TabPanel hidden={selectedTab != 0} key={"home"}>
+        <Home />
+      </TabPanel>
+      <TabPanel hidden={selectedTab != 1} key={"connect"}>
+        <Connect />
       </TabPanel>
       { tabs.map((tab, i) => 
-          <TabPanel hidden={selectedTab != i+1} key={i+1}>{tab.content}</TabPanel>
+          <TabPanel hidden={selectedTab != i+2} key={i+2}>{tab.content}</TabPanel>
       ) }
     </Tabs>
   )
