@@ -1,11 +1,12 @@
-import './App.css'
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
-import { useState } from 'react'
-import TabProps from './model/Tab'
-import '@styles/react-tabs.css'
+import './App.css';
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
+import { useState } from 'react';
+import TabProps from './model/Tab';
+import '@styles/react-tabs.css';
 import CloseIcon from 'remixicon-react/CloseLineIcon';
 import HomeIcon from 'remixicon-react/Home2FillIcon';
-import Music from '@components/Music'
+import Music from '@components/Music';
+import Synthesizer from '@components/Synthesizer';
 
 function App() {
 
@@ -18,7 +19,10 @@ function App() {
   },{
     name: "test3",
     content: <h3>test3</h3>
-  },])
+  },{
+    name: "Synthesizer-Playground",
+    content: <Synthesizer />
+  }])
 
   const [selectedTab, setSelectedTab] = useState(0);
 
