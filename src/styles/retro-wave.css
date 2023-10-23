@@ -1,0 +1,60 @@
+@keyframes moveDownAnimation {
+    100% {
+        background-position-y: 100%;
+    }
+}
+
+@font-face {
+    font-family: "VT323-Regular";
+    src: url("src/assets/VT323-Regular.ttf") format("truetype");
+}
+
+:root {
+    font-family: 'VT323-Regular', 'Monocraft';
+    font-size: 1.2em;
+}
+
+h1, span, button, select, label, input {
+    color: rgb(225, 225, 225);
+    text-shadow: 0px 0px 2px hsl(0, 100%, 70%),
+                 0px 0px 15px red,
+                 0px 0px 60px green;
+    backface-visibility: hidden;
+}
+
+svg {
+    filter: drop-shadow(0px 0px 2px hsl(0, 100%, 70%))
+            drop-shadow(0px 0px 15px red)
+            drop-shadow(0px 0px 60px green);
+}
+
+#crt-lines {
+    position: absolute;
+    inset: 0;
+    background: url(src/assets/lines.jpg);
+    z-index: 10;
+    background-size: 7px auto;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    opacity: 0.4;
+    animation: moveDownAnimation 150s linear infinite;
+}
+
+#darken {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: -1;
+    pointer-events: none;
+}
+
+#vignette {
+    position: absolute;
+    inset: 0;
+    background: url(src/assets/vignette.png);
+    z-index: 11;
+    background-size: 100% 100%;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    opacity: 0.6;
+}
