@@ -1,23 +1,21 @@
 import './App.css'
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
-import { useState } from 'react'
-import TabProps from './model/Tab'
 import '@styles/react-tabs.css'
+import '@styles/react-toastify.css'
 import CloseIcon from 'remixicon-react/CloseLineIcon';
 import HomeIcon from 'remixicon-react/Home2FillIcon';
 import ConnectIcon from 'remixicon-react/LinkIcon';
-import Music from '@components/Music'
-import Home from '@components/Home'
-import Connect from '@components/Connect'
+import Home from '@components/Home';
+import Connect from '@components/Connect';
+import { useTabs } from '@stores/Tabs';
+import { ToastContainer } from 'react-toastify';
 
 function App() {
 
-  const [tabs, setTabs] = useState<TabProps[]>([])
-
-  const [selectedTab, setSelectedTab] = useState(0);
-
-  return (
-    <Tabs style={{"display": "contents"}} onSelect={(index) => setSelectedTab(index)}>
+  const { tabIndex, setTabIndex, tabs, setTabs } = useTabs();
+  
+  return <>
+    <Tabs style={{"display": "contents"}} onSelect={(index) => setTabIndex(index)}>
       <TabList>
         <Tab key={"home"}>
           <HomeIcon size="1.2rem" />
@@ -37,17 +35,19 @@ function App() {
         ) }
       </TabList>
       
-      <TabPanel hidden={selectedTab != 0} key={"home"}>
+      <TabPanel hidden={tabIndex != 0} key={"home"}>
         <Home />
       </TabPanel>
-      <TabPanel hidden={selectedTab != 1} key={"connect"}>
+      <TabPanel hidden={tabIndex != 1} key={"connect"}>
         <Connect />
       </TabPanel>
       { tabs.map((tab, i) => 
-          <TabPanel hidden={selectedTab != i+2} key={i+2}>{tab.content}</TabPanel>
+          <TabPanel hidden={tabIndex != i+2} key={i+2}>{tab.content}</TabPanel>
       ) }
     </Tabs>
-  )
+
+    <ToastContainer />
+  </>
 }
 
 export default App

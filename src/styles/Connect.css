@@ -1,0 +1,24 @@
+#connect-layout #connect-layout {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+}
+
+#connect-layout #connect-form > label + * {
+    margin-bottom: 1rem;
+    display: block;
+}
+
+#connect-layout #connect-form {
+    max-width: 16rem;
+}
+
+#connect-layout {
+    display: grid;
+    grid-template-columns: 14rem 12rem;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+}

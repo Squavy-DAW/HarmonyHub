@@ -1,18 +1,30 @@
 import Session from "@models/Session"
 import * as Network from "@network"
-import { useRef, useState } from "react"
+import React, { useRef, useState } from "react"
 import { ToastContainer, toast } from 'react-toastify';
-import { Peer } from "peerjs";
 import 'react-toastify/dist/ReactToastify.css';
+import { useTabs } from "@stores/Tabs";
+import Project from "@models/Project";
+import Music from "./Music";
+import '@styles/Home.css';
 
 export default function Home() {
+
+    const { tabs, setTabs } = useTabs();
     
     const [session, setSession] = useState<Session>();
-    const [peer, setPeer] = useState<Peer>();
+    const [selectedProject, setSelectedProject] = useState<Project | undefined>();
 
     const tokenRef = useRef<HTMLTextAreaElement>(null);
 
     function launchInteractive() {
+        if (!selectedProject) {
+            toast.error("Please select a project", {
+                autoClose: 2000,
+            });
+            return;
+        }
+
         if (!session?.name) {
             toast.error("Please enter a display name", {
                 autoClose: 2000,
@@ -20,15 +32,18 @@ export default function Home() {
             return;
         }
 
-
         let token = Network.createToken();
-        setSession({ ...session, id: token });
         let peer = Network.createSession(session.name, token);
-        setPeer(peer);
+        setSession({ id: token, peer: peer, ...session });
 
         toast.success("Session created!", {
             autoClose: 2000,
         });
+
+        setTabs([...tabs, {
+            name: selectedProject.name,
+            content: <Music session={session} />
+        }])
     }
 
     function copyToken() {
@@ -52,6 +67,15 @@ export default function Home() {
                     e.preventDefault();
                     launchInteractive();
                 }}>
+                    { !selectedProject && <>
+                        <b>Select a project to continue!</b>
+                        <hr />
+                    </> }
+                    { selectedProject && <>
+                        <label htmlFor="selected project">Selected Project</label>
+                        <div className="project-card" onClick={() => setSelectedProject(undefined)}>Card 1</div>
+                    </> }
+
                     <label htmlFor="displayname">Display name</label>
                     <input type="text" name="displayname" id="displayname" onChange={(e) => {
                         setSession({ ...session, name: e.target.value })
@@ -61,14 +85,16 @@ export default function Home() {
                     <button type="submit" name="launch" id="launch">Launch session</button>
 
                     <label htmlFor="token">Session token <u hidden={!session?.id} onClick={copyToken}>Click to copy</u></label>
-                    <textarea ref={tokenRef} name="token" id="token" className="token-input" value={session?.id} readOnly onClick={copyToken} />
+                    <textarea ref={tokenRef} name="token" id="token" className="token-input" value={session?.id} readOnly onClick={copyToken} disabled={session === undefined} />
                 </form>
 
                 <ToastContainer />
             </aside>
 
             <main id="home-projects">
-                <div className="project-card">Card 1</div>
+                <div className="project-card" onClick={() => setSelectedProject({
+                    name: "Project 1",
+                })}>Card 1</div>
             </main>
         </section>
     )

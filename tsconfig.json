@@ -24,6 +24,7 @@
 			"@models/*": [ "./src/model/*" ],
 			"@styles/*": [ "./src/styles/*" ],
       "@network": [ "./src/Network.ts" ],
+      "@stores/*": ["./src/stores/*"],
 			"@src/*": [ "./src/*" ],
 		}
   },

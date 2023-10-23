@@ -4,6 +4,7 @@ import { FormEvent, useRef, useState } from "react"
 import { ToastContainer, toast } from 'react-toastify';
 import { Peer } from "peerjs";
 import 'react-toastify/dist/ReactToastify.css';
+import '@styles/Connect.css'
 
 export default function Home() {
 
@@ -48,8 +49,6 @@ export default function Home() {
 
                 <button type="submit" name="launch">Connect</button>
             </form>
-
-            <ToastContainer />
         </section>
     )
 }

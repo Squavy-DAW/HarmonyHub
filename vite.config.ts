@@ -11,6 +11,7 @@ export default defineConfig({
 			"@models": path.resolve("./src/model"),
 			"@styles": path.resolve("./src/styles"),
 			"@network": path.resolve("./src/Network.ts"),
+			"@stores": path.resolve("./src/stores"),
 			"@src": path.resolve("./src"),
 		},
 	},
