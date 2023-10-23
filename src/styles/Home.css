@@ -5,7 +5,7 @@
     gap: 1rem;
 }
 
-#home-layout #connect-form>label+* {
+#home-layout #connect-form > label + * {
     margin-bottom: 1rem;
     display: block;
 }

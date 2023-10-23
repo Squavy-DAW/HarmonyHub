@@ -1,6 +1,6 @@
-import Session from "@models/Session"
+import { SessionDTO } from "@models/Session"
 import * as Network from "@network"
-import React, { useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTabs } from "@stores/Tabs";
@@ -12,7 +12,7 @@ export default function Home() {
 
     const { tabs, setTabs } = useTabs();
     
-    const [session, setSession] = useState<Session>();
+    const [session, setSession] = useState<SessionDTO>();
     const [selectedProject, setSelectedProject] = useState<Project | undefined>();
 
     const tokenRef = useRef<HTMLTextAreaElement>(null);
@@ -42,7 +42,11 @@ export default function Home() {
 
         setTabs([...tabs, {
             name: selectedProject.name,
-            content: <Music session={session} />
+            content: <Music session={{
+                id: token,
+                peer: peer,
+                name: session.name,
+            }} />
         }])
     }
 
@@ -68,16 +72,16 @@ export default function Home() {
                     launchInteractive();
                 }}>
                     { !selectedProject && <>
-                        <b>Select a project to continue!</b>
+                        <span>Select a project to continue!</span>
                         <hr />
                     </> }
                     { selectedProject && <>
-                        <label htmlFor="selected project">Selected Project</label>
-                        <div className="project-card" onClick={() => setSelectedProject(undefined)}>Card 1</div>
+                        <label htmlFor="selected-project">Selected Project</label>
+                        <div id="selected-project" className="project-card" onClick={() => setSelectedProject(undefined)}>Card 1</div>
                     </> }
 
-                    <label htmlFor="displayname">Display name</label>
-                    <input type="text" name="displayname" id="displayname" onChange={(e) => {
+                    <label htmlFor="display-name">Display name</label>
+                    <input type="text" name="display-name" id="display-name" onChange={(e) => {
                         setSession({ ...session, name: e.target.value })
                     }} />
 
@@ -85,7 +89,7 @@ export default function Home() {
                     <button type="submit" name="launch" id="launch">Launch session</button>
 
                     <label htmlFor="token">Session token <u hidden={!session?.id} onClick={copyToken}>Click to copy</u></label>
-                    <textarea ref={tokenRef} name="token" id="token" className="token-input" value={session?.id} readOnly onClick={copyToken} disabled={session === undefined} />
+                    <textarea ref={tokenRef} name="token" id="token" className="token-input" value={session?.id} readOnly onClick={copyToken} disabled={session?.id === undefined} />
                 </form>
 
                 <ToastContainer />

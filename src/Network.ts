@@ -12,22 +12,37 @@ export function createToken() : string {
 }
 
 export function createSession(name: string, id: string) : Peer {
-    let peer = new Peer(prefix+id);
-    peer.on('connection', (conn) => {
-        console.info(`new connection '${conn.peer}'`);
-        conn.on('data', (data) => {
-            console.info(`data from '${conn.peer}': ${data}`);
-        })
+    let peer = new Peer(prefix+id, {
+        debug: 2,
+        logFunction: (logLevel, ...rest) => { console.log(logLevel, rest) }
+    });
+    peer.on('open', id => {
+        console.log('ID: ' + id);
+    });
+    peer.on('connection', conn => {
+        console.log(`new connection '${conn.peer}' '${conn.metadata.name}'`);
+        
     })
+    
     return peer;
 }
 
 export function joinSession(name: string, id: string) : Peer {
-    let peer = new Peer();
-    let conn = peer.connect(prefix+id)
-    conn.on('open', () => {
-        conn.send('hi!');
+    let peer = new Peer({
+        debug: 2,
+        logFunction: (logLevel, ...rest) => { console.log(logLevel, rest) }
     });
+    peer.on('open', id => {
+        console.log('ID: ' + id);
+    });
+
+    let conn = peer.connect(prefix+id, {
+        reliable: true,
+        metadata: { name: name }
+    });
+    conn.on('open', () => {
+        console.info(`new connection '${conn.peer}'`);
+    })
 
     return peer;
 }

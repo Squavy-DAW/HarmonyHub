@@ -14,7 +14,7 @@
     font-size: 1.2em;
 }
 
-h1, span, button, select, label, input {
+#content h1, #content hr, #content span, #content button, #content select, #content label, #content input {
     color: rgb(225, 225, 225);
     text-shadow: 0px 0px 2px hsl(0, 100%, 70%),
                  0px 0px 15px red,
@@ -22,7 +22,7 @@ h1, span, button, select, label, input {
     backface-visibility: hidden;
 }
 
-svg {
+#content svg {
     filter: drop-shadow(0px 0px 2px hsl(0, 100%, 70%))
             drop-shadow(0px 0px 15px red)
             drop-shadow(0px 0px 60px green);
@@ -33,7 +33,7 @@ svg {
     inset: 0;
     background: url(src/assets/lines.jpg);
     z-index: 10;
-    background-size: 7px auto;
+    background-size: 9px auto;
     mix-blend-mode: overlay;
     pointer-events: none;
     opacity: 0.4;

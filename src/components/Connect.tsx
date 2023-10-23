@@ -1,12 +1,14 @@
-import Session from "@models/Session"
 import * as Network from "@network"
-import { FormEvent, useRef, useState } from "react"
-import { ToastContainer, toast } from 'react-toastify';
-import { Peer } from "peerjs";
+import { useRef } from "react"
+import { toast } from 'react-toastify';
+import { useTabs } from "@stores/Tabs";
+import Music from "@components/Music";
 import 'react-toastify/dist/ReactToastify.css';
 import '@styles/Connect.css'
 
-export default function Home() {
+export default function Connect() {
+
+    const { tabs, setTabs } = useTabs();
 
     const displaynameRef = useRef<HTMLInputElement>(null);
     const tokenRef = useRef<HTMLTextAreaElement>(null);
@@ -31,6 +33,15 @@ export default function Home() {
         toast.success("Session joined!", {
             autoClose: 2000,
         });
+
+        setTabs([...tabs, {
+            name: `Remote: ${displaynameRef.current.value}`,
+            content: <Music session={{
+                id: token,
+                peer: peer,
+                name: displaynameRef.current.value,
+            }} />
+        }])
     }
 
     return (

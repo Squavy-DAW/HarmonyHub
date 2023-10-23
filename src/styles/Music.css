@@ -1,0 +1,10 @@
+#music-layout #music-notes {
+    position: relative;
+}
+
+#music-layout #music-notes #mouse-cursors {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    user-select: none;
+}

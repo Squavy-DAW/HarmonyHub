@@ -21,7 +21,7 @@ function App() {
     <div id="darken"></div>
     <div id="vignette"></div>
 
-    <Tabs style={{"display": "contents"}} onSelect={(index) => setTabIndex(index)}>
+    <Tabs id='content' style={{"display": "contents"}} onSelect={(index) => setTabIndex(index)}>
       <TabList>
         <Tab key={"home"}>
           <HomeIcon size="1.2rem" />

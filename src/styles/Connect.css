@@ -16,7 +16,7 @@
 
 #connect-layout {
     display: grid;
-    grid-template-columns: 14rem 12rem;
+    grid-template-columns: 12rem 12rem;
     justify-content: center;
     align-items: center;
     gap: 1rem;

@@ -14,6 +14,10 @@
     display: grid;
 }
 
+.react-tabs__tab-panel div * {
+    overflow: hidden;
+}
+
 .react-tabs__tab {
     background: #242424;
     color: lightgray;
@@ -33,11 +37,11 @@
 }
 
 .react-tabs__tab:not(.react-tabs__tab--disabled) .close-btn:hover {
-    background: #545454;
+    background: #54545430;
 }
 
 .react-tabs__tab:not(.react-tabs__tab--disabled) .close-btn:active {
-    background: #626262;
+    background: #62626230;
 }
 
 .react-tabs__tab:not(.react-tabs__tab--disabled):hover {
