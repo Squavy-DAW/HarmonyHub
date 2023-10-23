@@ -5,7 +5,7 @@
 .react-tabs__tab-list {
     display: flex;
     height: var(--header-height);
-    border-bottom: 1px solid #303030;
+    border-bottom: 5px solid #303030;
     margin: 0;
     padding: 0;
 }

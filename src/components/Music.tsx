@@ -9,7 +9,7 @@ export default function Music({session}: {session: Session}) {
         <Split
             sizes={[70, 30]}
             minSize={100}
-            gutterSize={1}
+            gutterSize={5}
             snapOffset={20}
             gutterAlign=''
             direction="vertical"
