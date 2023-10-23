@@ -208,3 +208,11 @@ export async function toggle() {
         stopOscillators();
     }
 }
+
+export async function startFreq(freq:number) {
+    setFreq(freq);
+    startOscillators();
+}
+export async function stopFreq(freq:number) {
+    stopOscillators();
+}

@@ -1,5 +1,6 @@
 import Split from "react-split";
 import { toggle, setFreq, AudioNodes,init, setGain, setWaveform, setPan, setDetone, setPitch}  from "@src/synth/engine";
+import PianoRoll from "./PianoRoll";
 
 export default function Synthesizer() {
     init(); //initialize the synthesizer (AudioContext, Oscillators, etc.)
@@ -12,7 +13,10 @@ export default function Synthesizer() {
             gutterAlign=''
             direction="vertical"
             cursor="row-resize">
-                <section />
+                <section>
+                    <PianoRoll/>
+                </section>
+                <section >
                     <div>
                         <button onClick={toggle}>ToggleOscillators</button>
                         <ul>
@@ -116,7 +120,7 @@ export default function Synthesizer() {
                             </ul>
                         </div>
                     </div>
-                <section />
+                </section>
         </Split>
     )
 }

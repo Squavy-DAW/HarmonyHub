@@ -1,7 +1,7 @@
 @font-face {
   font-family: "Monocraft";
-  src: local("Monocraft"),
-    url("./fonts/Monocraft.ttf") format("truetype");
+  src: local("VT323-Regular"),
+    url("./assets/fonts/VT323-Regular.ttf") format("truetype");
  }
 
 :root {

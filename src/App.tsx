@@ -6,7 +6,7 @@ import '@styles/react-tabs.css';
 import CloseIcon from 'remixicon-react/CloseLineIcon';
 import HomeIcon from 'remixicon-react/Home2FillIcon';
 import Music from '@components/Music';
-import Synthesizer from '@components/Synthesizer';
+import Synthesizer from '@components/Synthesizer/Synthesizer';
 
 function App() {
 
