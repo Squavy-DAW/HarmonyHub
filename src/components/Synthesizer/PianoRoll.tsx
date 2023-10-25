@@ -18,8 +18,7 @@ export default function PianoRoll() {
             let value:number = root.freq;
             value = root.freq * (2**(index/12.0));
 
-            let key:string = Math.floor(index/12)+genNoteName(index)
-            console.log(Math.floor(index/12)+genNoteName(index)+ " -> "+value)
+            let key:string = Math.floor(index/12)+"-"+genNoteName(index)
             map.set(key, value);
         }
 
@@ -31,7 +30,7 @@ export default function PianoRoll() {
         <ul>
             {noteList.map(([key, value]) =>
                 <li>
-                    <Note frequency={value} keyName={key}></Note>
+                    <Note frequency={value} keyName={key.split("-")[1]}></Note>
                 </li>
             )}
         </ul>
