@@ -1,17 +1,30 @@
-import { startFreq, stopFreq }  from "@src/synth/engine";
+import '@styles/note.css';
 
 export interface NoteProps{
-    frequency:number,
-    keyName:string
+    keyName:string,
+    onMouseEnter:()=>void,
+    onMouseLeave:()=>void,
+    onMouseDown:()=>void,
 }
 
 export default function Note(props:NoteProps) {
 
+    function getClassName(kname:string){
+        if(kname.endsWith("#"))
+            return "black-key";
+        return "white-key";
+    }
+
     return (
-        <button onMouseDown={()=>startFreq(props.frequency)}
-                onMouseLeave={()=>stopFreq(props.frequency)} 
-                onMouseUp={()=>stopFreq(props.frequency)}>
-            {props.keyName}
-        </button>
+        <div onMouseLeave={props.onMouseLeave} 
+                onMouseEnter={props.onMouseEnter}
+                onMouseUp={props.onMouseLeave}
+                onMouseDown={props.onMouseDown}
+                data-key-name={props.keyName}
+                className={
+                    getClassName(props.keyName)+ " key " + ((props.keyName.charAt(0)=='C' || props.keyName.charAt(0)=='F') ? "c-f" : 
+                    (props.keyName.charAt(0)=='E' || props.keyName.charAt(0)=='B') ? "e-b" : "general")
+                    }>
+        </div>
     )
 }

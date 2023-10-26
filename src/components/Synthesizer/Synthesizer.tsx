@@ -1,11 +1,13 @@
 import Split from "react-split";
-import { toggle, setFreq, AudioNodes,init, setGain, setWaveform, setPan, setDetone, setPitch}  from "@src/synth/engine";
-import PianoRoll from "./PianoRoll";
+import { AudioNodes,init, setGain, setWaveform, setPan, setDetone, setPitch}  from "@src/synth/engine";
+import PianoRoll from "./Keyboard";
+import "@styles/synthesizer.css"
 
-export default function Synthesizer() {
+export default function Synthesizer() { //TODO: Stop Synthesizer on Tab-Change
     init(); //initialize the synthesizer (AudioContext, Oscillators, etc.)
     return (
         <Split
+            id="synthesizer-layout"
             sizes={[50, 50]}
             minSize={100}
             gutterSize={1}
@@ -13,22 +15,13 @@ export default function Synthesizer() {
             gutterAlign=''
             direction="vertical"
             cursor="row-resize">
-                <section>
+                <section id="piano-roll">
                     <PianoRoll/>
                 </section>
-                <section >
+                <section id="oscillators">
                     <div>
-                        <button onClick={toggle}>ToggleOscillators</button>
-                        <ul>
-                                <li>
-                                    <label htmlFor="mastervolume">MasterVolume</label>
-                                    <input type="range" id="mastervolume" name="mastervolume" min={0} max={2} step={0.01} defaultValue={0.2} onChange={e => setGain(+e.target.value, AudioNodes.Master)}/>
-                                </li>
-                                <li>
-                                    <label htmlFor="frequency">Frequency</label>
-                                    <input type="range" id="frequency" name="frequenvcy" min={27.5} max={4186.01} step={0.1} defaultValue={261.63} onChange={e => setFreq(+e.target.value)}/>
-                                </li>
-                        </ul>
+                        <label htmlFor="mastervolume">MasterVolume</label>
+                        <input type="range" id="mastervolume" name="mastervolume" min={0} max={2} step={0.01} defaultValue={0.2} onChange={e => setGain(+e.target.value, AudioNodes.Master)}/>
                         <div id="Osc1">
                             <h2>Osc1: </h2>
                             <ul>

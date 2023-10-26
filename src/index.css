@@ -19,16 +19,6 @@
   -webkit-text-size-adjust: 100%;
 }
 
-div.scroll {
-  height: 200px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  text-align:justify;
-}
-div.scroll ul li *{ /*TODO: DELETE*/
-  color: black !important;
-}
-
 a {
   font-weight: 500;
   color: #646cff;

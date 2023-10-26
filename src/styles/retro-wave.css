@@ -10,12 +10,12 @@
 }
 
 :root {
+    color: rgb(225, 225, 225);
     font-family: 'VT323-Regular', 'Monocraft';
     font-size: 1.2em;
 }
 
-h1, span, button, select, label, input {
-    color: rgb(225, 225, 225);
+h1, span, button, select, label, input, ::after, li{
     text-shadow: 0px 0px 2px hsl(0, 100%, 70%),
                  0px 0px 15px red,
                  0px 0px 60px green;

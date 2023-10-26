@@ -1,7 +1,7 @@
-import './App.css'
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
-import { useState } from 'react'
-import TabProps from './model/Tab'
+import './App.css';
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
+import { useState } from 'react';
+import TabProps from './model/Tab';
 import CloseIcon from 'remixicon-react/CloseLineIcon';
 import HomeIcon from 'remixicon-react/Home2FillIcon';
 import Music from '@components/Music'

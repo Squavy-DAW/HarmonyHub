@@ -1,0 +1,39 @@
+#synthesizer-layout #piano-roll{
+    overflow: auto;
+    display: grid;
+    grid-template-columns: 30px 144px auto;
+    grid-template-rows: 1fr;
+}
+
+#synthesizer-layout #piano-roll ul#keys{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    grid-column: 1/3;
+    grid-row-start: 1;
+}
+
+#synthesizer-layout #oscillators{
+    overflow: auto;
+}
+
+#synthesizer-layout #piano-roll ul#octaves{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    grid-column: 1/2;
+    grid-row-start: 1;
+    z-index: 2;
+    pointer-events: none;
+}
+
+#synthesizer-layout #piano-roll ul#octaves .octave{
+    height: 504px;
+    user-select: none;
+    display: grid;
+    place-content: center;
+    background-image: url("src/assets/piano/octave.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    image-rendering: pixelated;
+}
