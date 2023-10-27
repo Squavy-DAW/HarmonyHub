@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import Note from "./Note";
 import { startFreq, stopFreq } from "@src/synth/engine";
+import { onKeyPressed, onKeyUp } from "@src/synth/keylistener"
 
 export default function PianoRoll() {
     //Freq = note x 2^(N/12)
@@ -37,9 +38,13 @@ export default function PianoRoll() {
     useEffect(()=>{
         document.addEventListener("mousedown", onMouseDown);
         document.addEventListener("mouseup", onMouseUp);
+        document.addEventListener("keydown", e => onKeyPressed(e));
+        document.addEventListener("keyup", e => onKeyUp(e));
         return ()=>{
             document.removeEventListener("mousedown", onMouseDown);
             document.removeEventListener("mouseup", onMouseUp);
+            document.removeEventListener("keydown", e => onKeyPressed(e));
+            document.removeEventListener("keyup", e => onKeyUp(e));
         }
     });
 
