@@ -23,7 +23,7 @@
 			"@components/*": [ "./src/components/*" ],
 			"@models/*": [ "./src/model/*" ],
 			"@styles/*": [ "./src/styles/*" ],
-      "@network": [ "./src/Network.ts" ],
+      "@network/*": [ "./src/network/*" ],
       "@stores/*": ["./src/stores/*"],
 			"@src/*": [ "./src/*" ],
 		}

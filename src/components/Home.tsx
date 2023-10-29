@@ -1,53 +1,59 @@
-import { SessionDTO } from "@models/Session"
-import * as Network from "@network"
+import { SessionDTO } from "@models/session"
+import * as Network from "@network/sessions"
 import { useRef, useState } from "react"
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useTabs } from "@stores/Tabs";
-import Project from "@models/Project";
+import { useTabs } from "@stores/tabs";
+import Project from "@models/project";
 import Music from "./Music";
 import '@styles/Home.css';
 
 export default function Home() {
 
-    const { tabs, setTabs } = useTabs();
+    const { tabs, setTabs, setTabIndex } = useTabs();
     
     const [session, setSession] = useState<SessionDTO>();
     const [selectedProject, setSelectedProject] = useState<Project | undefined>();
 
     const tokenRef = useRef<HTMLTextAreaElement>(null);
 
-    function launchInteractive() {
+    async function launchInteractive() {
         if (!selectedProject) {
-            toast.error("Please select a project", {
-                autoClose: 2000,
-            });
+            toast.error("Please select a project");
             return;
         }
 
         if (!session?.name) {
-            toast.error("Please enter a display name", {
-                autoClose: 2000,
-            });
+            toast.error("Please enter a display name");
             return;
         }
 
-        let token = Network.createToken();
-        let peer = Network.createSession(session.name, token);
-        setSession({ id: token, peer: peer, ...session });
+        const socket = Network.createSocket();
+        if (!socket) {
+            toast.error("Failed to create socket");
+            return;
+        }
 
-        toast.success("Session created!", {
-            autoClose: 2000,
-        });
+        const token = await Network.createSession(socket, session.name);
+        if (!token) {
+            toast.error("Failed to create session");
+            return;
+        }
+        
+        setSession({ id: token, socket: socket, ...session });
+
+        toast.success("Session created!");
 
         setTabs([...tabs, {
             name: selectedProject.name,
             content: <Music session={{
                 id: token,
-                peer: peer,
+                socket: socket,
                 name: session.name,
             }} />
         }])
+
+        setTabIndex(tabs.length);
     }
 
     function copyToken() {
@@ -91,8 +97,6 @@ export default function Home() {
                     <label htmlFor="token">Session token <u hidden={!session?.id} onClick={copyToken}>Click to copy</u></label>
                     <textarea ref={tokenRef} name="token" id="token" className="token-input" value={session?.id} readOnly onClick={copyToken} disabled={session?.id === undefined} />
                 </form>
-
-                <ToastContainer />
             </aside>
 
             <main id="home-projects">

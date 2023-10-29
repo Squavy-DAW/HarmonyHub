@@ -1,5 +1,6 @@
 #music-layout #music-notes {
     position: relative;
+    overflow: auto;
 }
 
 #music-layout #music-notes #mouse-cursors {

@@ -1,7 +1,7 @@
-import * as Network from "@network"
+import * as Network from "@network/sessions"
 import { useRef } from "react"
 import { toast } from 'react-toastify';
-import { useTabs } from "@stores/Tabs";
+import { useTabs } from "@stores/tabs";
 import Music from "@components/Music";
 import 'react-toastify/dist/ReactToastify.css';
 import '@styles/Connect.css'
@@ -15,30 +15,34 @@ export default function Connect() {
 
     function joinSession() {
         if (!displaynameRef.current?.value) {
-            toast.error("Please enter a display name", {
-                autoClose: 2000,
-            });
+            toast.error("Please enter a display name");
             return;
         }
 
         if (!tokenRef.current?.value) {
-            toast.error("Please enter a session token", {
-                autoClose: 2000,
-            });
+            toast.error("Please enter a session token");
+            return;
+        }
+
+        const socket = Network.createSocket();
+        if (!socket) {
+            toast.error("Failed to create socket");
             return;
         }
 
         let token = tokenRef.current.value;
-        let peer = Network.joinSession(displaynameRef.current.value, token);
-        toast.success("Session joined!", {
-            autoClose: 2000,
-        });
+        if (!Network.joinSession(socket, displaynameRef.current.value, token)) {
+            toast.error("Failed to join session");
+            return;
+        }
+
+        toast.success("Session joined!");
 
         setTabs([...tabs, {
             name: `Remote: ${displaynameRef.current.value}`,
             content: <Music session={{
                 id: token,
-                peer: peer,
+                socket: socket,
                 name: displaynameRef.current.value,
             }} />
         }])

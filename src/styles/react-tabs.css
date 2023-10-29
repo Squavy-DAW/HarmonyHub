@@ -14,7 +14,11 @@
     display: grid;
 }
 
-.react-tabs__tab-panel div * {
+.react-tabs__tab-panel{
+    overflow: hidden;
+}
+
+.react-tabs__tab-panel > * {
     overflow: hidden;
 }
 

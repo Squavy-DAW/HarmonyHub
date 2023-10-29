@@ -64,6 +64,7 @@ bower_components
 build/Release
 
 # Dependency directories
+package-lock.json
 node_modules/
 jspm_packages/
 
@@ -149,11 +150,14 @@ dist
 .vscode
 
 # yarn v2
+.yarn.lock
 .yarn/cache
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
 
-# bun
+package-lock.json
 bun.lockb
+node_modules/
+.env

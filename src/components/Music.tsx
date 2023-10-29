@@ -1,10 +1,10 @@
-import { Session } from "@models/Session";
+import { Session } from "@models/session";
 import Split from "react-split";
 import '@styles/Music.css';
 
 export default function Music({session}: {session: Session}) {
 
-    const { peer } = session;
+    const { socket } = session;
 
     return (
         <Split id="music-layout"

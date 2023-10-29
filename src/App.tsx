@@ -9,7 +9,7 @@ import '@styles/retro-wave.css';
 import ConnectIcon from 'remixicon-react/LinkIcon';
 import Home from '@components/Home';
 import Connect from '@components/Connect';
-import { useTabs } from '@stores/Tabs';
+import { useTabs } from '@stores/tabs';
 import { ToastContainer } from 'react-toastify';
 
 function App() {
@@ -52,7 +52,7 @@ function App() {
       ) }
     </Tabs>
 
-    <ToastContainer />
+    <ToastContainer autoClose={2000} />
   </>
 }
 

@@ -1,4 +1,4 @@
-import Tab from "@models/Tab";
+import Tab from "@models/tab";
 import { create } from "zustand";
 
 export interface TabContext {
@@ -14,3 +14,5 @@ export const useTabs = create<TabContext>((set) => ({
     tabIndex: 0,
     setTabIndex: (index) => set({ tabIndex: index }),
 }));
+
+export default useTabs;
