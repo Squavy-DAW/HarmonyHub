@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import Note from "./Note";
 import { startFreq, stopFreq } from "@src/synth/engine";
-import { onKeyPressed, onKeyUp } from "@src/synth/keylistener"
+import { onKeyPressed, onKeyUp, pressedFrequencies, clickedFreq } from "@src/synth/keylistener"
 
 export default function PianoRoll() {
     //Freq = note x 2^(N/12)
@@ -48,18 +48,42 @@ export default function PianoRoll() {
         }
     });
 
-    function onNoteStart(freq:number){
-        if(mouseClicked)
-            startFreq(freq);
+    function onNoteStart(e: React.MouseEvent,freq:number, key:string){
+        e.preventDefault();
+
+        if(mouseClicked){
+            clickedFreq.value = freq;
+            // console.warn(clickedFreq.value);
+            if(!pressedFrequencies.includes(freq)){
+                startFreq(freq);
+                if(key.includes('#')){
+                    e.currentTarget.classList.add("pressed-black");
+                }
+                else{
+                    e.currentTarget.classList.add("pressed-white");
+                }
+            }
+        }
     }
-    function onNoteStop(freq:number){
-        stopFreq(freq);
+    function onNoteStop(e: React.MouseEvent,freq:number, key:string){
+        e.preventDefault();
+        if(!pressedFrequencies.includes(freq)){
+            if(key.includes('#')){
+                e.currentTarget.classList.remove("pressed-black");
+            }
+            else{
+                e.currentTarget.classList.remove("pressed-white");
+            }
+            stopFreq(freq);
+        }
+        clickedFreq.value = null;
+        // console.warn(clickedFreq.value);
     }
 
 
     return <>
                 <ul id="octaves">
-                {noteList.map(([key, value]) => key.split("-")[1]=='C' && <li key={key+value+"octave"} className="octave">
+                {noteList.map(([key, value]) => key.split("-")[1]=='C' && <li key={key+value+"octave"} className={"octave "+(key.split("-")[0]=='4'?"base-octave":"")}>
                         {key.split("-")[0]}
                     </li>
                 )}
@@ -67,7 +91,24 @@ export default function PianoRoll() {
                 <ul id="keys">
                     {noteList.map(([key, value]) =>
                         <li key={key+value+"key"}>
-                            <Note onMouseEnter={()=>onNoteStart(value)} onMouseLeave={()=>onNoteStop(value)} onMouseDown={()=>startFreq(value)} keyName={key.split("-")[1]}></Note>
+                            <Note 
+                            onMouseEnter={(e: React.MouseEvent)=>onNoteStart(e,value,key)} 
+                            onMouseLeave={(e: React.MouseEvent)=>onNoteStop(e,value,key)} 
+                            onMouseDown={(e: React.MouseEvent)=>{
+                                clickedFreq.value = value;
+                                // console.warn(clickedFreq.value);
+                                if(!pressedFrequencies.includes(value)){
+                                    startFreq(value);
+                                    if(key.includes('#')){
+                                        e.currentTarget.classList.add("pressed-black");
+                                    }
+                                    else{
+                                        e.currentTarget.classList.add("pressed-white");
+                                    }
+                                }
+                                }} 
+                            keyName={key.split("-")[1]}
+                            frequency={value}></Note>
                         </li>
                     )}
                 </ul>

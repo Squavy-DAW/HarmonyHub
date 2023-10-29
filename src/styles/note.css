@@ -52,3 +52,7 @@
 .white-key.e-b{
     background-image: url("src/assets/piano/e-b-key.png");
 }
+
+.pressed-white, .pressed-black::after{
+    filter: hue-rotate(-90deg);
+}

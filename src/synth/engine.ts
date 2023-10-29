@@ -1,3 +1,11 @@
+/*
+TODO:   
+    1. Organize File, Create oscillator nodes on demand (The real oscillators remain somewhat abstract), so many frequencies of many different instruments 
+    can be played simultaniously
+    2. Use createPeriodicWave and setPeriodicWave to implement more complicated features like Phase shifting. 
+*/
+
+
 const AudioContext = window.AudioContext;   //legacy Browsers
 
 var ctx:AudioContext;   //audiocontext

@@ -37,3 +37,8 @@
     background-size: contain;
     image-rendering: pixelated;
 }
+
+#synthesizer-layout #piano-roll ul#octaves .base-octave{
+    
+    filter: hue-rotate(90deg);
+}
