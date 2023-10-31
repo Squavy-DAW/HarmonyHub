@@ -5,10 +5,11 @@ import { useTabs } from "@stores/tabs";
 import Music from "@components/Music";
 import 'react-toastify/dist/ReactToastify.css';
 import '@styles/Connect.css'
+import AsciiLogo from "./AsciiLogo";
 
 export default function Connect() {
 
-    const { tabs, setTabs } = useTabs();
+    // const { tabs, setTabs } = useTabs();
 
     const displaynameRef = useRef<HTMLInputElement>(null);
     const tokenRef = useRef<HTMLTextAreaElement>(null);
@@ -35,22 +36,15 @@ export default function Connect() {
             toast.error("Failed to join session");
             return;
         }
-
-        toast.success("Session joined!");
-
-        setTabs([...tabs, {
-            name: `Remote: ${displaynameRef.current.value}`,
-            content: <Music session={{
-                id: token,
-                socket: socket,
-                name: displaynameRef.current.value,
-            }} />
-        }])
     }
 
     return (
         <section id="connect-layout">
-            <h1>Connect remotely to a session</h1>
+            <AsciiLogo />
+
+            <main>
+                <h1>Connect remotely to a session</h1>
+            </main>
 
             <form id="connect-form" onSubmit={e => {
                 e.preventDefault();

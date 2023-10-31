@@ -1,108 +1,137 @@
-import { SessionDTO } from "@models/session"
-import * as Network from "@network/sessions"
-import { useRef, useState } from "react"
-import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useTabs } from "@stores/tabs";
-import Project from "@models/project";
-import Music from "./Music";
 import '@styles/Home.css';
+import OpenIcon from 'remixicon-react/ArrowRightFillIcon';
+import NewIcon from 'remixicon-react/AddFillIcon';
+import { createRef, useEffect, useState } from 'react';
+import Project from '@models/project';
+import Music from './Music';
+import AsciiLogo from './AsciiLogo';
 
 export default function Home() {
 
     const { tabs, setTabs, setTabIndex } = useTabs();
-    
-    const [session, setSession] = useState<SessionDTO>();
-    const [selectedProject, setSelectedProject] = useState<Project | undefined>();
 
-    const tokenRef = useRef<HTMLTextAreaElement>(null);
+    const [recentProjects, setRecentProjects] = useState<Project[]>([{
+        name: 'Test Project',
+        createDate: new Date(),
+        editDate: new Date(),
+        data: "",
+        description: "This is a test project",
+    }]);
 
-    async function launchInteractive() {
-        if (!selectedProject) {
-            toast.error("Please select a project");
-            return;
-        }
+    useEffect(() => {
+        // load recent projects
+    });
 
-        if (!session?.name) {
-            toast.error("Please enter a display name");
-            return;
-        }
+    const openButton = createRef<HTMLDivElement>();
+    const openInput = createRef<HTMLInputElement>();
 
-        const socket = Network.createSocket();
-        if (!socket) {
-            toast.error("Failed to create socket");
-            return;
-        }
-
-        const token = await Network.createSession(socket, session.name);
-        if (!token) {
-            toast.error("Failed to create session");
-            return;
-        }
-        
-        setSession({ id: token, socket: socket, ...session });
-
-        toast.success("Session created!");
-
-        setTabs([...tabs, {
-            name: selectedProject.name,
-            content: <Music session={{
-                id: token,
-                socket: socket,
-                name: session.name,
-            }} />
-        }])
-
-        setTabIndex(tabs.length);
+    function handleDragLeave(event: React.DragEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+        openButton.current?.classList.remove('dragging-over');
     }
 
-    function copyToken() {
-        if (!session?.id) return;
+    function handleDragEnter(event: React.DragEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+        openButton.current?.classList.add('dragging-over');
+    }
 
-        tokenRef.current?.select();
-        navigator.clipboard.writeText(session?.id || "");
-        toast.success("Token copied to clipboard!", {
-            autoClose: 2000,
-        });
+    function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+        event.preventDefault();
+        event.stopPropagation();
+        openButton.current?.classList.remove('dragging-over');
+
+        let file = event.target.files?.item(0);
+        if (file && file.name.endsWith('.harmony')) {
+            let reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    let project = JSON.parse(event.target?.result as string) as Project;
+                    // TODO: save project to recent projects
+                    setRecentProjects([project, ...recentProjects]);
+                    openProject(project);
+                } catch (e) {
+                    console.error("Failed to open project, JSON could not parse.", e);
+                    return false;
+                }
+            };
+            reader.readAsText(file);
+        }
+        else {
+            console.error("Failed to open project, file was not accepted. Valid files are .harmony files");
+            openButton.current?.classList.add('error');
+            setTimeout(() => {
+                openButton.current?.classList.remove('error');
+            }, 1500);
+        }
+
+        event.target.value = '';
+    }
+
+    function openProject(project: Project) {
+        setTabs([...tabs, {
+            name: project.name,
+            content: <Music project={project} />
+        }]);
+        setTabIndex(tabs.length+2);
+    }
+
+    function newProject() {
+        // i smell ✨magic✨, maybe there'll be a wizard?
+        setTabs([...tabs, {
+            name: 'New Project',
+            content: <Music project={{
+                name: 'New Project',
+                createDate: new Date(),
+                editDate: new Date(),
+                data: "",
+                description: "",
+            }} />
+        }]);
+        setTabIndex(tabs.length+2);
     }
 
     return (
         <section id="home-layout">
-            <header style={{gridColumn: '1 / 3'}}>
-                <h1>Hello!</h1>
-            </header>
-            
-            <aside id="session-creator">
-                <form id="connect-form" onSubmit={e => {
-                    e.preventDefault();
-                    launchInteractive();
-                }}>
-                    { !selectedProject && <>
-                        <span>Select a project to continue!</span>
-                        <hr />
-                    </> }
-                    { selectedProject && <>
-                        <label htmlFor="selected-project">Selected Project</label>
-                        <div id="selected-project" className="project-card" onClick={() => setSelectedProject(undefined)}>Card 1</div>
-                    </> }
+            <AsciiLogo />
 
-                    <label htmlFor="display-name">Display name</label>
-                    <input type="text" name="display-name" id="display-name" onChange={(e) => {
-                        setSession({ ...session, name: e.target.value })
-                    }} />
+            <main id="home-title">
+                <h1>Welcome to HarmonyHub!</h1>
+            </main>
 
-                    <label htmlFor="launch">Ready?</label>
-                    <button type="submit" name="launch" id="launch">Launch session</button>
+            <main id="home-controls">
+                <div id='open-project'
+                     className='hoverable'
+                     ref={openButton}>
+                    <input type="file" id="open-project-input"
+                           ref={openInput}
+                           onDragEnter={handleDragEnter}
+                           onDragLeave={handleDragLeave}
+                           onChange={handleChange} />
+                    <OpenIcon size="1.2rem" />
+                    <span>Open project</span>
+                </div>
 
-                    <label htmlFor="token">Session token <u hidden={!session?.id} onClick={copyToken}>Click to copy</u></label>
-                    <textarea ref={tokenRef} name="token" id="token" className="token-input" value={session?.id} readOnly onClick={copyToken} disabled={session?.id === undefined} />
-                </form>
-            </aside>
+                <div id='new-project'
+                     className='hoverable'
+                     onClick={newProject}>
+                    <NewIcon size="1.2rem" />
+                    <span>Create new</span>
+                </div>
 
-            <main id="home-projects">
-                <div className="project-card" onClick={() => setSelectedProject({
-                    name: "Project 1",
-                })}>Card 1</div>
+                {/* <h3>Recently opened</h3>
+
+                <ul id='recently-opened'>
+                    {recentProjects.map((project, index) =>
+                        <li key={`recent-project[${index}]`} className='recent-project hoverable'>
+                            <span style={{fontSize: '1.2em'}}>{project.name}</span>
+                            <span>{project.description}</span>
+                        </li>
+                    )}
+                </ul> */}
             </main>
         </section>
     )

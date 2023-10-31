@@ -1,3 +1,7 @@
 export default interface Project {
-    name: string;
+    name: string,
+    description: string,
+    editDate: Date,
+    createDate: Date,
+    data: any,
 }

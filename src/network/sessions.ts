@@ -1,4 +1,4 @@
-import { TypedSockets as Socket } from "@models/packets";
+import { TypedSockets as Socket } from "@network/packets";
 import { io } from "socket.io-client";
 
 export function createSocket(): Socket | undefined {

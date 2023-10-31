@@ -10,7 +10,11 @@ export interface TabContext {
 
 export const useTabs = create<TabContext>((set) => ({
     tabs: [],
-    setTabs: (tabs) => set({ tabs }),
+    setTabs: (tabs) => {
+        set(() => ({
+            tabs: [...tabs]
+        }))
+    },
     tabIndex: 0,
     setTabIndex: (index) => set({ tabIndex: index }),
 }));

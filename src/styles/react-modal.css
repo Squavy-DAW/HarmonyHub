@@ -1,0 +1,19 @@
+.ReactModalPortal {
+    position: absolute;
+}
+
+.ReactModalPortal .ReactModal__Overlay {
+    background: #00000066 !important;
+    display: grid;
+    place-content: center;
+}
+
+.ReactModalPortal .ReactModal__Content {
+    position: initial !important;
+    background: none !important;
+    border-radius: none !important;
+    border-image-source: url("/src/assets/modal-background.png") !important;
+    border-image-slice: 3 fill !important;
+    border-image-width: 1rem !important;
+    image-rendering: pixelated !important;
+}

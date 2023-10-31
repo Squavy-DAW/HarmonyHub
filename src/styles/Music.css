@@ -1,3 +1,48 @@
+#music-layout {
+    display: grid;
+    grid-template-rows: 2rem auto;
+    grid-template-columns: auto;
+}
+
+#music-layout #toolbar {
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+    background-color: rgba(37, 2, 2, 0.402);
+}
+
+#music-layout #toolbar li {
+    list-style: none;
+}
+
+#music-layout #toolbar > .toolbar-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    image-rendering: pixelated;
+    border-image-source: url("/src/assets/toolbar-item.png");
+    border-image-slice: 1 fill;
+    border-image-width: 3px;
+    font-size: 1.2em;
+    cursor: pointer;
+}
+
+#music-layout #toolbar #collaboration {
+    
+}
+
+#collaboration-modal {
+    padding: 8px;
+    display: grid;
+    grid-template-rows: 3rem auto;
+    grid-template-columns: 3rem 24rem;
+    image-rendering: pixelated;
+    gap: 1rem;
+}
+
 #music-layout #music-notes {
     position: relative;
     overflow: auto;
