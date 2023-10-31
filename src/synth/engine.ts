@@ -1,5 +1,7 @@
 /*
 TODO:   
+    0. Delete Pitch-Shift and change detune to make it more universal for different browsers. (There is no difference between them. Why did i think there was. Am i stupid? Oups.
+        Hopefully nobody will look at the git-history...)
     1. Organize File, Create oscillator nodes on demand (The real oscillators remain somewhat abstract), so many frequencies of many different instruments 
     can be played simultaniously
     2. Use createPeriodicWave and setPeriodicWave to implement more complicated features like Phase shifting. 
@@ -159,7 +161,7 @@ export async function setPan(pan:number, node:AudioNodes) {
     if(panNode != null)
         panNode.pan.setValueAtTime(pan, ctx.currentTime);
 }
-export async function setDetone(cents:number, node:AudioNodes) {  //in Cents
+export async function setDetune(cents:number, node:AudioNodes) {  //in Cents
     let oscillator = getOsc(node);
     if(oscillator != null)
         oscillator.detune.setValueAtTime(cents,ctx.currentTime);

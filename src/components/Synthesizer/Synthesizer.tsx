@@ -1,5 +1,5 @@
 import Split from "react-split";
-import { AudioNodes,init, setGain, setWaveform, setPan, setDetone, setPitch}  from "@src/synth/engine";
+import { AudioNodes,init, setGain, setWaveform, setPan, setDetune, setPitch}  from "@src/synth/engine";
 import PianoRoll from "./Keyboard";
 import "@styles/synthesizer.css"
 
@@ -47,8 +47,8 @@ export default function Synthesizer() { //TODO: Stop Synthesizer on Tab-Change
                                     <input type="range" id="pitchOsc1" name="pitchOsc1" min={0.5} max={2} step={0.01} defaultValue={1} onChange={e => setPitch(+e.target.value, AudioNodes.Osc1)}/>
                                 </li>
                                 <li>
-                                    <label htmlFor="detoneOsc1">Detone</label>
-                                    <input type="range" id="detoneOsc1" name="detoneOsc1" min={-100} max={100} step={1} defaultValue={0} onChange={e => setDetone(+e.target.value, AudioNodes.Osc1)}/>
+                                    <label htmlFor="detuneOsc1">Detone</label>
+                                    <input type="range" id="detuneOsc1" name="detuneOsc1" min={-100} max={100} step={1} defaultValue={0} onChange={e => setDetune(+e.target.value, AudioNodes.Osc1)}/>
                                 </li>
                             </ul>
                         </div>
@@ -77,8 +77,8 @@ export default function Synthesizer() { //TODO: Stop Synthesizer on Tab-Change
                                     <input type="range" id="pitchOsc2" name="pitchOsc2" min={0.5} max={2} step={0.01} defaultValue={1} onChange={e => setPitch(+e.target.value, AudioNodes.Osc2)}/>
                                 </li>
                                 <li>
-                                    <label htmlFor="detoneOsc2">Detone</label>
-                                    <input type="range" id="detoneOsc2" name="detoneOsc2" min={-100} max={100} step={1} defaultValue={0} onChange={e => setDetone(+e.target.value, AudioNodes.Osc2)}/>
+                                    <label htmlFor="detuneOsc2">Detone</label>
+                                    <input type="range" id="detuneOsc2" name="detuneOsc2" min={-100} max={100} step={1} defaultValue={0} onChange={e => setDetune(+e.target.value, AudioNodes.Osc2)}/>
                                 </li>
                             </ul>
                         </div>
@@ -107,8 +107,8 @@ export default function Synthesizer() { //TODO: Stop Synthesizer on Tab-Change
                                     <input type="range" id="pitchOsc3" name="pitchOsc3" min={0.5} max={2} step={0.01} defaultValue={1} onChange={e => setPitch(+e.target.value, AudioNodes.Osc3)}/>
                                 </li>
                                 <li>
-                                    <label htmlFor="detoneOsc3">Detone</label>
-                                    <input type="range" id="detoneOsc3" name="detoneOsc3" min={-100} max={100} step={1} defaultValue={0} onChange={e => setDetone(+e.target.value, AudioNodes.Osc3)}/>
+                                    <label htmlFor="detuneOsc3">Detone</label>
+                                    <input type="range" id="detuneOsc3" name="detuneOsc3" min={-100} max={100} step={1} defaultValue={0} onChange={e => setDetune(+e.target.value, AudioNodes.Osc3)}/>
                                 </li>
                             </ul>
                         </div>

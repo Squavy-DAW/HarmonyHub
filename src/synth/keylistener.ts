@@ -32,7 +32,7 @@ export function onKeyPressed(event:KeyboardEvent){
         let octaveElement = document.querySelector(".base-octave");
         octaveElement?.classList.remove("base-octave");
         octave = oct;
-        //TODO: Change all already pressed keys accordingly to the desired octave-switch (IMPORTANT)
+        //TODO: Change all already pressed keys (and mouse-input!) accordingly to the desired octave-switch (IMPORTANT)
         let octaves = document.querySelectorAll(".octave");
         octaves.forEach(element => {
             if(element.innerHTML == oct.toString()){
