@@ -28,18 +28,15 @@
     }
 }
 
-/* this thing literally MELTS the browser 🫠 */
-/* TODO: try gifs instead of animation */
 #crt-lines {
     position: absolute;
     inset: 0;
-    background: url(src/assets/lines.jpg);
+    background: url(src/assets/lines.gif);
     background-size: 9px auto;
     mix-blend-mode: overlay;
     pointer-events: none;
     opacity: 0.4;
     z-index: 100;
-    animation: moveDownAnimation 150s linear infinite;
 }
 
 #darken {
