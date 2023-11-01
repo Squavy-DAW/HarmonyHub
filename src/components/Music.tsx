@@ -1,10 +1,10 @@
 import Split from "react-split";
 import '@styles/Music.css';
 import Project from "@models/project";
-import useModal from "@stores/modal";
-import { useState } from "react";
-import { encrypt, extract, generateKey } from "@network/crypto";
-import { upload } from "@network/network";
+import Modal from 'react-modal';
+import { createRef, useEffect, useState } from "react";
+import CollaborationModal from "./modal/Collaboration";
+import { generateKey, extract } from "@network/crypto";
 
 export default function Music(props: { project: Project }) {
 
@@ -38,55 +38,43 @@ export default function Music(props: { project: Project }) {
         }]
     }];
 
-    const { setModalContent } = useModal();
+    const [layoutRef, setLayoutRef] = useState<HTMLElement | null>(null);
+    
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [modalContent, setModalContent] = useState<React.ReactNode>(null);
+
+    useEffect(() => {
+        setModalIsOpen(!!modalContent);
+    }, [modalContent]);
+
     const [inviteLink, setInviteLink] = useState<string>();
+    const [cryptoKey, setCryptoKey] = useState<CryptoKey>();
 
-    async function handleStartCollaboration() {
-        let project = props.project;
-        let key = await generateKey();
-        let encrypted = await encrypt(key, project);
-        let inviteUrl = await upload(encrypted);
-        let inviteKey = await extract(key);
-        let inviteLink = `${inviteUrl}#key=${inviteKey}`;
-        setInviteLink(inviteLink);
-    }
-
-    function handleCollaborateClick() {
+    async function handleCollaborateClick() {
         setModalContent((
-            <div id="collaboration-modal">
-                <img src="/src/assets/collaboration-lock.png" alt="lock" width={48} />
-                <div>
-                    <h1 style={{margin: 0, lineHeight: 0.9}}>Collaborate</h1>
-                    <p>Securely via E2E encryption - <a href={/*TODO*/ ""}>Learn more</a></p>
-                </div>
-                <div style={{gridColumn: '1/3'}}>
-                    { inviteLink ? <>
-                        <p>Share this link with your friends to collaborate on this project:</p>
-                        <input type="text" value={inviteLink} readOnly />
-                    </> : <>
-                        <p>To start collaborating, click the button below to generate an invitation:</p>
-                        <button onClick={handleStartCollaboration} />
-                    </> }
-                </div>
-            </div>
+            <CollaborationModal 
+                cryptoKey={cryptoKey}
+                setCryptoKey={setCryptoKey}
+                inviteLink={inviteLink} 
+                setInviteLink={setInviteLink} />
         ));
     }
 
     return (
-        <section id="music-layout">
-            <ul id="toolbar">
-                {toolbarItems.map((item, index) => 
+        <section className="music-layout" ref={ref => setLayoutRef(ref)}>
+            <ul className="toolbar">
+                {toolbarItems.map((item, index) =>
                     <li key={`toolbaritem[${index}]`} className="toolbar-item" onClick={() => {
                         item.onClick ? item.onClick() : null; // TODO: Add dropdown menu
                     }}>
                         <img src={item.icon} alt={item.name} height={16} />
-                        <span>{ item.name }{item.items && "..."}</span>
+                        <span>{item.name}{item.items && "..."}</span>
                     </li>
                 )}
-                <li style={{flex: 1}} />
-                <li id="collaboration" className="toolbar-item" onClick={handleCollaborateClick}>
+                <li style={{ flex: 1 }} />
+                <li className={["toolbar-item collaboration", inviteLink && 'active'].join(' ')} onClick={handleCollaborateClick}>
                     <img src="/src/assets/toolbar/collaboration.png" alt="collaboration" height={16} />
-                    <span>Collaborate...</span>
+                    <span>{ inviteLink ? 'Collaborating' : 'Collaborate...' }</span>
                 </li>
             </ul>
             <Split
@@ -97,11 +85,18 @@ export default function Music(props: { project: Project }) {
                 gutterAlign=''
                 direction="vertical"
                 cursor="row-resize">
-                <section id="music-notes">
-                    <section id="mouse-cursors"></section>
+                <section className="music-notes">
+                    <section className="mouse-cursors"></section>
                 </section>
                 <section />
             </Split>
+
+            { layoutRef && <Modal
+                isOpen={modalIsOpen} 
+                onRequestClose={() => setModalIsOpen(false)}
+                parentSelector={() => layoutRef}>
+                {modalContent}
+            </Modal> }
         </section>
-    )
+    );
 }

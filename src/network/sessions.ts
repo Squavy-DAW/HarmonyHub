@@ -9,6 +9,10 @@ export function createSocket(): Socket | undefined {
     }
 }
 
+export async function getSessionId(): Promise<string | undefined> {
+    return await fetch(import.meta.env.VITE_WEBSERVER + '/new').then(res => res.text());
+}
+
 export async function createSession(socket: Socket, name: string): Promise<string | undefined> {
     return await new Promise<string>((resolve, reject) => {
         socket.timeout(5000).emit('hh:create-session', {

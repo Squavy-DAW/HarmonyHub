@@ -1,0 +1,26 @@
+.collaboration-modal {
+    padding: 8px;
+    display: grid;
+    grid-template-rows: 3rem 1fr auto;
+    grid-template-columns: 3rem minmax(12rem, 28rem);
+    image-rendering: pixelated;
+    gap: 1rem;
+}
+
+.collaboration-modal.active .title {
+    color: aquamarine !important;
+}
+
+.collaboration-modal.active .title::after {
+    content: ' [active]';
+    color: initial;
+}
+
+.collaboration-modal .invite-link {
+    padding: 1rem;
+    margin: 1rem 0 0 0;
+    border-image-source: url("/src/assets/invite-link.png");
+    border-image-slice: 3 fill;
+    border-image-width: 16px;
+    overflow-x: auto;
+}

@@ -1,8 +1,10 @@
 .ReactModalPortal {
-    position: absolute;
+    display: contents;
 }
 
 .ReactModalPortal .ReactModal__Overlay {
+    position: absolute !important;
+    inset: 0 !important;
     background: #00000066 !important;
     display: grid;
     place-content: center;
