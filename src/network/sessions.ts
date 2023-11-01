@@ -30,9 +30,12 @@ export async function joinSession(socket: Socket, room: string): Promise<boolean
     });
 }
 
-export async function broadcast(socket: Socket, key: CryptoKey, data: unknown) {
+export async function broadcast<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, data: Parameters<ClientToClientEvents[T]>['0']) {
     return socket.emit('hh:broadcast', {
-        data: await encrypt(key, data)
+        data: await encrypt(key, {
+            type: type,
+            data: data
+        })
     });
 }
 
@@ -49,19 +52,11 @@ export async function request<T extends keyof ClientToClientEvents>(socket: Sock
     })
 }
 
-export async function handleBroadcast<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, callback: (data: ClientToClientEvents[T]) => void) {
-    socket.on('hh:broadcast', async ({ data }) => {
-        let decrypted = await decrypt(key, data);
-        if (decrypted.type === type) callback(decrypted.data);
-    });
-}
-
-export async function handleRequest<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, callback: (data: ClientToClientEvents[T]) => ReturnType<ClientToClientEvents[T]>) {
-    socket.on('hh:request', async ({ data }, ack) => {
+export async function handle<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, callback: (data: ClientToClientEvents[T]) => ReturnType<ClientToClientEvents[T]>) {
+    socket.on('hh:data', async ({ data }, ack) => {
         let decrypted = await decrypt(key, data);
         if (decrypted.type === type) {
-            let response = await callback(decrypted.data);
-            ack({ data: await encrypt(key, response) });
+            ack({ data: await encrypt(key, callback(decrypted.data)) });
         }
     });
 }

@@ -2,9 +2,7 @@ import Project from "@models/project";
 import { Socket } from "socket.io-client";
 
 export interface ServerToClientEvents {
-    'hh:user-joined': (args: { name: string }) => void;
-    'hh:broadcast': (args: { data: ArrayBuffer }) => void;
-    'hh:request': (args: { data: ArrayBuffer }, callback: (res: { data: any }) => void) => void;
+    'hh:data': (args: { data: ArrayBuffer }, callback: (res: { data: any }) => void) => void;
 }
 
 export interface ClientToServerEvents {
@@ -16,6 +14,7 @@ export interface ClientToServerEvents {
 
 export interface ClientToClientEvents {
     'hh:request-project': (args: null) => Project;
+    'hh:user-joined': (args: { name: string }) => void;
 }
 
 export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;

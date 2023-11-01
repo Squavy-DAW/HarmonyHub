@@ -5,7 +5,7 @@ import Modal from 'react-modal';
 import { useEffect, useState } from "react";
 import CollaborationModal from "./modal/Collaboration";
 import { TypedSocket as Socket } from "@network/packets";
-import { handleBroadcast, handleRequest } from "@network/sessions";
+import { handle } from "@network/sessions";
 
 export default function Music(props: { project: Project, networkData: {
     name: string;
@@ -65,11 +65,11 @@ export default function Music(props: { project: Project, networkData: {
 
     useEffect(() => {
         if (socket) {
-            handleBroadcast(socket, cryptoKey!, 'hh:request-project', () => {
-                console.log("Broadcast");
+            handle(socket, cryptoKey!, 'hh:user-joined', ({ name }) => {
+                console.log(`${name} joined the session`);
             })
 
-            handleRequest(socket, cryptoKey!, 'hh:request-project', () => {
+            handle(socket, cryptoKey!, 'hh:request-project', () => {
                 console.log("Requested project");
                 return props.project;
             })

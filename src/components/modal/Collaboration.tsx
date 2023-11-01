@@ -63,6 +63,7 @@ export default function CollaborationModal(props: CollaborationModalProps) {
     }
 
     function handleStopCollaboration() {
+        socket?.disconnect();
         setCryptoKey(undefined);
         setRoom(undefined);
         setInviteLink(undefined);

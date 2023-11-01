@@ -1,7 +1,7 @@
 import Music from "@components/Music";
 import Project from "@models/project";
 import { importKey } from "@network/crypto";
-import { createSocket, joinSession, request } from "@network/sessions";
+import { broadcast, createSocket, joinSession, request } from "@network/sessions";
 import { useTabs } from "@stores/tabs";
 import { useState } from "react";
 
@@ -24,6 +24,8 @@ export default function ConnectModal(props: ConnectModalProps) {
     
         let success = await joinSession(socket, room);
         if (!success) return;
+
+        broadcast(socket, key, 'hh:user-joined', { name: userName });
 
         let project = await request(socket, key, 'hh:request-project', null);
         if (!project) return;
