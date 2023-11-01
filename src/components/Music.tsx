@@ -65,12 +65,13 @@ export default function Music(props: { project: Project, networkData: {
 
     useEffect(() => {
         if (socket) {
-            handleBroadcast(socket, cryptoKey!, (data) => {
-                console.log("Broadcast", data);
+            handleBroadcast(socket, cryptoKey!, 'hh:request-project', () => {
+                console.log("Broadcast");
             })
-            handleRequest(socket, cryptoKey!, data => {
-                console.log("Request", data);
-                return data;
+
+            handleRequest(socket, cryptoKey!, 'hh:request-project', () => {
+                console.log("Requested project");
+                return props.project;
             })
         }
     }, [socket])

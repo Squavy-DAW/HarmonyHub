@@ -25,13 +25,13 @@ export default function ConnectModal(props: ConnectModalProps) {
         let success = await joinSession(socket, room);
         if (!success) return;
 
-        let project = await request<Project>(socket, key, 'project');
+        let project = await request(socket, key, 'hh:request-project', null);
         if (!project) return;
 
         props.onClose();
 
         setTabs([...tabs, {
-            name: "Music",
+            name: project.name,
             content: <Music project={project} networkData={{
                 name: userName,
                 cryptoKey: key,

@@ -1,4 +1,4 @@
-import { TypedSocket as Socket } from "@network/packets";
+import { ClientToClientEvents, TypedSocket as Socket } from "@network/packets";
 import { io } from "socket.io-client";
 import { decrypt, encrypt } from "./crypto";
 
@@ -36,24 +36,32 @@ export async function broadcast(socket: Socket, key: CryptoKey, data: unknown) {
     });
 }
 
-export async function request<TRes>(socket: Socket, key: CryptoKey, data: unknown) : Promise<TRes> {
+export async function request<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, data: Parameters<ClientToClientEvents[T]>['0']) : Promise<ReturnType<ClientToClientEvents[T]>> {
     return new Promise(async resolve => {
         socket.emit('hh:request', {
-            data: await encrypt(key, data)
+            data: await encrypt(key, {
+                type: type,
+                data: data
+            })
         }, ({ data }) => {
-            resolve(data as TRes);
+            resolve(data);
         });
     })
 }
 
-export async function handleBroadcast(socket: Socket, key: CryptoKey, callback: (data: unknown) => void) {
+export async function handleBroadcast<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, callback: (data: ClientToClientEvents[T]) => void) {
     socket.on('hh:broadcast', async ({ data }) => {
-        callback(await decrypt(key, data));
+        let decrypted = await decrypt(key, data);
+        if (decrypted.type === type) callback(decrypted.data);
     });
 }
 
-export async function handleRequest(socket: Socket, key: CryptoKey, callback: (data: unknown) => unknown) {
-    socket.on('hh:request', async ({ data }, ack) => ack({
-        data: await encrypt(key, await callback(await decrypt(key, data)))
-    }));
+export async function handleRequest<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, callback: (data: ClientToClientEvents[T]) => ReturnType<ClientToClientEvents[T]>) {
+    socket.on('hh:request', async ({ data }, ack) => {
+        let decrypted = await decrypt(key, data);
+        if (decrypted.type === type) {
+            let response = await callback(decrypted.data);
+            ack({ data: await encrypt(key, response) });
+        }
+    });
 }

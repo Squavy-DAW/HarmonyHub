@@ -69,6 +69,16 @@ export default function CollaborationModal(props: CollaborationModalProps) {
         setSocket(undefined);
     }
 
+    let copyTimeout : number | undefined;
+    function handleCopyInviteLink(event: React.MouseEvent<HTMLPreElement, MouseEvent>) {
+        if (copyTimeout) clearTimeout(copyTimeout);
+        navigator.clipboard.writeText(inviteLink!);
+        event.currentTarget.classList.add('copied');
+        copyTimeout = setTimeout(() => {
+            (event.target as HTMLElement)?.classList.remove('copied');
+        }, 1000);
+    }
+
     return (
         <div className={['collaboration-modal', socket && 'active'].join(' ')}>
             <img src="/src/assets/collaboration-lock.png" alt="lock" width={48} />
@@ -79,7 +89,7 @@ export default function CollaborationModal(props: CollaborationModalProps) {
             <div style={{ gridColumn: '1/3' }}>
                 {socket ? <>
                     <p>Share this link with your friends to collaborate on this project:</p>
-                    <pre className='invite-link'>{inviteLink}</pre>
+                    <pre className='invite-link' onClick={handleCopyInviteLink}>{inviteLink}</pre>
                 </> : <>
                     <p>To start collaborating, click the button below to generate an invitation:</p>
                     <button onClick={handleStartCollaboration}>Start collaboration</button>

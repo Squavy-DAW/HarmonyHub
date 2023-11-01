@@ -17,10 +17,37 @@
 }
 
 .collaboration-modal .invite-link {
+    position:relative;
     padding: 1rem;
     margin: 1rem 0 0 0;
+    font-size: 0.8em;
     border-image-source: url("/src/assets/invite-link.png");
     border-image-slice: 3 fill;
     border-image-width: 16px;
-    overflow-x: auto;
+}
+
+@keyframes copied {
+    from {
+        box-shadow: 0 0 0 0 #00ff00b3;
+    }
+    80% {
+        opacity: 1;
+    }
+    to {
+        box-shadow: 0 0 0 10px #00ff0000;
+        opacity: 0;
+    }
+}
+
+.collaboration-modal .invite-link.copied::before {
+    content: 'Copied!';
+    display: grid;
+    place-items: center;
+    position: absolute;
+    box-shadow: 0 0 10px 10px rgba(0, 255, 0, 0.7);
+    inset: 0;
+    animation: copied 1s ease-out forwards;
+    border-image-source: url("/src/assets/invite-link-copied.png");
+    border-image-slice: 3 fill;
+    border-image-width: 16px;
 }
