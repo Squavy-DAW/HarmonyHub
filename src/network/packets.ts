@@ -1,12 +1,16 @@
 import { Socket } from "socket.io-client";
 
-interface ServerToClientEvents {
-    
+export interface ServerToClientEvents {
+    'hh:user-joined': (args: { name: string }) => void;
+    'hh:broadcast': (args: { data: ArrayBuffer }) => void;
+    'hh:request': (args: { data: ArrayBuffer }, callback: (res: { data: any }) => void) => void;
 }
 
-interface ClientToServerEvents {
-    'hh:create-session': (args: { name: string }, callback: (ack: { token: string }) => void) => void;
-    'hh:join-session': (args: { name: string, id: string }, callback: (ack: { success: boolean }) => void) => void;
+export interface ClientToServerEvents {
+    'hh:create-session': (args: null, callback: (ack: { room: string }) => void) => void;
+    'hh:join-session': (args: { room: string }, callback: (ack: { success: boolean }) => void) => void;
+    'hh:broadcast': (args: { data: ArrayBuffer }) => void;
+    'hh:request': (args: { data: ArrayBuffer }, callback: (res: { data: any }) => void) => void;
 }
 
-export type TypedSockets = Socket<ServerToClientEvents, ClientToServerEvents>;
+export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;

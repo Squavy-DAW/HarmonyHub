@@ -2,11 +2,17 @@ import Split from "react-split";
 import '@styles/Music.css';
 import Project from "@models/project";
 import Modal from 'react-modal';
-import { createRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import CollaborationModal from "./modal/Collaboration";
-import { generateKey, extract } from "@network/crypto";
+import { TypedSocket as Socket } from "@network/packets";
+import { handleBroadcast, handleRequest } from "@network/sessions";
 
-export default function Music(props: { project: Project }) {
+export default function Music(props: { project: Project, networkData: {
+    name: string;
+    cryptoKey: CryptoKey | undefined;
+    room: string | undefined;
+    socket: Socket | undefined;
+} }) {
 
     interface ToolbarItem {
         name: string;
@@ -39,26 +45,35 @@ export default function Music(props: { project: Project }) {
     }];
 
     const [layoutRef, setLayoutRef] = useState<HTMLElement | null>(null);
-    
-    const [modalIsOpen, setModalIsOpen] = useState(false);
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
 
-    useEffect(() => {
-        setModalIsOpen(!!modalContent);
-    }, [modalContent]);
-
-    const [inviteLink, setInviteLink] = useState<string>();
-    const [cryptoKey, setCryptoKey] = useState<CryptoKey>();
+    const [cryptoKey, setCryptoKey] = useState(props.networkData.cryptoKey);
+    const [room, setRoom] = useState(props.networkData.room);
+    const [socket, setSocket] = useState(props.networkData.socket);
 
     async function handleCollaborateClick() {
         setModalContent((
             <CollaborationModal 
                 cryptoKey={cryptoKey}
                 setCryptoKey={setCryptoKey}
-                inviteLink={inviteLink} 
-                setInviteLink={setInviteLink} />
+                room={room}
+                setRoom={setRoom}
+                socket={socket}
+                setSocket={setSocket} />
         ));
     }
+
+    useEffect(() => {
+        if (socket) {
+            handleBroadcast(socket, cryptoKey!, (data) => {
+                console.log("Broadcast", data);
+            })
+            handleRequest(socket, cryptoKey!, data => {
+                console.log("Request", data);
+                return data;
+            })
+        }
+    }, [socket])
 
     return (
         <section className="music-layout" ref={ref => setLayoutRef(ref)}>
@@ -72,11 +87,12 @@ export default function Music(props: { project: Project }) {
                     </li>
                 )}
                 <li style={{ flex: 1 }} />
-                <li className={["toolbar-item collaboration", inviteLink && 'active'].join(' ')} onClick={handleCollaborateClick}>
+                <li className={["toolbar-item collaboration", socket && 'active'].join(' ')} onClick={handleCollaborateClick}>
                     <img src="/src/assets/toolbar/collaboration.png" alt="collaboration" height={16} />
-                    <span>{ inviteLink ? 'Collaborating' : 'Collaborate...' }</span>
+                    <span>{ socket ? 'Collaborating' : 'Collaborate...' }</span>
                 </li>
             </ul>
+            
             <Split
                 sizes={[70, 30]}
                 minSize={100}
@@ -92,8 +108,8 @@ export default function Music(props: { project: Project }) {
             </Split>
 
             { layoutRef && <Modal
-                isOpen={modalIsOpen} 
-                onRequestClose={() => setModalIsOpen(false)}
+                isOpen={!!modalContent} 
+                onRequestClose={() => setModalContent(null)}
                 parentSelector={() => layoutRef}>
                 {modalContent}
             </Modal> }

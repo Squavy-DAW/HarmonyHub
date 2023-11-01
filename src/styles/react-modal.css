@@ -8,6 +8,7 @@
     background: #00000066 !important;
     display: grid;
     place-content: center;
+    z-index: 15;
 }
 
 .ReactModalPortal .ReactModal__Content {
@@ -18,4 +19,5 @@
     border-image-slice: 3 fill !important;
     border-image-width: 1rem !important;
     image-rendering: pixelated !important;
+    z-index: 20;
 }

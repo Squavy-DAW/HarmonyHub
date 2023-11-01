@@ -6,18 +6,31 @@ import '@styles/react-toastify.css'
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
 import CloseIcon from 'remixicon-react/CloseLineIcon';
 import HomeIcon from 'remixicon-react/Home2FillIcon';
-import ConnectIcon from 'remixicon-react/LinkIcon';
 import Home from '@components/Home';
-import Connect from '@components/Connect';
 import { ToastContainer } from 'react-toastify';
 import { useTabs } from '@stores/tabs';
-import ReactModal from 'react-modal';
+import { useEffect, useState } from 'react';
+import Modal from 'react-modal';
+import ConnectModal from '@components/modal/Connect';
 
 function App() {
 
   const { tabIndex, setTabIndex, tabs, setTabs } = useTabs();
 
-  ReactModal.setAppElement('#root');
+  const [modalContent, setModalContent] = useState<React.ReactNode>(null);
+
+  Modal.setAppElement('#root');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    let session = params.get('session');
+    if (!session) return;
+
+    let jwkKey = window.location.hash.slice("#key=".length);
+    setModalContent((
+      <ConnectModal room={session} jwkKey={jwkKey} onClose={() => setModalContent(null)} />
+    ));
+  }, [])
 
   return (
     <>
@@ -29,9 +42,6 @@ function App() {
         <TabList>
           <Tab key={"home"}>
             <HomeIcon size="1.2rem" />
-          </Tab>
-          <Tab key={"connect"}>
-            <ConnectIcon size="1.2rem" />
           </Tab>
           {tabs.map((tab, i) =>
             <Tab key={`tab[${i}]`}>
@@ -51,13 +61,16 @@ function App() {
         <TabPanel hidden={tabIndex != 0} key={"home"}>
           <Home />
         </TabPanel>
-        <TabPanel hidden={tabIndex != 1} key={"connect"}>
-          <Connect />
-        </TabPanel>
         {tabs.map((tab, i) =>
-          <TabPanel hidden={tabIndex != i + 2} key={`tab-panel[${i}]`}>{tab.content}</TabPanel>
+          <TabPanel hidden={tabIndex != i + 1} key={`tab-panel[${i}]`}>{tab.content}</TabPanel>
         )}
       </Tabs>
+
+      <Modal
+          isOpen={!!modalContent}
+          parentSelector={() => document.body}>
+          {modalContent}
+      </Modal>
 
       <ToastContainer autoClose={2000} />
     </>

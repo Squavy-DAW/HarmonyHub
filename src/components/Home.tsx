@@ -74,9 +74,14 @@ export default function Home() {
     function openProject(project: Project) {
         setTabs([...tabs, {
             name: project.name,
-            content: <Music project={project} />
+            content: <Music project={project} networkData={{
+                name: "",
+                cryptoKey: undefined,
+                room: undefined,
+                socket: undefined,
+            }} />
         }]);
-        setTabIndex(tabs.length+2);
+        setTabIndex(tabs.length+1);
     }
 
     function newProject() {
@@ -89,9 +94,14 @@ export default function Home() {
                 editDate: new Date(),
                 data: "",
                 description: "",
+            }} networkData={{
+                name: "",
+                cryptoKey: undefined,
+                room: undefined,
+                socket: undefined,
             }} />
         }]);
-        setTabIndex(tabs.length+2);
+        setTabIndex(tabs.length+1);
     }
 
     return (

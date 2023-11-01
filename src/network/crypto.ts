@@ -1,7 +1,7 @@
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-export async function generateKey() : Promise<CryptoKey> {
+export async function generateKey(): Promise<CryptoKey> {
     return await window.crypto.subtle.generateKey(
         { name: "AES-GCM", length: 128 },
         true, // extractable
@@ -9,7 +9,7 @@ export async function generateKey() : Promise<CryptoKey> {
     );
 }
 
-export async function encrypt(key: CryptoKey, content: any) : Promise<ArrayBuffer> {
+export async function encrypt(key: CryptoKey, content: any): Promise<ArrayBuffer> {
     return await window.crypto.subtle.encrypt(
         { name: "AES-GCM", iv: new Uint8Array(12) },
         key,
@@ -26,6 +26,22 @@ export async function decrypt(key: CryptoKey, content: ArrayBuffer) {
     return JSON.parse(decoder.decode(decrypted));
 }
 
-export async function extract(key: CryptoKey) : Promise<string | undefined> {
-    return (await window.crypto.subtle.exportKey("jwk", key)).k;
+export async function extract(key: CryptoKey): Promise<string> {
+    return (await window.crypto.subtle.exportKey("jwk", key)).k!;
+}
+
+export async function importKey(key: string): Promise<CryptoKey> {
+    return await window.crypto.subtle.importKey(
+        "jwk",
+        {
+            k: key,
+            alg: "A128GCM",
+            ext: true,
+            key_ops: ["encrypt", "decrypt"],
+            kty: "oct",
+        },
+        { name: "AES-GCM", length: 128 },
+        true,
+        ["encrypt", "decrypt"],
+    );
 }

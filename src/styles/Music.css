@@ -46,3 +46,15 @@
     pointer-events: none;
     user-select: none;
 }
+  
+.music-layout .music-notes .mouse-cursors .cursor {
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    background-image: url('assets/cursor.png');
+    background-size: 1rem 1rem;
+    image-rendering: pixelated;
+    filter: hue-rotate(attr(data-hue)deg) drop-shadow(0 0 0.2rem white);
+    transition: left 0.1s linear, top 0.1s linear;
+    list-style: none;
+  }
