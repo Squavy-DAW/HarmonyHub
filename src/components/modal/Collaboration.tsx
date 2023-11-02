@@ -1,29 +1,16 @@
 import { extract, generateKey } from '@network/crypto';
 import { createSession, createSocket } from '@network/sessions';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { TypedSocket as Socket } from '@network/packets';
 import '@styles/modal/Collaboration.css'
+import NetworkContext from '@src/context/networkcontext';
 
-export interface CollaborationModalProps {
-    cryptoKey: CryptoKey | undefined;
-    setCryptoKey: (key: CryptoKey | undefined) => void;
-    room: string | undefined;
-    setRoom: (room: string | undefined) => void;
-    socket: Socket | undefined;
-    setSocket: (socket: Socket | undefined) => void;
-}
-
-export default function CollaborationModal(props: CollaborationModalProps) {
-    const [cryptoKey, setCryptoKey] = useState(props.cryptoKey);
-    const [room, setRoom] = useState(props.room);
+export default function CollaborationModal() {
     const [inviteLink, setInviteLink] = useState<string>();
-    const [socket, setSocket] = useState(props.socket);
+
+    const { cryptoKey, setCryptoKey, room, setRoom, socket, setSocket } = useContext(NetworkContext);
 
     useEffect(() => {
-        props.setCryptoKey(cryptoKey);
-        props.setRoom(room);
-        props.setSocket(socket);
-
         if (cryptoKey) {
             handleExtractKey(cryptoKey).then((key) => {
                 let inviteLink = `${import.meta.env.VITE_HARMONYHUB}/?session=${room}#key=${key}`;

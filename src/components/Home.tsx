@@ -74,7 +74,7 @@ export default function Home() {
     function openProject(project: Project) {
         setTabs([...tabs, {
             name: project.name,
-            content: <Music project={project} networkData={{
+            content: <Music project={project} network={{
                 name: "",
                 cryptoKey: undefined,
                 room: undefined,
@@ -94,7 +94,7 @@ export default function Home() {
                 editDate: new Date(),
                 data: "",
                 description: "",
-            }} networkData={{
+            }} network={{
                 name: "",
                 cryptoKey: undefined,
                 room: undefined,

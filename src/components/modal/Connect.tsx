@@ -1,5 +1,4 @@
 import Music from "@components/Music";
-import Project from "@models/project";
 import { importKey } from "@network/crypto";
 import { broadcast, createSocket, joinSession, request } from "@network/sessions";
 import { useTabs } from "@stores/tabs";
