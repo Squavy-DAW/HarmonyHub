@@ -33,7 +33,7 @@ export default function ConnectModal(props: ConnectModalProps) {
 
         setTabs([...tabs, {
             name: project.name,
-            content: <Music project={project} networkData={{
+            content: <Music project={project} network={{
                 name: userName,
                 cryptoKey: key,
                 room: room,
