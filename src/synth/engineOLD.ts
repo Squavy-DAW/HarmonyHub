@@ -201,11 +201,15 @@ function fitValue(value:number){
 
 
 async function startOscillators() {
-    oscOnOFFNode.gain.setValueAtTime(1,ctx.currentTime);
+    oscOnOFFNode.gain.cancelScheduledValues(0);
+    oscOnOFFNode.gain.setValueAtTime(0, ctx.currentTime);
+    oscOnOFFNode.gain.linearRampToValueAtTime(1,ctx.currentTime + 0.1);
     console.log("started oscillators");
 }
 async function stopOscillators() {
-    oscOnOFFNode.gain.setValueAtTime(0,ctx.currentTime);
+    oscOnOFFNode.gain.cancelScheduledValues(0);
+    oscOnOFFNode.gain.setValueAtTime(oscOnOFFNode.gain.value, ctx.currentTime);
+    oscOnOFFNode.gain.linearRampToValueAtTime(0,ctx.currentTime + 0.1);
     console.log("stopped oscillators");
 }
 

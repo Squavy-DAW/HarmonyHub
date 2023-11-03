@@ -1,5 +1,5 @@
 import Split from "react-split";
-import { AudioNodes,init, setGain, setWaveform, setPan, setDetune, setPitch}  from "@src/synth/engineOLD";
+import { AudioNodes, init, setGain, setWaveform, setPan, setDetune}  from "@src/synth/engineOLD";
 import PianoRoll from "./Keyboard";
 import "@styles/synthesizer.css"
 

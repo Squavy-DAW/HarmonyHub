@@ -1,3 +1,5 @@
+import { AdvancedAudioNode } from "./engine";
+
 //the configurable params of an oscillator
 export interface OscillatorParams{
     waveform:string,            // basic types or custom
@@ -30,38 +32,33 @@ export function setOscillatorParams(
     };
 }
 
-export interface AdvancedOscillator{
+export interface AdvancedOscillator extends AdvancedAudioNode{
     params: OscillatorParams,
-    start:() => OscillatorNode,
-    stop:() => OscillatorNode,
-    connect:(audioNode:AudioNode) => OscillatorNode,
-    disconnect:() => OscillatorNode
+    osc:() => OscillatorNode
 }
 export function setAdvancedOscillator(
     params: OscillatorParams,
     ctx: AudioContext
 ): AdvancedOscillator{  //TODO: Take another look at this one
     let osc = new OscillatorNode(ctx);
-    let oscGain = new GainNode(ctx);    //TODO: Implement
+    let oscGain = new GainNode(ctx);
+    oscGain.gain.setValueAtTime(1, ctx.currentTime);
+
     let oscPan = new PannerNode(ctx);   //TODO: Implement
     //TODO: Configure the oscillator accordingly
+
+
     return {
         params: params,
-        start: ()=>{
-            osc.start();
+        osc: ()=>{
             return osc;
         },
-        stop: ()=>{
-            osc.stop();
-            return osc;
-        },
-        connect: (audioNode:AudioNode)=>{
-            osc.connect(audioNode);
-            return osc;
+        connect: (node:AdvancedAudioNode)=>{
+            oscGain.connect(node.out);
         },
         disconnect: ()=>{
-            osc.disconnect();
-            return osc;
-        }
+            oscGain.disconnect();
+        },
+        out: oscGain
     }
 }
