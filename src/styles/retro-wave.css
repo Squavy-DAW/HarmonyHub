@@ -22,12 +22,6 @@
             drop-shadow(0px 0px 60px green);
 }
 
-@keyframes moveDownAnimation {
-    100% {
-        background-position-y: 100%;
-    }
-}
-
 #crt-lines {
     position: absolute;
     inset: 0;
@@ -74,7 +68,7 @@
     
     background-image: url("/src/assets/logo-ascii.png");
     inset: 0;
-    filter: saturate(1.5);
+    filter: drop-shadow(5px 10px 20px #e6441c) saturate(1.5);
     background-size: contain;
     background-repeat: no-repeat;
     background-position: 20% center;

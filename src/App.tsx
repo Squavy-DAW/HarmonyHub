@@ -12,6 +12,7 @@ import { useTabs } from '@stores/tabs';
 import { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import ConnectModal from '@components/modal/Connect';
+import TabContext from './context/tabcontext';
 
 function App() {
 
@@ -62,7 +63,11 @@ function App() {
           <Home />
         </TabPanel>
         {tabs.map((tab, i) =>
-          <TabPanel hidden={tabIndex != i + 1} key={`tab-panel[${i}]`}>{tab.content}</TabPanel>
+          <TabPanel hidden={tabIndex != i + 1} key={`tab-panel[${i}]`}>
+            <TabContext.Provider value={{ tab: tab }} >
+              {tab.content}
+            </TabContext.Provider>
+          </TabPanel>
         )}
       </Tabs>
 

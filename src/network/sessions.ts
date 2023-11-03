@@ -30,8 +30,11 @@ export async function joinSession(socket: Socket, room: string): Promise<boolean
     });
 }
 
-export async function broadcast<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, data: Parameters<ClientToClientEvents[T]>['0']) {
-    return socket.emit('hh:broadcast', {
+type EventParameters<T extends keyof ClientToClientEvents> = Parameters<ClientToClientEvents[T]>[0];
+type EventReturnType<T extends keyof ClientToClientEvents> = ReturnType<ClientToClientEvents[T]>;
+
+export async function broadcast<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, data: EventParameters<T>) {
+    socket.emit('hh:broadcast', {
         data: await encrypt(key, {
             type: type,
             data: data
@@ -39,7 +42,7 @@ export async function broadcast<T extends keyof ClientToClientEvents>(socket: So
     });
 }
 
-export async function request<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, data: Parameters<ClientToClientEvents[T]>['0']) : Promise<ReturnType<ClientToClientEvents[T]>> {
+export async function request<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, data: EventParameters<T>): Promise<EventReturnType<T>> {
     return new Promise(async resolve => {
         socket.emit('hh:request', {
             data: await encrypt(key, {
@@ -52,11 +55,18 @@ export async function request<T extends keyof ClientToClientEvents>(socket: Sock
     })
 }
 
-export async function handle<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, callback: (data: ClientToClientEvents[T]) => ReturnType<ClientToClientEvents[T]>) {
-    socket.on('hh:data', async ({ data }, ack) => {
+type EventCallback<T extends keyof ClientToClientEvents> = (id: string, data: EventParameters<T>) => EventReturnType<T> | Promise<EventReturnType<T>>;
+
+export async function handle<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, callback: EventCallback<T>) {
+    socket.on('hh:data', async ({ id, data }, ack) => {
         let decrypted = await decrypt(key, data);
         if (decrypted.type === type) {
-            ack({ data: await encrypt(key, callback(decrypted.data)) });
+            const result = await callback(id, decrypted.data);
+            if (result instanceof Promise) {
+                ack({ data: await encrypt(key, await result) });
+            } else {
+                ack({ data: await encrypt(key, result) });
+            }
         }
     });
 }
