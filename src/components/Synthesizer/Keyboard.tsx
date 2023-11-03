@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import Note from "./Note";
-import { startFreq, stopFreq } from "@src/synth/engine";
+import { startFreq, stopFreq } from "@src/synth/engineOLD";
 import { onKeyPressed, onKeyUp, pressedFrequencies, clickedFreq } from "@src/synth/keylistener"
 
 export default function PianoRoll() {

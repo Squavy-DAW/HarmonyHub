@@ -1,4 +1,4 @@
-import { startFreq, stopFreq } from "@src/synth/engine";
+import { startFreq, stopFreq } from "@src/synth/engineOLD";
 
 function genKeyName(idx:number){
     let arr = ["KeyA","KeyW","KeyS","KeyE","KeyD","KeyF","KeyT","KeyG","KeyY","KeyH","KeyU","KeyJ"];
