@@ -1,0 +1,15 @@
+:root {
+  --separator-border: #49494959;
+  --focus-border: #452e2e;
+  --sash-size: 13px;
+  --sash-hover-size: 5px;
+}
+
+.split-view-view::before {
+  content: none !important;
+}
+
+.sash::before {
+  background: var(--separator-border);
+  transform: translateX(-50%);
+}

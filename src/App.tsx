@@ -1,8 +1,10 @@
-import './App.css'
+import './App.css';
 import '@styles/react-tabs.css';
 import '@styles/react-modal.css';
 import '@styles/retro-wave.css';
-import '@styles/react-toastify.css'
+import '@styles/react-toastify.css';
+import "allotment/dist/style.css";
+import '@styles/allotment.css';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
 import CloseIcon from 'remixicon-react/CloseLineIcon';
 import HomeIcon from 'remixicon-react/Home2FillIcon';

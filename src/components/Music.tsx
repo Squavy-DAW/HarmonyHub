@@ -1,4 +1,3 @@
-import Split from "react-split";
 import '@styles/Music.css';
 import Project from "@models/project";
 import Modal from 'react-modal';
@@ -11,6 +10,7 @@ import ModalContext from "@src/context/modalcontext";
 import useTabs from "@stores/tabs";
 import TabContext from "@src/context/tabcontext";
 import MousePositionsContext from "@src/context/mousepositions";
+import { Allotment, LayoutPriority } from "allotment";
 
 export default function Music(props: { project: Project, network: Network }) {
 
@@ -98,26 +98,25 @@ export default function Music(props: { project: Project, network: Network }) {
                     <section className="music-layout" ref={ref => setLayoutRef(ref)}>
                         <Toolbar />
 
-                        <Split
-                            sizes={[70, 30]}
-                            minSize={100}
-                            gutterSize={5}
-                            snapOffset={20}
-                            gutterAlign=''
-                            direction="vertical"
-                            cursor="row-resize">
-                            <section className="music-notes" onMouseMove={handleMouseMove}>
-                                <section className="mouse-cursors">
-                                    {Object.keys(mousePositions).map(id => {
-                                        const pos = mousePositions[id];
-                                        return <div key={id} className="cursor" style={{ left: pos.x, top: pos.y }}>
-                                            <span className="cursor-name">{id}</span>
-                                        </div>
-                                    })}
+                        <Allotment vertical={false} separator={true} proportionalLayout={false}>
+                            <Allotment.Pane priority={LayoutPriority.High}>
+                                <section className="music-notes" onMouseMove={handleMouseMove}>
+                                    <section className="mouse-cursors">
+                                        {Object.keys(mousePositions).map(id => {
+                                            const pos = mousePositions[id];
+                                            return <div key={id} className="cursor" style={{ left: pos.x, top: pos.y }}>
+                                                <span className="cursor-name">{id}</span>
+                                            </div>
+                                        })}
+                                    </section>
                                 </section>
-                            </section>
-                            <section />
-                        </Split>
+                            </Allotment.Pane>
+                            <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
+                                <section className='music-patterns'>
+                                    
+                                </section>
+                            </Allotment.Pane>
+                        </Allotment>
 
                         {layoutRef && <Modal
                             isOpen={!!modalContent}

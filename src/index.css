@@ -37,36 +37,3 @@ a {
 a:hover {
   color: #535bf2;
 }
-
-.gutter {
-  position: relative;
-  background: #303030;
-}
-
-.gutter.gutter-vertical:hover {
-  cursor: ns-resize;
-}
-
-.gutter.gutter-vertical::after {
-  content: "";
-  display: block;
-  height: 10px;
-  width: 100%;
-  position: absolute;
-  top: -5px;
-  z-index: 10;
-}
-
-.gutter.gutter-horizontal:hover {
-  cursor: ew-resize;
-}
-
-.gutter.gutter-horizontal::after {
-  content: "";
-  display: block;
-  height: 100%;
-  width: 10px;
-  position: absolute;
-  left: -5px;
-  z-index: 10;
-}
