@@ -1,8 +1,12 @@
 :root {
-  --separator-border: #49494959;
+  --separator-border: #2b2b2b;
   --focus-border: #452e2e;
   --sash-size: 13px;
   --sash-hover-size: 5px;
+}
+
+.split-view-view {
+  display: grid;
 }
 
 .split-view-view::before {

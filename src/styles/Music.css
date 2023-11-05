@@ -33,3 +33,89 @@
 .music-layout .music-notes .mouse-cursors .cursor .cursor-name {
     margin-left: 1rem;
 }
+
+.music-layout .music-patterns {
+    border-image-source: url("/src/assets/patterns-container.png");
+    border-image-slice: 1 fill;
+    border-image-repeat: repeat;
+    border-image-width: 8px;
+    display: grid;
+    grid-template-rows: 1fr 2rem;
+    overflow: hidden;
+}
+
+.music-layout .music-patterns ul {
+    list-style: none;
+    margin: 0;
+    padding: 1rem;
+    overflow: auto;
+}
+
+.music-layout .music-patterns ul li.pattern, .pattern {
+    padding: 8px 20px;
+    border-image-source: url("/src/assets/pattern-background.png");
+    border-image-slice: 2 2 2 3 fill;
+    border-image-width: 8px;
+    image-rendering: pixelated;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+}
+
+@keyframes pattern-drag-begin {
+    from { opacity: 0; scale: 0.5; }
+    to { opacity: 1; scale: 1; }
+}
+
+.pattern-drag-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+}
+
+.pattern-drag-overlay .pattern {
+    animation: pattern-drag-begin 1s cubic-bezier(.13,1.3,.1,1) forwards;
+    display: none;
+    position: absolute;
+    width: 8rem;
+    transform: translate(-50%, -50%);
+    transition: rotate 0.1s ease-out;
+    transform-origin: left top;
+}
+
+.pattern-drag-overlay .pattern.active {
+    display: block;
+}
+
+@keyframes pattern-dropped {
+    from { opacity: 1; scale: 1; }
+    to { opacity: 0; scale: 0.5; }
+}
+
+.pattern-drag-overlay .pattern.dropped {
+    animation: pattern-dropped 0.2s ease-out forwards;
+}
+
+.music-layout .music-patterns ul li.pattern:not(:last-child) {
+    margin-bottom: 1rem;
+}
+
+.music-layout .music-patterns .controls {
+    background-color: #0000003a;
+    border-top: #2b2b2b 5px solid;
+    display: flex;
+}
+
+.music-layout .music-patterns .controls .control {
+    padding: 12px;
+    line-height: 0;
+    border: none;
+}
+
+.music-layout .music-patterns .controls .control img {
+    height: 100%;
+    image-rendering: pixelated;
+}

@@ -15,14 +15,49 @@ import { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import ConnectModal from '@components/modal/Connect';
 import TabContext from './context/tabcontext';
+import MouseMoveContext from './context/mousemove';
 
 function App() {
 
   const { tabIndex, setTabIndex, tabs, setTabs } = useTabs();
 
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
+  const [mousePosition, setMousePosition] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
+  const [mouseDelta, setMouseDelta] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
+  const [mouseDown, setMouseDown] = useState<boolean>(false);
 
   Modal.setAppElement('#root');
+
+  function handleMouseMove(ev: MouseEvent) {
+    setMouseDelta({
+      x: ev.movementX,
+      y: ev.movementY
+    });
+    setMousePosition({
+      x: ev.clientX,
+      y: ev.clientY
+    });
+  }
+
+  function handleMouseDown(_ev: MouseEvent) {
+    setMouseDown(true);
+  }
+
+  function handleMouseUp(_ev: MouseEvent) {
+    setMouseDown(false);
+  }
+
+  useEffect(() => {
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mouseup', handleMouseUp);
+    }
+  }, [])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -67,7 +102,11 @@ function App() {
         {tabs.map((tab, i) =>
           <TabPanel hidden={tabIndex != i + 1} key={`tab-panel[${i}]`}>
             <TabContext.Provider value={{ tab: tab }} >
-              {tab.content}
+              <MouseMoveContext.Provider value={{
+                mousePosition, mouseDelta, mouseDown
+              }}>
+                {tab.content}
+              </MouseMoveContext.Provider>
             </TabContext.Provider>
           </TabPanel>
         )}

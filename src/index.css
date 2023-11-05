@@ -37,3 +37,18 @@ a {
 a:hover {
   color: #535bf2;
 }
+
+button {
+  appearance: none;
+  cursor: pointer;
+  background: none;
+  border-image-source: url("/src/assets/button.png");
+  border-image-slice: 2 fill;
+  border-image-width: 8px;
+  image-rendering: pixelated;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
