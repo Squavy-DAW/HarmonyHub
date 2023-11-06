@@ -71,7 +71,7 @@ export default function CollaborationModal() {
     }
 
     return (
-        <div className={['collaboration-modal', socket && 'active'].join(' ')}>
+        <div className={['collaboration-modal', 'overlay-center', socket && 'active'].join(' ')}>
             <img src="/src/assets/collaboration-lock.png" alt="lock" width={48} />
             <div>
                 <h1 className='title' style={{ margin: 0, lineHeight: 0.9 }}>Collaborate</h1>

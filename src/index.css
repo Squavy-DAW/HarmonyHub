@@ -1,3 +1,9 @@
+@font-face {
+  font-family: "Monocraft";
+  src: local("VT323-Regular"),
+    url("./assets/fonts/VT323-Regular.ttf") format("truetype");
+ }
+
 :root {
   line-height: 1.5;
   font-weight: 400;

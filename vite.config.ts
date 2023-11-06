@@ -14,6 +14,7 @@ export default defineConfig({
 			"@styles": path.resolve("./src/styles"),
 			"@network": path.resolve("./src/network"),
 			"@stores": path.resolve("./src/stores"),
+			"@synth": path.resolve("./src/synth"),
 			"@src": path.resolve("./src"),
 		},
 	},

@@ -6,12 +6,12 @@
     position: absolute !important;
     inset: 0 !important;
     background: #00000066 !important;
-    display: grid;
-    place-content: center;
     z-index: 50;
 }
 
 .ReactModalPortal .ReactModal__Content {
+    height: 100%;
+    width: 100%;
     position: initial !important;
     background: none !important;
     border-radius: none !important;
@@ -20,4 +20,14 @@
     border-image-width: 1rem !important;
     image-rendering: pixelated !important;
     z-index: 55;
+}
+
+.ReactModalPortal .ReactModal__Overlay:has( .overlay-fill) {
+    height: 100%;
+    width: 100%;
+}
+
+.ReactModalPortal .ReactModal__Overlay:has( .overlay-center) {
+    display: grid;
+    place-content: center;
 }

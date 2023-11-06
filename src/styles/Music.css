@@ -8,6 +8,7 @@
 .music-layout .music-notes {
     position: relative;
     overflow: auto;
+    display: grid;
 }
 
 .music-layout .music-notes .mouse-cursors {

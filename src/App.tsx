@@ -11,7 +11,7 @@ import HomeIcon from 'remixicon-react/Home2FillIcon';
 import Home from '@components/Home';
 import { ToastContainer } from 'react-toastify';
 import { useTabs } from '@stores/tabs';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Modal from 'react-modal';
 import ConnectModal from '@components/modal/Connect';
 import TabContext from './context/tabcontext';
@@ -25,10 +25,18 @@ function App() {
   const [mousePosition, setMousePosition] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
   const [mouseDelta, setMouseDelta] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
   const [mouseDown, setMouseDown] = useState<boolean>(false);
+  const [propagating, _setPropagating] = useState<boolean>(true);
+  const propagatingRef = useRef(propagating);
 
   Modal.setAppElement('#root');
 
+  function setPropagating(value: boolean) {
+    propagatingRef.current = value;
+    _setPropagating(value);
+  }
+
   function handleMouseMove(ev: MouseEvent) {
+    if (!propagatingRef.current) return;
     setMouseDelta({
       x: ev.movementX,
       y: ev.movementY
@@ -40,10 +48,12 @@ function App() {
   }
 
   function handleMouseDown(_ev: MouseEvent) {
+    if (!propagatingRef.current) return;
     setMouseDown(true);
   }
 
   function handleMouseUp(_ev: MouseEvent) {
+    if (!propagatingRef.current) return;
     setMouseDown(false);
   }
 
@@ -103,7 +113,7 @@ function App() {
           <TabPanel hidden={tabIndex != i + 1} key={`tab-panel[${i}]`}>
             <TabContext.Provider value={{ tab: tab }} >
               <MouseMoveContext.Provider value={{
-                mousePosition, mouseDelta, mouseDown
+                mousePosition, mouseDelta, mouseDown, propagating, setPropagating
               }}>
                 {tab.content}
               </MouseMoveContext.Provider>

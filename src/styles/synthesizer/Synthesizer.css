@@ -1,0 +1,108 @@
+.music-layout .piano-roll{
+    overflow: auto;
+    position: relative;
+    display: grid;
+    grid-template-columns: auto auto 100%;
+    grid-template-rows: 100%;
+    width: 100%;
+    height: 100%;
+}
+
+.music-layout .piano-roll ul.keys{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    grid-row-start: 1;
+    left: 0;
+    top: 0;
+}
+
+.music-layout .piano-roll ul.octaves{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    grid-row-start: 1;
+    left: 0;
+    top: 0;
+    width: 30px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.music-layout .piano-roll ul.octaves .octave{
+    height: 504px;
+    user-select: none;
+    display: grid;
+    place-content: center;
+    background-image: url("src/assets/piano/octave.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    image-rendering: pixelated;
+}
+
+.music-layout .piano-roll ul.octaves .base-octave{
+    
+    filter: hue-rotate(90deg);
+}
+
+.music-layout .piano-roll ul.keys .key{
+    user-select: none;
+    position: relative;
+}
+
+.music-layout .piano-roll ul.keys .black-key{
+    height: 0;
+    width: 0;
+}
+
+.music-layout .piano-roll ul.keys .black-key::after{
+    content: attr(data-key-name);
+    position: absolute;
+    z-index: 1;
+    width: 100px;
+    height: 30px;
+    top: 0;
+    transform: translateY(-50%);
+    background-position: right;
+    background-image: url("src/assets/piano/black-key.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    image-rendering: pixelated;
+    padding-left: 40px;
+}
+
+.music-layout .piano-roll ul.keys .white-key{
+    width: 174px;
+    height: 72px;
+    background-position: right;
+    background-repeat: no-repeat;
+    background-size: contain;
+    image-rendering: pixelated;
+    color: black;
+}
+.music-layout .piano-roll ul.keys .white-key::after{
+    content: attr(data-key-name);
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-items: center;
+    padding-left: 40px;
+}
+
+.music-layout .piano-roll ul.keys .white-key.general{
+    background-image: url("src/assets/piano/general-key.png");
+}
+
+.music-layout .piano-roll ul.keys .white-key.c-f{
+    background-image: url("src/assets/piano/c-f-key.png");
+}
+
+.music-layout .piano-roll ul.keys .white-key.e-b{
+    background-image: url("src/assets/piano/e-b-key.png");
+}
+
+.music-layout .piano-roll ul.keys .pressed-white, .pressed-black::after{
+    filter: hue-rotate(-90deg);
+}

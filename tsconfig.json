@@ -25,6 +25,7 @@
 			"@styles/*": [ "./src/styles/*" ],
       "@network/*": [ "./src/network/*" ],
       "@stores/*": ["./src/stores/*"],
+      "@synth/*": [ "./src/synth/*" ],
 			"@src/*": [ "./src/*" ],
 		}
   },
