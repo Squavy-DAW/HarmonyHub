@@ -49,8 +49,8 @@ export async function request<T extends keyof ClientToClientEvents>(socket: Sock
                 type: type,
                 data: data
             })
-        }, ({ data }) => {
-            resolve(data);
+        }, async ({ data }) => {
+            resolve(await decrypt(key, data));
         });
     })
 }

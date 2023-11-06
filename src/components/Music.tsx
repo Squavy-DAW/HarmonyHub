@@ -26,7 +26,9 @@ export default function Music(props: { project: Project, network: Network }) {
     const [room, setRoom] = useState(props.network.room);
     const [socket, setSocket] = useState(props.network.socket);
 
-    const [patterns, setPatterns] = useState(props.project.data.patterns ?? []);
+    console.log(props.project);
+    
+    const [patterns, setPatterns] = useState(props.project.data.patterns);
     const [draggedPattern, setDraggedPattern] = useState<HTMLElement>();
     const patternDragOverlay = createRef<HTMLDivElement>();
 

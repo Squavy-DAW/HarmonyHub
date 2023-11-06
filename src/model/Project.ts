@@ -9,3 +9,13 @@ export default interface Project {
         patterns: Pattern[]
     },
 }
+
+export const defaultProject: Project = {
+    name: 'New Project',
+    description: '',
+    editDate: new Date(),
+    createDate: new Date(),
+    data: {
+        patterns: []
+    }
+}

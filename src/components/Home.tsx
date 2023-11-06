@@ -4,7 +4,7 @@ import '@styles/Home.css';
 import OpenIcon from 'remixicon-react/ArrowRightFillIcon';
 import NewIcon from 'remixicon-react/AddFillIcon';
 import { createRef, useEffect, useState } from 'react';
-import Project from '@models/project';
+import Project, { defaultProject } from '@models/project';
 import Music from './Music';
 import AsciiLogo from './AsciiLogo';
 
@@ -12,13 +12,7 @@ export default function Home() {
 
     const { tabs, setTabs, setTabIndex } = useTabs();
 
-    const [recentProjects, setRecentProjects] = useState<Project[]>([{
-        name: 'Test Project',
-        createDate: new Date(),
-        editDate: new Date(),
-        data: "",
-        description: "This is a test project",
-    }]);
+    const [recentProjects, setRecentProjects] = useState<Project[]>();
 
     useEffect(() => {
         // load recent projects
@@ -51,7 +45,7 @@ export default function Home() {
                 try {
                     let project = JSON.parse(event.target?.result as string) as Project;
                     // TODO: save project to recent projects
-                    setRecentProjects([project, ...recentProjects]);
+                    setRecentProjects([project, ...recentProjects ?? []]);
                     openProject(project);
                 } catch (e) {
                     console.error("Failed to open project, JSON could not parse.", e);
@@ -74,7 +68,7 @@ export default function Home() {
     function openProject(project: Project) {
         setTabs([...tabs, {
             name: project.name,
-            content: <Music project={project} network={{
+            content: <Music project={defaultProject} network={{
                 name: "",
                 cryptoKey: undefined,
                 room: undefined,
@@ -88,13 +82,7 @@ export default function Home() {
         // i smell ✨magic✨, maybe there'll be a wizard?
         setTabs([...tabs, {
             name: 'New Project',
-            content: <Music project={{
-                name: 'New Project',
-                createDate: new Date(),
-                editDate: new Date(),
-                data: "",
-                description: "",
-            }} network={{
+            content: <Music project={defaultProject} network={{
                 name: "",
                 cryptoKey: undefined,
                 room: undefined,
