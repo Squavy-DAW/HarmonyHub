@@ -5,24 +5,25 @@ import { createRef, useContext, useEffect, useState } from "react";
 import { broadcast, handle } from "@network/sessions";
 import Network from "@models/network";
 import NetworkContext from "@src/context/networkcontext";
-import Toolbar from "./Toolbar";
+import Toolbar from "./editor/Toolbar";
 import ModalContext from "@src/context/modalcontext";
 import useTabs from "@stores/tabs";
 import TabContext from "@src/context/tabcontext";
 import MousePositionsContext from "@src/context/mousepositions";
 import { Allotment, LayoutPriority } from "allotment";
-import MouseMoveContext from '@src/context/mousemove';
 import Pattern from '@models/pattern';
 import { init } from '@synth/engineOLD';
-import PianoRoll from './synthesizer/PianoRoll';
-import SongEditor from './song/SongEditor';
+import SongEditor from './editor/SongEditor';
 import EditingPatternContext from '@src/context/editingpattern';
+import Patterns from './editor/Patterns';
+import ProjectContext from '@src/context/projectcontext';
 
 export default function Music(props: { project: Project, network: Network }) {
 
     const { tabs } = useTabs();
     const { tab } = useContext(TabContext);
-    const { mousePosition, mouseDelta, mouseDown } = useContext(MouseMoveContext);
+
+    const [project, setProject] = useState<Project>(props.project);
 
     const [layoutRef, setLayoutRef] = useState<HTMLElement | null>(null);
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
@@ -31,8 +32,6 @@ export default function Music(props: { project: Project, network: Network }) {
     const [room, setRoom] = useState(props.network.room);
     const [socket, setSocket] = useState(props.network.socket);
 
-    const [patterns, setPatterns] = useState(props.project.data.patterns);
-    const [draggedPattern, setDraggedPattern] = useState<HTMLElement>();
     const patternDragOverlay = createRef<HTMLDivElement>();
 
     const [editingPattern, setEditingPattern] = useState<Pattern>();
@@ -56,45 +55,9 @@ export default function Music(props: { project: Project, network: Network }) {
         setMousePositions({});
     }
 
-    function handlePatternClick(ev: React.MouseEvent, pattern: Pattern) {
-        setEditingPattern(pattern);
-        setModalContent(
-            <PianoRoll />
-        )
-    }
-
-    function handlePatternMouseDown(ev: React.MouseEvent) {
-        const target = ev.target as HTMLElement;
-        const clone = target.cloneNode(true) as HTMLElement;
-        patternDragOverlay.current!.append(clone);
-        setDraggedPattern(clone);
-    }
-
     useEffect(() => {
         init();
     }, []);
-
-    useEffect(() => {
-        if (!mouseDown && draggedPattern) {
-            const element = draggedPattern;
-            element.classList.add('dropped');
-            setTimeout(() => {
-                element.remove();
-            }, 200);
-            return;
-        }
-    }, [mouseDown])
-
-    useEffect(() => {
-        if (draggedPattern) {
-            draggedPattern.classList.add('active');
-            const left = mousePosition.x - patternDragOverlay.current!.getBoundingClientRect().x
-            const top = mousePosition.y - patternDragOverlay.current!.getBoundingClientRect().y
-            draggedPattern.style.left = `${left}px`;
-            draggedPattern.style.top = `${top}px`;
-            draggedPattern.style.rotate = `${Math.min(Math.max(mouseDelta.x, -30), 30)}deg`;
-        }
-    }, [mousePosition, mouseDelta])
 
     useEffect(() => {
         return () => {
@@ -138,77 +101,59 @@ export default function Music(props: { project: Project, network: Network }) {
     }, [socket])
 
     return (
-        <NetworkContext.Provider value={{
-            cryptoKey, setCryptoKey,
-            room, setRoom,
-            socket, setSocket
+        <ProjectContext.Provider value={{
+            project, setProject
         }}>
-            <ModalContext.Provider value={{
-                modalContent, setModalContent
+            <NetworkContext.Provider value={{
+                cryptoKey, setCryptoKey,
+                room, setRoom,
+                socket, setSocket
             }}>
-                <MousePositionsContext.Provider value={{
-                    mousePositions, setMousePositions
+                <ModalContext.Provider value={{
+                    modalContent, setModalContent
                 }}>
-                    <EditingPatternContext.Provider value={{
-                        editingPattern, setEditingPattern
+                    <MousePositionsContext.Provider value={{
+                        mousePositions, setMousePositions
                     }}>
-                        <section className="music-layout" ref={ref => setLayoutRef(ref)}>
-                            <Toolbar />
+                        <EditingPatternContext.Provider value={{
+                            editingPattern, setEditingPattern
+                        }}>
+                            <section className="music-layout" ref={ref => setLayoutRef(ref)}>
+                                <Toolbar />
 
-                            <Allotment vertical={false} separator={true} proportionalLayout={false}>
-                                <Allotment.Pane priority={LayoutPriority.High}>
-                                    <section className="music-notes" onMouseMove={handleMouseMove}>
-                                        <SongEditor />
+                                <Allotment vertical={false} separator={true} proportionalLayout={false}>
+                                    <Allotment.Pane priority={LayoutPriority.High}>
+                                        <section className="music-notes" onMouseMove={handleMouseMove}>
+                                            <SongEditor />
 
-                                        <section className="mouse-cursors">
-                                            {Object.keys(mousePositions).map(id => {
-                                                const pos = mousePositions[id];
-                                                return <div key={id} className="cursor" style={{ left: pos.x, top: pos.y }}>
-                                                    <span className="cursor-name">{id}</span>
-                                                </div>
-                                            })}
+                                            <section className="mouse-cursors">
+                                                {Object.keys(mousePositions).map(id => {
+                                                    const pos = mousePositions[id];
+                                                    return <div key={id} className="cursor" style={{ left: pos.x, top: pos.y }}>
+                                                        <span className="cursor-name">{id}</span>
+                                                    </div>
+                                                })}
+                                            </section>
                                         </section>
-                                    </section>
-                                </Allotment.Pane>
-                                <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
-                                    <section className='music-patterns'>
-                                        <ul>
-                                            {patterns.map((pattern, i) =>
-                                                <li key={`pattern[${i}]`} className='pattern' onClick={(ev) => {
-                                                    handlePatternClick(ev, pattern);
-                                                }}
-                                                    onMouseDown={handlePatternMouseDown}>
-                                                    {pattern.name}
-                                                </li>
-                                            )}
-                                        </ul>
-                                        <div className='controls'>
-                                            <button className='control' onClick={() => {
-                                                setPatterns([...patterns, {
-                                                    name: 'New Pattern',
-                                                    color: '#000000',
-                                                    data: undefined
-                                                }])
-                                            }}>
-                                                <img src="/src/assets/pattern/new.png" alt="add new pattern" />
-                                            </button>
-                                        </div>
-                                    </section>
-                                </Allotment.Pane>
-                            </Allotment>
+                                    </Allotment.Pane>
+                                    <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
+                                        <Patterns overlay={patternDragOverlay} />
+                                    </Allotment.Pane>
+                                </Allotment>
 
-                            <div className="pattern-drag-overlay" ref={patternDragOverlay} />
+                                <div className="pattern-drag-overlay" ref={patternDragOverlay} />
 
-                            {layoutRef && <Modal
-                                isOpen={!!modalContent}
-                                onRequestClose={() => setModalContent(null)}
-                                parentSelector={() => layoutRef}>
-                                {modalContent}
-                            </Modal>}
-                        </section>
-                    </EditingPatternContext.Provider>
-                </MousePositionsContext.Provider>
-            </ModalContext.Provider>
-        </NetworkContext.Provider>
+                                {layoutRef && <Modal
+                                    isOpen={!!modalContent}
+                                    onRequestClose={() => setModalContent(null)}
+                                    parentSelector={() => layoutRef}>
+                                    {modalContent}
+                                </Modal>}
+                            </section>
+                        </EditingPatternContext.Provider>
+                    </MousePositionsContext.Provider>
+                </ModalContext.Provider>
+            </NetworkContext.Provider>
+        </ProjectContext.Provider>
     );
 }

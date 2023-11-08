@@ -1,13 +1,10 @@
 import ModalContext from "@src/context/modalcontext";
 import NetworkContext from "@src/context/networkcontext";
 import { useContext, useEffect, useState } from "react";
-import CollaborationModal from "./modal/Collaboration";
+import CollaborationModal from "../modal/Collaboration";
 import '@styles/Toolbar.css'
-import MouseMoveContext from "@src/context/mousemove";
 
 export default function Toolbar() {
-
-    const { setPropagating } = useContext(MouseMoveContext);
 
     interface ToolbarItem {
         name: string;
@@ -74,7 +71,6 @@ export default function Toolbar() {
     const [currentToolbarItem, setCurrentToolbarItem] = useState<ToolbarItem | undefined>(undefined);
 
     useEffect(() => {
-        setPropagating(!toolbarOpen);
         if (!toolbarOpen) {
             setCurrentToolbarItem(undefined);
         }

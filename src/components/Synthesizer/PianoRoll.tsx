@@ -8,7 +8,7 @@ import EditingPatternContext from "@src/context/editingpattern";
 export default function PianoRoll() {
 
     const pianoRollRef = createRef<HTMLDivElement>();
-    const { editingPattern } = useContext(EditingPatternContext);
+    // const { editingPattern } = useContext(EditingPatternContext);
 
     //Freq = note x 2^(N/12)
     const noteList = Array.from(genLookupTable()).sort(([, v1], [, v2]) => {

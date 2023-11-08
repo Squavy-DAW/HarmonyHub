@@ -72,12 +72,12 @@ export default function CollaborationModal() {
 
     return (
         <div className={['collaboration-modal', 'overlay-center', socket && 'active'].join(' ')}>
-            <img src="/src/assets/collaboration-lock.png" alt="lock" width={48} />
+            <img src="/src/assets/collaboration-lock.png" alt="lock" className='collaboration-lock' />
             <div>
                 <h1 className='title' style={{ margin: 0, lineHeight: 0.9 }}>Collaborate</h1>
                 <p>Securely via E2E encryption - <a href={/*TODO*/ ""}>Learn more</a></p>
             </div>
-            <div style={{ gridColumn: '1/3' }}>
+            <div>
                 {socket ? <>
                     <p>Share this link with your friends to collaborate on this project:</p>
                     <pre className='invite-link' onClick={handleCopyInviteLink}>{inviteLink}</pre>

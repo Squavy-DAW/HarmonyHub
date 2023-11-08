@@ -2,31 +2,32 @@
     overflow: auto;
     position: relative;
     display: grid;
-    grid-template-columns: auto auto 100%;
-    grid-template-rows: 100%;
+    grid-template-columns: 30px 144px auto;
+    grid-template-rows: auto;
     width: 100%;
     height: 100%;
+}
+
+.music-layout .piano-roll .midi-editor{
+    background: #362523;
+    grid-column: 3 / 4;
+    grid-row-start: 1;
 }
 
 .music-layout .piano-roll ul.keys{
     list-style-type: none;
     margin: 0;
     padding: 0;
-    position: absolute;
+    grid-column: 1 / 3;
     grid-row-start: 1;
-    left: 0;
-    top: 0;
 }
 
 .music-layout .piano-roll ul.octaves{
     list-style-type: none;
     margin: 0;
     padding: 0;
-    position: absolute;
+    grid-column: 1 / 2;
     grid-row-start: 1;
-    left: 0;
-    top: 0;
-    width: 30px;
     z-index: 2;
     pointer-events: none;
 }

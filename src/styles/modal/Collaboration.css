@@ -1,10 +1,16 @@
 .collaboration-modal {
     padding: 8px;
     display: grid;
-    grid-template-rows: 3rem 1fr auto;
-    grid-template-columns: 3rem minmax(12rem, 28rem);
+    grid-template-rows: 3rem 1fr;
+    grid-template-columns: auto minmax(12rem, 28rem);
     image-rendering: pixelated;
     gap: 1rem;
+}
+
+.collaboration-modal .collaboration-lock {
+    grid-row: 1 / 3;
+    width: 100%;
+    height: 100%;
 }
 
 .collaboration-modal.active .title {
@@ -24,6 +30,8 @@
     border-image-source: url("/src/assets/invite-link.png");
     border-image-slice: 3 fill;
     border-image-width: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 @keyframes copied {

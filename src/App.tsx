@@ -11,63 +11,18 @@ import HomeIcon from 'remixicon-react/Home2FillIcon';
 import Home from '@components/Home';
 import { ToastContainer } from 'react-toastify';
 import { useTabs } from '@stores/tabs';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import ConnectModal from '@components/modal/Connect';
 import TabContext from './context/tabcontext';
-import MouseMoveContext from './context/mousemove';
 
 function App() {
 
   const { tabIndex, setTabIndex, tabs, setTabs } = useTabs();
 
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
-  const [mousePosition, setMousePosition] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
-  const [mouseDelta, setMouseDelta] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
-  const [mouseDown, setMouseDown] = useState<boolean>(false);
-  const [propagating, _setPropagating] = useState<boolean>(true);
-  const propagatingRef = useRef(propagating);
 
   Modal.setAppElement('#root');
-
-  function setPropagating(value: boolean) {
-    propagatingRef.current = value;
-    _setPropagating(value);
-  }
-
-  function handleMouseMove(ev: MouseEvent) {
-    if (!propagatingRef.current) return;
-    setMouseDelta({
-      x: ev.movementX,
-      y: ev.movementY
-    });
-    setMousePosition({
-      x: ev.clientX,
-      y: ev.clientY
-    });
-  }
-
-  function handleMouseDown(_ev: MouseEvent) {
-    if (!propagatingRef.current) return;
-    setMouseDown(true);
-  }
-
-  function handleMouseUp(_ev: MouseEvent) {
-    if (!propagatingRef.current) return;
-    setMouseDown(false);
-  }
-
-  useEffect(() => {
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mousedown', handleMouseDown);
-      document.removeEventListener('mouseup', handleMouseUp);
-    }
-  }, [])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -112,11 +67,7 @@ function App() {
         {tabs.map((tab, i) =>
           <TabPanel hidden={tabIndex != i + 1} key={`tab-panel[${i}]`}>
             <TabContext.Provider value={{ tab: tab }} >
-              <MouseMoveContext.Provider value={{
-                mousePosition, mouseDelta, mouseDown, propagating, setPropagating
-              }}>
                 {tab.content}
-              </MouseMoveContext.Provider>
             </TabContext.Provider>
           </TabPanel>
         )}
