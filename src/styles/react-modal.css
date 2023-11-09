@@ -2,11 +2,32 @@
     display: contents;
 }
 
+@keyframes modal-overlay-popup {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 .ReactModalPortal .ReactModal__Overlay {
     position: absolute !important;
     inset: 0 !important;
     background: #00000066 !important;
     z-index: 50;
+    animation: modal-overlay-popup 0.1s linear forwards;
+}
+
+@keyframes modal-popup {
+    from {
+        scale: 0.8;
+        opacity: 0;
+    }
+    to {
+        scale: 1;
+        opacity: 1;
+    }
 }
 
 .ReactModalPortal .ReactModal__Content {
@@ -20,11 +41,13 @@
     border-image-width: 1rem !important;
     image-rendering: pixelated !important;
     z-index: 55;
+    animation: modal-popup 0.3s cubic-bezier(.31,1.61,.36,.86) forwards;
 }
 
 .ReactModalPortal .ReactModal__Overlay:has( .overlay-fill) {
     height: 100%;
     width: 100%;
+    padding: 1rem;
 }
 
 .ReactModalPortal .ReactModal__Overlay:has( .overlay-center) {
