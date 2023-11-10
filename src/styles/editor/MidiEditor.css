@@ -1,0 +1,8 @@
+.midi-editor {
+    display: grid;
+    background-color: #362523;
+    background-image: linear-gradient(0deg, #00000000 50%, #00000044 50%), linear-gradient(90deg, #6e6e6e 0px, #6e6e6e 4px, #00000000 4px);
+    background-blend-mode: multiply;
+    background-repeat: repeat;
+	transition: background-size 0.3s ease, background-position-x 0.3s ease;
+}
