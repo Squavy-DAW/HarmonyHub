@@ -5,6 +5,7 @@ import "@styles/synthesizer/Synthesizer.css"
 import { onKeyPressed, onKeyUp, pressedFrequencies, clickedFreq } from "@synth/keylistener"
 import EditingPatternContext from "@src/context/editingpattern";
 import NumberUpDown from "@components/NumberUpDown";
+import MidiEditor from "@components/editor/MidiEditor";
 
 export default function PianoRoll() {
 
@@ -150,9 +151,7 @@ export default function PianoRoll() {
                     )}
                 </ul>
 
-                <section className="midi-editor">
-
-                </section>
+                <MidiEditor />
             </div>
         </section>
     )
