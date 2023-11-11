@@ -1,5 +1,7 @@
+import Note from "./note";
+
 export default interface Pattern {
     name: string,
     color: string,
-    data: any
+    data: { [id: string]: Note },
 }
