@@ -219,13 +219,15 @@ export default function MidiEditor(props: { pattern: Pattern }) {
                     ref={editorRef}
                     style={{ backgroundSize: `${zoomBase * Math.E ** zoom}px 72px`, backgroundPositionX: -position }}
                     onClick={handleEditorClick}>
-                    {Object.keys(notes).map(id => (
-                        <li key={id} data-key={id} className="note" onClick={() => void 0} style={{
-                            width: `${zoomBase * Math.E ** zoom / tact.beats}px`,
-                            left: `${zoomBase * Math.E ** zoom / tact.beats * notes[id].start - position}px`,
-                            top: `${notes[id].pitch * 36}px`,
-                        }} />
-                    ))}
+                    <div style={{position: 'absolute', left: -position}}>
+                        {Object.keys(notes).map(id => (
+                            <li key={id} data-key={id} className="note" onClick={() => void 0} style={{
+                                width: `${zoomBase * Math.E ** zoom / tact.beats}px`,
+                                left: `${zoomBase * Math.E ** zoom / tact.beats * notes[id].start}px`,
+                                top: `${notes[id].pitch * 36}px`,
+                            }} />
+                        ))}
+                    </div>
                 </section>
             </div>
         </section>
