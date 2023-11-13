@@ -6,7 +6,7 @@ export interface NoteProps {
     onMouseDown: (e: React.MouseEvent) => void,
 }
 
-export default function Note(props: NoteProps) {
+export default function Key(props: NoteProps) {
 
     function getClassName(kname: string) {
         if (kname.endsWith("#"))

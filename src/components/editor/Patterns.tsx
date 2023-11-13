@@ -27,8 +27,7 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
     }
 
     function handlePatternMouseDown(ev: React.MouseEvent) {
-        const target = ev.target as HTMLElement;
-        const clone = target.cloneNode(true) as HTMLElement;
+        const clone = ev.currentTarget.cloneNode(true) as HTMLElement;
         props.overlay.current!.append(clone);
         setDraggedPattern(clone);
     }

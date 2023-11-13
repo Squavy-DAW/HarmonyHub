@@ -1,11 +1,11 @@
-import React, { createRef, useContext, useEffect, useRef, useState } from "react";
+import React, { createRef, useEffect, useRef, useState } from "react";
 import { startFreq, stopFreq } from "@synth/engineOLD";
 import '@styles/editor/MidiEditor.css';
 import { onKeyPressed, onKeyUp, pressedFrequencies, clickedFreq } from "@synth/keylistener"
-import EditingPatternContext from "@src/context/editingpattern";
 import NumberUpDown from "@components/NumberUpDown";
 import Pattern from "@models/pattern";
-import Note from "@components/synthesizer/Note";
+import Key from "@components/synthesizer/Key";
+import useMouse from "@src/hooks/mouse";
 
 export default function MidiEditor(props: { pattern: Pattern }) {
 
@@ -27,6 +27,14 @@ export default function MidiEditor(props: { pattern: Pattern }) {
     const _position = useRef(position);
 
     const [notes, setNotes] = useState(props.pattern.data);
+    const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
+    const _selectedNotes = useRef<Set<string>>(new Set()); // These are the notes that are kept selected after the selection has been made
+
+    const _selectionOrigin = useRef<{ x: number, y: number } | undefined>({ x: 0, y: 0 });
+    const [selectionStart, setSelectionStart] = useState({ x: 0, y: 0 });
+    const _selectionStart = useRef(selectionStart);
+    const [selectionEnd, setSelectionEnd] = useState({ x: 0, y: 0 });
+    const _selectionEnd = useRef(selectionEnd);
 
     const zoomBase = 100;
 
@@ -63,12 +71,31 @@ export default function MidiEditor(props: { pattern: Pattern }) {
     }
 
     function handleEditorClick(ev: React.MouseEvent) {
+        if (ev.shiftKey) {
+            // Reset if the selection has not grown and return
+            if (_selectionStart.current.x == _selectionEnd.current.x && _selectionStart.current.y == _selectionEnd.current.y) {
+                setSelectedNotes(prev => {
+                    prev.clear();
+                    return prev;
+                });
+                _selectedNotes.current.clear();
+            }
+            return;
+        }
+
         let rect = editorRef.current!.getBoundingClientRect();
         let x = ev.clientX - rect.left;
         let y = ev.clientY - rect.top;
 
         let start = Math.floor((x + _position.current) / (zoomBase * Math.E ** _zoom.current / _tact.current.beats));
         let pitch = Math.floor(y / 36);
+
+        if (!notes[`${start}:${pitch}`]) {
+            setSelectedNotes(prev => {
+                prev.clear();
+                return prev;
+            })
+        }
 
         setNotes(prev => {
             return {
@@ -79,6 +106,111 @@ export default function MidiEditor(props: { pattern: Pattern }) {
                 }
             }
         });
+    }
+
+    function handleSelectionStart(ev: React.MouseEvent) {
+        let rect = editorRef.current!.getBoundingClientRect();
+        let x = ev.clientX - rect.left;
+        let y = ev.clientY - rect.top;
+        _selectionStart.current = { x, y };
+        _selectionEnd.current = { x, y };
+        _selectionOrigin.current = { x, y };
+        setSelectionStart(_selectionStart.current);
+        setSelectionEnd(_selectionStart.current);
+        // clear from the previous selection, because the previous ones are kept in _selectedNotes
+        setSelectedNotes(prev => {
+            prev.clear();
+            return prev;
+        });
+
+        handleSelectionDrag(ev);
+    }
+
+    function handleSelectionDrag(ev: React.MouseEvent) {
+        if (_selectionOrigin.current && ev.buttons == 1 && ev.shiftKey) {
+            let rect = editorRef.current!.getBoundingClientRect();
+            let x = ev.clientX - rect.left;
+            let y = ev.clientY - rect.top;
+
+            _selectionStart.current = {
+                x: Math.min(x, _selectionOrigin.current.x),
+                y: Math.min(y, _selectionOrigin.current.y)
+            };
+            setSelectionStart(_selectionStart.current);
+            _selectionEnd.current = {
+                x: Math.max(x, _selectionOrigin.current.x),
+                y: Math.max(y, _selectionOrigin.current.y)
+            };
+            setSelectionEnd(_selectionEnd.current);
+
+            let startX = Math.floor((_selectionStart.current.x + _position.current) / (zoomBase * Math.E ** _zoom.current / _tact.current.beats));
+            let startY = Math.floor(_selectionStart.current.y / 36);
+            let endX = Math.floor((_selectionEnd.current.x + _position.current) / (zoomBase * Math.E ** _zoom.current / _tact.current.beats));
+            let endY = Math.floor(_selectionEnd.current.y / 36);
+
+            Object.keys(notes).forEach(id => {
+                if (_selectedNotes.current.has(id)) {
+                    if (notes[id].start >= startX && notes[id].start <= endX &&
+                        notes[id].pitch >= startY && notes[id].pitch <= endY) {
+                        setSelectedNotes(prev => {
+                            prev.delete(id);
+                            return prev;
+                        });
+                    } else {
+                        setSelectedNotes(prev => {
+                            prev.add(id);
+                            return prev;
+                        });
+                    }
+                }
+                else {
+                    if (notes[id].start >= startX && notes[id].start <= endX &&
+                        notes[id].pitch >= startY && notes[id].pitch <= endY) {
+                        setSelectedNotes(prev => {
+                            prev.add(id);
+                            return prev;
+                        });
+                    } else {
+                        setSelectedNotes(prev => {
+                            prev.delete(id);
+                            return prev;
+                        });
+                    }
+                }
+            });
+        } else {
+            _selectionOrigin.current = undefined;
+            _selectionStart.current = { x: 0, y: 0 };
+            _selectionEnd.current = { x: 0, y: 0 };
+            setSelectionStart(_selectionStart.current);
+            setSelectionEnd(_selectionEnd.current);
+        }
+    }
+
+    function handleNoteClick(ev: React.MouseEvent) {
+        if (ev.shiftKey) {
+            ev.stopPropagation();
+            if (_selectedNotes.current.has(ev.currentTarget.getAttribute("data-key")!)) {
+                _selectedNotes.current.delete(ev.currentTarget.getAttribute("data-key")!);
+                setSelectedNotes(prev => {
+                    prev.delete(ev.currentTarget.getAttribute("data-key")!);
+                    return prev;
+                });
+            }
+            else {
+                _selectedNotes.current.add(ev.currentTarget.getAttribute("data-key")!);
+                setSelectedNotes(prev => {
+                    prev.add(ev.currentTarget.getAttribute("data-key")!);
+                    return prev;
+                });
+            }
+
+            handleSelectionDrag(ev);
+        }
+    }
+
+    function handleNoteMouseDown(ev: React.MouseEvent) {
+        ev.stopPropagation();
     }
 
     function genNoteName(idx: number) {
@@ -100,17 +232,29 @@ export default function MidiEditor(props: { pattern: Pattern }) {
         return map;
     }
 
-    const [_mouseDown, _setMouseDown] = useState(false);
-    const mouseDown = useRef(_mouseDown);
+    const [mouseDown, setMouseDown] = useState(false);
+    const _mouseDown = useRef(mouseDown);
 
     function onMouseDown() {
-        mouseDown.current = true;
-        _setMouseDown(true);
+        _mouseDown.current = true;
+        setMouseDown(true);
     }
     function onMouseUp() {
-        mouseDown.current = false;
-        _setMouseDown(false);
+        _mouseDown.current = false;
+        setMouseDown(false);
     }
+
+    useEffect(() => {
+        if (!mouseDown) {
+            _selectedNotes.current.clear();
+            selectedNotes.forEach(note => {
+                _selectedNotes.current.add(note);
+            });
+            setSelectionStart({ x: 0, y: 0 });
+            setSelectionEnd({ x: 0, y: 0 });
+            _selectionOrigin.current = undefined;
+        }
+    }, [mouseDown, selectedNotes])
 
     useEffect(() => {
         contentRef.current!.scrollTop = contentRef.current!.children[0].clientHeight / 2 - contentRef.current!.clientHeight * 0.8;
@@ -123,18 +267,18 @@ export default function MidiEditor(props: { pattern: Pattern }) {
     useEffect(() => {
         document.addEventListener("mousedown", onMouseDown);
         document.addEventListener("mouseup", onMouseUp);
-        document.addEventListener("keydown", e => onKeyPressed(e));
-        document.addEventListener("keyup", e => onKeyUp(e));
+        document.addEventListener("keydown", onKeyPressed);
+        document.addEventListener("keyup", onKeyUp);
         return () => {
-            document.removeEventListener("keydown", e => onKeyPressed(e));
-            document.removeEventListener("keyup", e => onKeyUp(e));
+            document.removeEventListener("keydown", onKeyPressed);
+            document.removeEventListener("keyup", onKeyUp);
         }
     }, []);
 
     function onNoteStart(e: React.MouseEvent, freq: number, key: string) {
         e.preventDefault();
 
-        if (mouseDown.current) {
+        if (_mouseDown.current) {
             clickedFreq.value = freq;
             // console.warn(clickedFreq.value);
             if (!pressedFrequencies.includes(freq)) {
@@ -192,7 +336,7 @@ export default function MidiEditor(props: { pattern: Pattern }) {
                 <ul className="keys">
                     {noteList.map(([key, value]) =>
                         <li key={key + value + "key"}>
-                            <Note
+                            <Key
                                 onMouseEnter={(e: React.MouseEvent) => onNoteStart(e, value, key)}
                                 onMouseLeave={(e: React.MouseEvent) => onNoteStop(e, value, key)}
                                 onMouseDown={(e: React.MouseEvent) => {
@@ -218,14 +362,27 @@ export default function MidiEditor(props: { pattern: Pattern }) {
                     className="midi-editor"
                     ref={editorRef}
                     style={{ backgroundSize: `${zoomBase * Math.E ** zoom}px 72px`, backgroundPositionX: -position }}
-                    onClick={handleEditorClick}>
-                    <div style={{position: 'absolute', left: -position}}>
+                    onClick={handleEditorClick}
+                    onMouseDown={handleSelectionStart}
+                    onMouseMove={handleSelectionDrag}>
+                    {selectionStart.x != selectionEnd.x && selectionStart.y != selectionEnd.y && <div className="selection" style={{
+                        width: `${Math.abs(selectionStart.x - selectionEnd.x)}px`,
+                        height: `${Math.abs(selectionStart.y - selectionEnd.y)}px`,
+                        left: `${Math.min(selectionStart.x, selectionEnd.x)}px`,
+                        top: `${Math.min(selectionStart.y, selectionEnd.y)}px`,
+                    }} />}
+                    <div style={{ position: 'absolute', left: -position }}>
                         {Object.keys(notes).map(id => (
-                            <li key={id} data-key={id} className="note" onClick={() => void 0} style={{
+                            <li key={id} data-key={id} className="note" onClick={handleNoteClick} style={{
                                 width: `${zoomBase * Math.E ** zoom / tact.beats}px`,
                                 left: `${zoomBase * Math.E ** zoom / tact.beats * notes[id].start}px`,
                                 top: `${notes[id].pitch * 36}px`,
-                            }} />
+                                filter: selectedNotes.has(id) ? "brightness(0.5)" : "brightness(1)"
+                            }} onMouseDown={handleNoteMouseDown}>
+                                <div />
+                                <div />
+                                <div />
+                            </li>
                         ))}
                     </div>
                 </section>
