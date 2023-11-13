@@ -1,7 +1,7 @@
-import { AdvancedAudioNode } from "./engine";
+import { AdvancedAudioNode, AdvancedAudioNodeParams } from "./synth";
 
 //the configurable params of an oscillator
-export interface OscillatorParams{
+export interface OscillatorParams extends AdvancedAudioNodeParams{
     waveform:string,            // basic types or custom
     gain:number,                // the loudness modifier of the oscillator
     pan:number,                 // -1 to 1

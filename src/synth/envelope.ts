@@ -1,6 +1,6 @@
-import { AdvancedAudioNode } from "./engine";
+import { AdvancedAudioNode, AdvancedAudioNodeParams } from "./synth";
 
-export interface ADSREnvelope extends AdvancedAudioNode{
+export interface ADSREnvelope extends AdvancedAudioNode, AdvancedAudioNodeParams{
     attackTime:number,
     attackValue:number,
     decayTime:number,
@@ -41,8 +41,7 @@ export function createADSREnvelope(
         outGain.gain.linearRampToValueAtTime(0, now + releaseTime);      //release
     }
     
-    
-    let envelope:ADSREnvelope = {
+    return {
         attackTime: attackTime,
         attackValue: attackValue,
         decayTime: decayTime,
@@ -59,7 +58,5 @@ export function createADSREnvelope(
         disconnect(){
             outGain.disconnect();
         }
-    }
-  
-    return envelope;
+    };
 }

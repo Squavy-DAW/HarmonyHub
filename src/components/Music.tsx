@@ -124,7 +124,7 @@ export default function Music(props: { project: Project, network: Network }) {
                                 <Allotment vertical={false} separator={true} proportionalLayout={false}>
                                     <Allotment.Pane priority={LayoutPriority.High}>
                                         <section className="music-notes" onMouseMove={handleMouseMove}>
-                                            <SongEditor />
+                                            <SongEditor/>
 
                                             <section className="mouse-cursors">
                                                 {Object.keys(mousePositions).map(id => {

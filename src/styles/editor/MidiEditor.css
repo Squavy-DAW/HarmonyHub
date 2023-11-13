@@ -106,7 +106,6 @@
 }
 
 .music-layout .piano-roll ul.octaves .base-octave {
-
     filter: hue-rotate(90deg);
 }
 
@@ -170,7 +169,18 @@
     line-height: 46px;
 }
 
-.music-layout .piano-roll ul.keys .pressed-white,
-.pressed-black::after {
-    filter: hue-rotate(-90deg);
+.music-layout .piano-roll ul.keys .general.pressed-white {
+    background-image: url("src/assets/piano/general-key-pressed.png");
+}
+
+.music-layout .piano-roll ul.keys .c-f.pressed-white {
+    background-image: url("src/assets/piano/c-f-key-pressed.png");
+}
+
+.music-layout .piano-roll ul.keys .e-b.pressed-white {
+    background-image: url("src/assets/piano/e-b-key-pressed.png");
+}
+
+.music-layout .piano-roll ul.keys .pressed-black::after {
+    background-image: url("src/assets/piano/black-key-pressed.png");
 }
