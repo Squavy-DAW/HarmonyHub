@@ -1,11 +1,11 @@
 @font-face {
     font-family: "VT323-Regular";
-    src: url("src/assets/VT323-Regular.ttf") format("truetype");
+    src: url("src/assets/fonts/VT323-Regular.ttf") format("truetype");
 }
 
 :root {
     color: rgb(225, 225, 225);
-    font-family: 'VT323-Regular', 'Monocraft';
+    font-family: 'VT323-Regular';
     font-size: 1.2em;
 }
 

@@ -66,7 +66,7 @@ export default function CollaborationModal() {
         navigator.clipboard.writeText(inviteLink!);
         event.currentTarget.classList.add('copied');
         copyTimeout = setTimeout(() => {
-            (event.target as HTMLElement)?.classList.remove('copied');
+            event.currentTarget.classList.remove('copied');
         }, 1000);
     }
 

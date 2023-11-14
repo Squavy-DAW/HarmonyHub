@@ -1,4 +1,4 @@
-import PianoRoll from "@components/synthesizer/PianoRoll";
+import MidiEditor from "@components/editor/MidiEditor";
 import Pattern from "@models/pattern";
 import EditingPatternContext from "@src/context/editingpattern";
 import ModalContext from "@src/context/modalcontext";
@@ -22,13 +22,12 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
     function handlePatternClick(pattern: Pattern) {
         setEditingPattern(pattern);
         setModalContent(
-            <PianoRoll />
+            <MidiEditor pattern={pattern} />
         )
     }
 
     function handlePatternMouseDown(ev: React.MouseEvent) {
-        const target = ev.target as HTMLElement;
-        const clone = target.cloneNode(true) as HTMLElement;
+        const clone = ev.currentTarget.cloneNode(true) as HTMLElement;
         props.overlay.current!.append(clone);
         setDraggedPattern(clone);
     }
@@ -78,7 +77,7 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
                     setPatterns([...patterns ?? [], {
                         name: 'New Pattern',
                         color: '#000000',
-                        data: undefined
+                        data: {}
                     }])
                 }}>
                     <img src="/src/assets/pattern/new.png" alt="add new pattern" />
