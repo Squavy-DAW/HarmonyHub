@@ -30,8 +30,15 @@ export default function SynthEditor(){
         const target = ev.currentTarget as HTMLElement;
         const {x,y} = target.getBoundingClientRect();
         ev.stopPropagation();
-        setSvgDragLine({ x1: x - nodesDragOverlay.current!.getBoundingClientRect().x, y1: y - nodesDragOverlay.current!.getBoundingClientRect().y, x2: ev.clientX, y2: ev.clientY });
-        _svgDragLine.current = { x1: x, y1:y, x2: ev.clientX, y2: ev.clientY };
+        let offsetX = nodesDragOverlay.current!.getBoundingClientRect().x;
+        let offsetY = nodesDragOverlay.current!.getBoundingClientRect().y;
+        setSvgDragLine({ 
+            x1: x - offsetX + target.clientWidth/2, 
+            y1: y - offsetY + target.clientHeight/2, 
+            x2: ev.clientX - offsetX, 
+            y2: ev.clientY - offsetY 
+        });
+        _svgDragLine.current = { x1: x + target.clientWidth/2, y1:y + target.clientWidth/2, x2: ev.clientX, y2: ev.clientY };
     }
 
     useEffect(() => {
@@ -55,7 +62,14 @@ export default function SynthEditor(){
 
     useEffect(() => {
         if(!_svgDragLine.current)return;
-        setSvgDragLine({ x1: _svgDragLine.current.x1, y1: _svgDragLine.current.y1, x2: mousePosition.x - nodesDragOverlay.current!.getBoundingClientRect().x, y2: mousePosition.y - nodesDragOverlay.current!.getBoundingClientRect().y });
+        let offsetX = nodesDragOverlay.current!.getBoundingClientRect().x;
+        let offsetY = nodesDragOverlay.current!.getBoundingClientRect().y;
+        setSvgDragLine({
+            x1: _svgDragLine.current.x1 - offsetX, 
+            y1: _svgDragLine.current.y1 - offsetY, 
+            x2: mousePosition.x - offsetX, 
+            y2: mousePosition.y - offsetY 
+        });
     }, [mousePosition])
 
 
