@@ -46,3 +46,7 @@
     top: 0;
     left: 0;
 }
+
+.connection-lines > .placed-line{
+    pointer-events: auto;
+}
