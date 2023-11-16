@@ -20,24 +20,54 @@
 
 .audionode{
     position: absolute;
-    background-color: rgb(56, 56, 56);
     width: 100px;
     height: 100px;
     left: 0px;
     right: 0px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    image-rendering: pixelated;
 
     animation: pattern-drag-begin 1s cubic-bezier(.13,1.3,.1,1) forwards;
     transition: rotate 0.1s ease-out;
     transform-origin: left top;
 }
 
+.audionode[data-id= "AudioEndNode"]{
+    border-image-source: url("src/assets/synth-editor/audionode-nineslice.png");
+    border-image-slice: 6 fill;
+    border-image-width: 1rem;
+}
+
+.audionode[data-id= "Oscillator"]{
+    background-image: url("src/assets/synth-editor/oscillator.png");
+}
+
+.audionode[data-id= "Envelope"]{
+    background-image: url("src/assets/synth-editor/envelope.png");
+}
+
 .audio-connection-node{
     position: absolute;
-    background-color: rgb(0, 0, 0);
-    width: 10px;
-    height: 10px;
+    width: 20px;
+    height: 20px;
     right: 0;
     bottom: 0;
+    background-repeat: no-repeat;
+    background-size: cover;
+    image-rendering: pixelated;
+}
+
+.audio-connection-node[data-id="in"]{
+    background-image: url("src/assets/synth-editor/input-connector.png");
+}
+
+.audio-connection-node[data-id="out"]{
+    background-image: url("src/assets/synth-editor/output-connector.png");
+}
+
+.audio-connection-node[data-id="mod"]{
+    background-image: url("src/assets/synth-editor/modulation-connector.png");
 }
 
 .connection-lines{

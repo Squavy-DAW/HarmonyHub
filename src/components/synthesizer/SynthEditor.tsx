@@ -5,6 +5,7 @@ import ProjectContext from "@src/context/projectcontext";
 import useMouse from "@src/hooks/mouse";
 import SoundContext from "@src/context/soundcontext";
 import LinePosition from "@models/linepositionprops";
+import { ConnectionType } from "@models/connectionpointprops";
 
 export default function SynthEditor(){
     const [nodes, setNodes] = useState<AudioNodeProps[]>([]);
@@ -126,29 +127,67 @@ export default function SynthEditor(){
     }>
         <ul ref={nodesDragOverlay}>
                 {nodes?.map((node, i) =>
-                    <li key={`node[${i}]`} className='audionode'
-                        onMouseDown={handleNodeMouseDown}>
-                        {node.name}
-                        <div className="audio-connection-node" data-key={`node-connector[${i}]`}
-                        onClick={handleConnectionMouseClick}></div>
-                    </li>
+                    {
+                        return <li key={`node[${i}]`} className='audionode'
+                        onMouseDown={handleNodeMouseDown} 
+                        style={{width:node.data.width+"px", height:node.data.height+"px"}}
+                        data-id={node.id}>
+                            {node.name}
+                            {
+                                node.data.connectionpoints.map((connector,j) => 
+                                    <div className="audio-connection-node" key={`node-connector[${i}${j}]`} data-key={`node-connector[${i}${j}]`}
+                                    onClick={handleConnectionMouseClick}
+                                    data-id={connector.id}
+                                    style={{top: connector.top+"px", left: connector.left+"px", bottom: connector.bottom+"px", right: connector.right+"px"}}></div>
+                                )
+                            }
+                        </li>
+                    }
                 )}
         </ul>
         <div className="controls">
-            <button onClick={() => {
-                setNodes([...nodes ?? [], {
-                    name: 'New AudioNode',
-                    hue: 90,
-                    data: {
-                        x: 0,
-                        y: 0,
-                        height: 100,
-                        width: 100
-                    }
-                }]);
-            }}>
-                Add AudioNode
-            </button>
+            <ul>
+                <li>
+                <button onClick={() => {
+                    setNodes([...nodes ?? [], {
+                        id: "AudioEndNode",
+                        name: 'Default AudioEndNode',
+                        data: {
+                            x: 0,
+                            y: 0,
+                            height: 50,
+                            width: 100,
+                            connectionpoints: [
+                                {top:20, left:-10, bottom:undefined, right: undefined, id:"in"},
+                            ]
+                        }
+                    }]);
+                    }}>
+                    Add AudioEndNode
+                </button>
+                </li>
+                <li>
+                <button onClick={() => {
+                    setNodes([...nodes ?? [], {
+                        id: "AudioEndNode",
+                        name: 'TESTNODE',
+                        data: {
+                            x: 0,
+                            y: 0,
+                            height: 100,
+                            width: 100,
+                            connectionpoints: [
+                                {top:50, left:-10, bottom:undefined, right: undefined, id:"in"},
+                                {top:undefined, left:undefined, bottom:0, right: 50, id:"out"},
+                                {top:50, left:undefined, bottom:undefined, right: -10, id:"mod"}
+                            ]
+                        }
+                    }]);
+                    }}>
+                    Add AudioEndNode
+                </button>
+                </li>
+            </ul>
         </div>
         <svg className="connection-lines" width="100%" height="100%">
             {svgDragLine && <line className="dragged-connection-line" x1={svgDragLine.x1} y1={svgDragLine.y1} x2={svgDragLine.x2} y2={svgDragLine.y2} stroke="black" strokeWidth="5"/>}

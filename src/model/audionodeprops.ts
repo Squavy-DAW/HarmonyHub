@@ -1,10 +1,15 @@
+import ConnectionPointProps from "./connectionpointprops"
+
+export type AudioNodeType = "AudioEndNode" | "Oscillator" | "Envelope";
+
 export default interface AudioNodeProps {
+    id: AudioNodeType
     name: string,
-    hue: number,
     data: { 
         x: number,
         y: number,
         width: number,
-        height: number
+        height: number,
+        connectionpoints: ConnectionPointProps[]
     }
 }
