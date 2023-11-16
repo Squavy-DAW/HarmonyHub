@@ -9,7 +9,7 @@ import { useContext, useEffect, useState } from "react";
 
 export default function Patterns(props: { overlay: React.RefObject<HTMLDivElement> }) {
 
-    const [patterns, setPatterns] = useState<Pattern[]>();
+    const [patterns, setPatterns] = useState<Pattern[]>([]);
     const { project } = useContext(ProjectContext);
     const [draggedPattern, setDraggedPattern] = useState<HTMLElement>();
     // const { mousePosition, mouseDelta, mouseDown } = useContext(MouseMoveContext);
@@ -17,7 +17,7 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
     const { mousePosition, mouseDelta, mouseDown } = useMouse();
 
     const { setModalContent } = useContext(ModalContext);
-    const { setEditingPattern } = useContext(EditingPatternContext);
+    const { editingPattern, setEditingPattern } = useContext(EditingPatternContext);
 
     function handlePatternClick(pattern: Pattern) {
         setEditingPattern(pattern);
@@ -31,6 +31,16 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
         props.overlay.current!.append(clone);
         setDraggedPattern(clone);
     }
+
+    useEffect(() => {
+        if (!editingPattern) return;
+        setPatterns(prev => {
+            const index = prev.findIndex(p => p.name === editingPattern.name);
+            const newPatterns = [...prev];
+            newPatterns[index] = editingPattern;
+            return newPatterns;
+        })
+    }, [editingPattern])
 
     useEffect(() => {
         if (project && project.data.patterns) {

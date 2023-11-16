@@ -2,8 +2,8 @@ import Pattern from "@models/pattern";
 import React from "react";
 
 interface EditingPatternContextProps {
-    editingPattern: Pattern | undefined;
-    setEditingPattern: (pattern: Pattern | undefined) => void;
+    editingPattern?: Pattern;
+    setEditingPattern: (pattern?: Pattern) => void;
 }
 
 const EditingPatternContext = React.createContext<EditingPatternContextProps>(undefined!);

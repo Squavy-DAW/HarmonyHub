@@ -65,7 +65,7 @@ export default function Music(props: { project: Project, network: Network }) {
                 handleStopCollaboration();
             }
         }
-    }, [tabs, socket])
+    }, [tabs, socket]);
 
     useEffect(() => {
         if (socket) {
@@ -98,7 +98,7 @@ export default function Music(props: { project: Project, network: Network }) {
                 });
             })
         }
-    }, [socket])
+    }, [socket]);
 
     return (
         <ProjectContext.Provider value={{
