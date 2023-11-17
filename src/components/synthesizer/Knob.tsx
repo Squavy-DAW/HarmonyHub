@@ -1,55 +1,53 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import "../../styles/synthesizer/Knob.css"
+import useMouse from '@src/hooks/mouse';
 
-interface Props {
-  max: number;
-  min: number;
+
+export interface KnobProps extends Omit<React.HTMLProps<HTMLInputElement>, "onChange"> {
+    value: number;
+    onChange: (value: number) => void;
+    min?: number;
+    max?: number;
+    step?: number;
 }
 
-export default function Knob(props: Props) {
-    const [mousePosition, setMousePosition] = useState({ x:0, y:0 });
-    const [mousePositionOld, setMousePositionOld] = useState({ x:0, y:0 });
-    const [isMouseDown, setIsMouseDown] = useState(false);
-    const [value, setValue] = useState(10);
+
+export default function Knob({value, onChange, min, max, step, ...rest} : KnobProps) {
+  const [mousePositionOrigin, setMousePositionOrigin] = useState({ x:0, y:0 });
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [_value, _setValue] = useState(value);
+  
+  const { mousePosition, mouseDown } = useMouse();
+  
+  const clamp = (num: number, min: number, max: number) => Math.min(Math.max(num, min), max)
+
+  useEffect(() => {
+    if(!isMouseDown){
+      onChange(_value); 
+    }
+  }, [isMouseDown]);
     
-    useEffect(() => {
-      const handleMouseMove = (event: MouseEvent) => {
-        if (divRef.current) {
-          const rect = divRef.current.getBoundingClientRect();
-          const x = event.clientX - rect.left - rect.width /2;
-          const y = event.clientY - rect.top - rect.height /2;
-          setMousePosition({ x, y });
-        }
-      };
-      
-      document.addEventListener('mousedown', (event: MouseEvent) => {
-        if (divRef.current) {
-          const rect = divRef.current.getBoundingClientRect();
-          if(event.clientX - rect.left < 0 || event.clientX - rect.left > rect.width) return false;
-          if(event.clientY - rect.top < 0 || event.clientY - rect.top > rect.height) return false;
+  useEffect(() => {
+    if(!mouseDown){
+      setIsMouseDown(false);  
+    }
+  }, [mouseDown])  
+  
+  useEffect(() => {
+    if(!isMouseDown) return;
+    let tval = _value + (mousePosition.y - mousePositionOrigin.y)*-1;
+    
+    _setValue(clamp(tval, min ? min : 0, max ? max : 180)) 
+    setMousePositionOrigin({x: mousePosition.x, y: mousePosition.y});  
+  }, [mousePosition])
 
-          setIsMouseDown(true);
-        }
-      });
-      document.addEventListener('mouseup', () => setIsMouseDown(false));
-      document.addEventListener('mousemove', handleMouseMove);
-
-    }, [])
-
-    useEffect(() => {
-      //Keine ahnung warum hier, aber es geht :)
-      setMousePositionOld({x:mousePosition.x,y:mousePosition.y});
-
-      if(isMouseDown){
-        setValue(value + (mousePosition.y - mousePositionOld.y)*-1);
-        console.log(`x: ${mousePosition.x}, y: ${mousePosition.y}, y_old: ${mousePositionOld.y}`)
+  return (
+    <div {...rest} onMouseDown={
+      (e) => {
+        setMousePositionOrigin({x: e.clientX, y: e.clientY});  
+        setIsMouseDown(true); 
       }
-    }, [mousePosition])
-
-    const divRef = useRef<HTMLDivElement>(null);
-    
-    return (
-      <div ref={divRef} className='knob' style={{transform: `rotate(${value * 2}deg)`}}>
-      </div>
-    )
+    } className='knob' style={{transform: `rotate(${_value * 2}deg)`}}>
+    </div>
+  );
 }
