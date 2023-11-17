@@ -5,28 +5,29 @@ import { onKeyPressed, onKeyUp, pressedFrequencies, clickedFreq } from "@synth/k
 import NumberUpDown from "@components/editor/NumberUpDown";
 import Pattern from "@models/pattern";
 import Key from "@components/synthesizer/Key";
-import EditingPatternContext from "@src/context/editingpattern";
+import ProjectContext from "@src/context/projectcontext";
 
-export default function MidiEditor(props: { pattern: Pattern }) {
+export default function MidiEditor(props: { pattern: string }) {
 
-    const [snap, setSnap] = useState(props.pattern.snap ?? 4);
-    const [tact, setTact] = useState(props.pattern.tact ?? 4);
+    const { project, setProject } = useContext(ProjectContext);
+
+    const [snap, setSnap] = useState(project.data.patterns[props.pattern].snap ?? 4);
+    const [tact, setTact] = useState(project.data.patterns[props.pattern].tact ?? 4);
 
     const mode = useRef<{ x: 'move' | 'resize_right' | 'resize_left' | undefined, y: 'move' | undefined }>()
 
     const contentRef = createRef<HTMLDivElement>();
-    const { editingPattern, setEditingPattern } = useContext(EditingPatternContext);
 
     //Freq = note x 2^(N/12)
     const noteList = Array.from(genLookupTable()).sort(([, v1], [, v2]) => v2 - v1);
 
-    const [zoom, setZoom] = useState(props.pattern.zoom ?? 1);
+    const [zoom, setZoom] = useState(project.data.patterns[props.pattern].zoom ?? 1);
     const _zoom = useRef(zoom);
 
-    const [position, setPosition] = useState(props.pattern.position ?? 1);
+    const [position, setPosition] = useState(project.data.patterns[props.pattern].position ?? 1);
     const _position = useRef(position);
 
-    const [notes, setNotes] = useState(props.pattern.data ?? {});
+    const [notes, setNotes] = useState(project.data.patterns[props.pattern].data ?? {});
     const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
     const [mouseMoveRelative, setMouseMoveRelative] = useState({ x: 0, y: 0 });
     const _mouseDownOrigin = useRef({ x: 0, y: 0 });
@@ -335,14 +336,22 @@ export default function MidiEditor(props: { pattern: Pattern }) {
     }, [])
 
     useEffect(() => {
-        setEditingPattern({
-            ...editingPattern!,
-            zoom: zoom,
-            position: position,
-            snap: snap,
-            tact: tact,
-            data: notes,
-        })
+        setProject({
+            ...project,
+            data: {
+                patterns: {
+                    ...project.data.patterns,
+                    [props.pattern]: {
+                        ...project.data.patterns[props.pattern],
+                        zoom: zoom,
+                        position: position,
+                        snap: snap,
+                        tact: tact,
+                        data: notes,
+                    }
+                }
+            }
+        });
     }, [notes, zoom, position, snap, tact])
 
     useEffect(() => {
@@ -470,10 +479,10 @@ export default function MidiEditor(props: { pattern: Pattern }) {
                                 <li key={`note-[${id}]`} data-key={id}
                                     className={["note", selectedNotes.has(id) && "selected"].join(" ")}
                                     style={{
-                                        width: `${notes[id].length == 0
+                                        width: `${Math.abs(notes[id].length) < 0.001
                                             ? factor * 0.2
                                             : factor * Math.abs(notes[id].length)}px`,
-                                        left: `${notes[id].length == 0
+                                        left: `${Math.abs(notes[id].length) < 0.001
                                             ? factor * notes[id].start - factor * 0.2 / 2
                                             : notes[id].length < 0
                                                 ? factor * (notes[id].start + notes[id].length)
@@ -482,7 +491,7 @@ export default function MidiEditor(props: { pattern: Pattern }) {
                                     }} onMouseDown={handleNoteMouseDown}
                                     onMouseMove={handleNoteMouseMove}>
                                     <div onMouseDown={handleResizeLeftMouseDown} />
-                                    <div style={{ fontSize: '0.8em' }}>{`${notes[id].start.toPrecision(2)}, ${notes[id].length.toPrecision(2)}`}</div>
+                                    <div style={{ fontSize: '0.8em' }}>{`${notes[id].start.toPrecision(3)}, ${notes[id].length.toPrecision(3)}`}</div>
                                     <div onMouseDown={handleResizeRightMouseDown} />
                                 </li>
                             )

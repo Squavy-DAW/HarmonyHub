@@ -27,6 +27,8 @@ export default function ConnectModal(props: ConnectModalProps) {
         broadcast(socket, key, 'hh:user-joined', { name: userName });
 
         let project = await request(socket, key, 'hh:request-project', null);
+        console.log("Received project: ", project);
+        
         if (!project) return;
 
         props.onClose();

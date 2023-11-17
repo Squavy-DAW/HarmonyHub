@@ -1,6 +1,5 @@
 import MidiEditor from "@components/editor/MidiEditor";
 import Pattern from "@models/pattern";
-import EditingPatternContext from "@src/context/editingpattern";
 import ModalContext from "@src/context/modalcontext";
 // import MouseMoveContext from "@src/context/mousemove";
 import ProjectContext from "@src/context/projectcontext";
@@ -9,20 +8,19 @@ import { useContext, useEffect, useState } from "react";
 
 export default function Patterns(props: { overlay: React.RefObject<HTMLDivElement> }) {
 
-    const [patterns, setPatterns] = useState<Pattern[]>([]);
-    const { project } = useContext(ProjectContext);
+    const [patterns, setPatterns] = useState<{ [name: string]: Pattern }>({});
+    const [newPatternName, setNewPatternName] = useState<string>('');
+    const { project, setProject } = useContext(ProjectContext);
     const [draggedPattern, setDraggedPattern] = useState<HTMLElement>();
     // const { mousePosition, mouseDelta, mouseDown } = useContext(MouseMoveContext);
 
     const { mousePosition, mouseDelta, mouseDown } = useMouse();
 
     const { setModalContent } = useContext(ModalContext);
-    const { editingPattern, setEditingPattern } = useContext(EditingPatternContext);
 
-    function handlePatternClick(pattern: Pattern) {
-        setEditingPattern(pattern);
+    function handlePatternClick(patternName: string) {
         setModalContent(
-            <MidiEditor pattern={pattern} />
+            <MidiEditor pattern={patternName} />
         )
     }
 
@@ -32,21 +30,34 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
         setDraggedPattern(clone);
     }
 
-    useEffect(() => {
-        if (!editingPattern) return;
-        setPatterns(prev => {
-            const index = prev.findIndex(p => p.name === editingPattern.name);
-            const newPatterns = [...prev];
-            newPatterns[index] = editingPattern;
-            return newPatterns;
-        })
-    }, [editingPattern])
+    function handleNewPattern(ev: React.MouseEvent) {
+        if (!newPatternName) return;
+        if (!patterns[newPatternName] && true /* TODO: ask other members if this name is free */) {
+            setPatterns(prev => ({
+                ...prev, [newPatternName]: {
+                    color: '#000000',
+                    data: {},
+                    locked: false,
+                }
+            }))
+        }
+    }
 
     useEffect(() => {
-        if (project && project.data.patterns) {
-            setPatterns(project.data.patterns);
+        setPatterns(project.data.patterns);
+    }, [])
+
+    useEffect(() => {
+        if (project) {
+            setProject({
+                ...project,
+                data: {
+                    ...project.data,
+                    patterns: patterns
+                }
+            })
         }
-    }, [project])
+    }, [patterns])
 
     useEffect(() => {
         if (!mouseDown && draggedPattern) {
@@ -73,25 +84,19 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
     return (
         <section className='music-patterns'>
             <ul>
-                {patterns?.map((pattern, i) =>
-                    <li key={`pattern[${i}]`} className='pattern' onClick={() => {
-                        handlePatternClick(pattern);
-                    }}
+                {Object.keys(patterns).map((name, i) =>
+                    <li key={`pattern[${i}]`} className='pattern'
+                        onClick={() => handlePatternClick(name)}
                         onMouseDown={handlePatternMouseDown}>
-                        {pattern.name}
+                        {name}
                     </li>
                 )}
             </ul>
             <div className='controls'>
-                <button className='control' onClick={() => {
-                    setPatterns([...patterns ?? [], {
-                        name: 'New Pattern',
-                        color: '#000000',
-                        data: {}
-                    }])
-                }}>
-                    <img src="/src/assets/pattern/new.png" alt="add new pattern" />
-                </button>
+                <button className='control add-pattern' onClick={handleNewPattern} disabled={!newPatternName || !!patterns[newPatternName]} />
+                <input className='control new-pattern-name' type="text" value={newPatternName}
+                    onChange={(ev) => setNewPatternName(ev.target.value)}
+                    onKeyPress={(ev) => ev.key == 'Enter' && handleNewPattern(ev as any)} />
             </div>
         </section>
     )
