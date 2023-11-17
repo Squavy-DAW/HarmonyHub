@@ -1,7 +1,13 @@
 import Note from "./note";
 
 export default interface Pattern {
-    name: string,
     color: string,
-    data: { [id: string]: Note },
+    tact?: number,
+    zoom?: number,
+    position?: number,
+    snap?: number,
+    locked: boolean,
+    data: { 
+        [id: string]: Note
+    },
 }

@@ -1,7 +1,7 @@
 import '@styles/Music.css';
 import Project from "@models/project";
 import Modal from 'react-modal';
-import { createRef, useContext, useEffect, useState } from "react";
+import { createRef, useContext, useEffect, useRef, useState } from "react";
 import { broadcast, handle } from "@network/sessions";
 import Network from "@models/network";
 import NetworkContext from "@src/context/networkcontext";
@@ -14,7 +14,6 @@ import { Allotment, LayoutPriority } from "allotment";
 import Pattern from '@models/pattern';
 import { init } from '@synth/engineOLD';
 import SongEditor from './editor/SongEditor';
-import EditingPatternContext from '@src/context/editingpattern';
 import Patterns from './editor/Patterns';
 import ProjectContext from '@src/context/projectcontext';
 
@@ -24,6 +23,7 @@ export default function Music(props: { project: Project, network: Network }) {
     const { tab } = useContext(TabContext);
 
     const [project, setProject] = useState<Project>(props.project);
+    const _project = useRef<Project>(props.project);
 
     const [layoutRef, setLayoutRef] = useState<HTMLElement | null>(null);
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
@@ -33,8 +33,6 @@ export default function Music(props: { project: Project, network: Network }) {
     const [socket, setSocket] = useState(props.network.socket);
 
     const patternDragOverlay = createRef<HTMLDivElement>();
-
-    const [editingPattern, setEditingPattern] = useState<Pattern>();
 
     const [mousePositions, setMousePositions] = useState<{ [id: string]: { x: number, y: number } }>({});
 
@@ -65,7 +63,11 @@ export default function Music(props: { project: Project, network: Network }) {
                 handleStopCollaboration();
             }
         }
-    }, [tabs, socket])
+    }, [tabs, socket]);
+
+    useEffect(() => {
+        _project.current = project;
+    }, [project])
 
     useEffect(() => {
         if (socket) {
@@ -88,7 +90,7 @@ export default function Music(props: { project: Project, network: Network }) {
 
             handle(socket, cryptoKey!, 'hh:request-project', () => {
                 console.log("Requested project");
-                return props.project;
+                return _project.current;
             })
 
             handle(socket, cryptoKey!, 'hh:mouse-position', async (id, { x, y }) => {
@@ -98,7 +100,7 @@ export default function Music(props: { project: Project, network: Network }) {
                 });
             })
         }
-    }, [socket])
+    }, [socket]);
 
     return (
         <ProjectContext.Provider value={{
@@ -115,42 +117,38 @@ export default function Music(props: { project: Project, network: Network }) {
                     <MousePositionsContext.Provider value={{
                         mousePositions, setMousePositions
                     }}>
-                        <EditingPatternContext.Provider value={{
-                            editingPattern, setEditingPattern
-                        }}>
-                            <section className="music-layout" ref={ref => setLayoutRef(ref)}>
-                                <Toolbar />
+                        <section className="music-layout" ref={ref => setLayoutRef(ref)}>
+                            <Toolbar />
 
-                                <Allotment vertical={false} separator={true} proportionalLayout={false}>
-                                    <Allotment.Pane priority={LayoutPriority.High}>
-                                        <section className="music-notes" onMouseMove={handleMouseMove}>
-                                            <SongEditor/>
+                            <Allotment vertical={false} separator={true} proportionalLayout={false}>
+                                <Allotment.Pane priority={LayoutPriority.High}>
+                                    <section className="music-notes" onMouseMove={handleMouseMove}>
+                                        <SongEditor />
 
-                                            <section className="mouse-cursors">
-                                                {Object.keys(mousePositions).map(id => {
-                                                    const pos = mousePositions[id];
-                                                    return <div key={id} className="cursor" style={{ left: pos.x, top: pos.y }}>
-                                                        <span className="cursor-name">{id}</span>
-                                                    </div>
-                                                })}
-                                            </section>
+                                        <section className="mouse-cursors">
+                                            {Object.keys(mousePositions).map(id => {
+                                                const pos = mousePositions[id];
+                                                return <div key={id} className="cursor" style={{ left: pos.x, top: pos.y }}>
+                                                    <span className="cursor-name">{id}</span>
+                                                </div>
+                                            })}
                                         </section>
-                                    </Allotment.Pane>
-                                    <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
-                                        <Patterns overlay={patternDragOverlay} />
-                                    </Allotment.Pane>
-                                </Allotment>
+                                    </section>
+                                </Allotment.Pane>
+                                <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
+                                    <Patterns overlay={patternDragOverlay} />
+                                </Allotment.Pane>
+                            </Allotment>
 
-                                <div className="pattern-drag-overlay" ref={patternDragOverlay} />
+                            <div className="pattern-drag-overlay" ref={patternDragOverlay} />
 
-                                {layoutRef && <Modal
-                                    isOpen={!!modalContent}
-                                    onRequestClose={() => setModalContent(null)}
-                                    parentSelector={() => layoutRef}>
-                                    {modalContent}
-                                </Modal>}
-                            </section>
-                        </EditingPatternContext.Provider>
+                            {layoutRef && <Modal
+                                isOpen={!!modalContent}
+                                onRequestClose={() => setModalContent(null)}
+                                parentSelector={() => layoutRef}>
+                                {modalContent}
+                            </Modal>}
+                        </section>
                     </MousePositionsContext.Provider>
                 </ModalContext.Provider>
             </NetworkContext.Provider>

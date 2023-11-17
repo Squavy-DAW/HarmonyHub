@@ -6,5 +6,5 @@ interface EditingSynthesizerContextProps {
     setEditingSynth: (synth: Synth | undefined) => void;
 }
 
-const EditingSynthesizerContext = React.createContext<EditingSynthContextProps>(undefined!);
+const EditingSynthesizerContext = React.createContext<EditingSynthesizerContextProps>(undefined!);
 export default EditingSynthesizerContext;
