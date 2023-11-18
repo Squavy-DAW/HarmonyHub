@@ -7,7 +7,8 @@ import NetworkContext from "@src/context/networkcontext";
 import ProjectContext from "@src/context/projectcontext";
 import useMouse from "@src/hooks/mouse";
 import { useSignal } from "@src/hooks/signal";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { produce } from "immer"
 
 export default function Patterns(props: { overlay: React.RefObject<HTMLDivElement> }) {
 
@@ -42,16 +43,13 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
                 return;
             }
 
-            setPatterns(prev => {
-                return {
-                    ...prev,
-                    [newPatternName]: {
-                        color: '#000000',
-                        data: {},
-                        locked: false,
-                    }
-                };
-            });
+            setPatterns(produce(draft => {
+                draft[newPatternName] = {
+                    color: '#000000',
+                    data: {},
+                    locked: false,
+                }
+            }))
 
             if (socket) {
                 // notify other clients that a new pattern has been created
@@ -68,34 +66,27 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
         if (socket) {
             handle(socket, cryptoKey!, 'hh:survey-pattern', (_id, { pattern }) => {
                 console.log('survey-pattern', getPatterns());
-                
+
                 return !getPatterns()[pattern];
             })
 
             handle(socket, cryptoKey!, 'hh:pattern-created', (_id, { pattern }) => {
-                setPatterns(prev => {
-                    return {
-                        ...prev,
-                        [pattern]: {
-                            color: '#000000',
-                            data: {},
-                            locked: false,
-                        }
-                    };
-                });
+                setPatterns(produce(draft => {
+                    draft[pattern] = {
+                        color: '#000000',
+                        data: {},
+                        locked: false,
+                    }
+                }))
             })
         }
     }, [socket])
 
     useEffect(() => {
         if (project) {
-            setProject({
-                ...project,
-                data: {
-                    ...project.data,
-                    patterns: patterns
-                }
-            })
+            setProject(produce(draft => {
+                draft.data.patterns = patterns;
+            }));
         }
     }, [patterns])
 

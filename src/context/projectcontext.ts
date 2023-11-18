@@ -3,7 +3,7 @@ import React from "react";
 
 interface ProjectContextProps {
     project: Project,
-    setProject: (project: Project) => void
+    setProject: React.Dispatch<React.SetStateAction<Project>>
 }
 
 const ProjectContext = React.createContext<ProjectContextProps>(undefined!);

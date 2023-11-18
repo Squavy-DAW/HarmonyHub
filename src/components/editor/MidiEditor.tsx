@@ -1,9 +1,9 @@
 import React, { createRef, useContext, useEffect, useRef, useState } from "react";
+import { produce } from "immer"
 import { startFreq, stopFreq } from "@synth/engineOLD";
 import '@styles/editor/MidiEditor.css';
 import { onKeyPressed, onKeyUp, pressedFrequencies, clickedFreq } from "@synth/keylistener"
 import NumberUpDown from "@components/editor/NumberUpDown";
-import Pattern from "@models/pattern";
 import Key from "@components/synthesizer/Key";
 import ProjectContext from "@src/context/projectcontext";
 
@@ -44,18 +44,20 @@ export default function MidiEditor(props: { pattern: string }) {
     }
 
     function correctNoteErrors() {
-        Object.keys(notes).forEach(id => {
-            const note = notes[id];
-            if (note.length < 0) {
-                note.start += note.length;
-                note.length *= -1;
-            }
+        setNotes(produce(draft => {
+            Object.keys(notes).forEach(id => {
+                const note = draft[id];
+                if (note.length < 0) {
+                    note.start += note.length;
+                    note.length *= -1;
+                }
 
-            if (note.start < 0) {
-                note.length += note.start;
-                note.start = 0;
-            }
-        });
+                if (note.start < 0) {
+                    note.length += note.start;
+                    note.start = 0;
+                }
+            });
+        }))
     }
 
     function handleSnapNotes(ev: React.MouseEvent) {
@@ -127,16 +129,13 @@ export default function MidiEditor(props: { pattern: string }) {
             return; // should never happen, but just in case
         }
 
-        setNotes(prev => {
-            return {
-                ...prev,
-                [`${start}:${pitch}`]: {
-                    start: start,
-                    pitch: pitch,
-                    length: 1 / snap
-                }
+        setNotes(produce(draft => {
+            draft[`${start}:${pitch}`] = {
+                start: start,
+                pitch: pitch,
+                length: 1 / snap
             }
-        });
+        }))
 
         _mouseDownOrigin.current = { x: start, y: pitch };
         setSelectedNotes(new Set([`${start}:${pitch}`]));
@@ -200,42 +199,40 @@ export default function MidiEditor(props: { pattern: string }) {
     useEffect(() => {
         if (!mode.current) return;
 
-        selectedNotes.forEach(id => {
-            const note = notes[id];
-            if (!note) return;
+        setNotes(produce(draft => {
+            selectedNotes.forEach(id => {
+                const note = draft[id];
+                if (!note) return;
 
-            if (mode.current?.x == 'resize_left') {
-                note.start += mouseMoveRelative.x;
-                if (note.start < 0) {
-                    note.length += note.start;
-                    note.start = 0;
+                if (mode.current?.x == 'resize_left') {
+                    note.start += mouseMoveRelative.x;
+                    if (note.start < 0) {
+                        note.length += note.start;
+                        note.start = 0;
+                    }
+                    note.length -= mouseMoveRelative.x;
                 }
-                note.length -= mouseMoveRelative.x;
-            }
 
-            if (mode.current?.x == 'resize_right') {
-                note.length += mouseMoveRelative.x;
-                if (note.start + note.length < 0) {
-                    note.length = -note.start;
+                if (mode.current?.x == 'resize_right') {
+                    note.length += mouseMoveRelative.x;
+                    if (note.start + note.length < 0) {
+                        note.length = -note.start;
+                    }
                 }
-            }
 
-            if (mode.current?.x == 'move') {
-                note.start += mouseMoveRelative.x;
-                if (note.start < 0) {
-                    note.length += note.start;
-                    note.start = 0;
+                if (mode.current?.x == 'move') {
+                    note.start += mouseMoveRelative.x;
+                    if (note.start < 0) {
+                        note.length += note.start;
+                        note.start = 0;
+                    }
                 }
-            }
 
-            if (mode.current?.y == 'move') {
-                note.pitch += mouseMoveRelative.y;
-            }
-
-            setNotes(prev => {
-                return { ...prev, [id]: note }
-            })
-        });
+                if (mode.current?.y == 'move') {
+                    note.pitch += mouseMoveRelative.y;
+                }
+            });
+        }));
     }, [mouseMoveRelative])
 
     function handleNoteMouseDown(ev: React.MouseEvent) {
@@ -276,11 +273,11 @@ export default function MidiEditor(props: { pattern: string }) {
     function handleNoteMouseMove(ev: React.MouseEvent) {
         if (ev.nativeEvent.which != 3) return;
         ev.stopPropagation();
-        setNotes(prev => {
-            if (ev.currentTarget === null) return prev; // idk why this is needed, but it is
-            delete prev[ev.currentTarget.getAttribute("data-key")!];
-            return { ...prev };
-        });
+
+        setNotes(produce(draft => {
+            if (ev.currentTarget === null) return; // idk why this is needed, but it is
+            delete draft[ev.currentTarget.getAttribute("data-key")!];
+        }));
     }
 
     function handleResizeRightMouseDown(_ev: React.MouseEvent) {
@@ -337,22 +334,14 @@ export default function MidiEditor(props: { pattern: string }) {
     }, [])
 
     useEffect(() => {
-        setProject({
-            ...project,
-            data: {
-                patterns: {
-                    ...project.data.patterns,
-                    [props.pattern]: {
-                        ...project.data.patterns[props.pattern],
-                        zoom: zoom,
-                        position: position,
-                        snap: snap,
-                        tact: tact,
-                        data: notes,
-                    }
-                }
-            }
-        });
+        setProject(produce(draft => {
+            let pattern = draft.data.patterns[props.pattern]
+            pattern.zoom = zoom;
+            pattern.position = position;
+            pattern.snap = snap;
+            pattern.tact = tact;
+            pattern.data = notes;
+        }));
     }, [notes, zoom, position, snap, tact])
 
     useEffect(() => {
