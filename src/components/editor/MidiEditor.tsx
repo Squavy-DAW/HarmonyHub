@@ -165,18 +165,17 @@ export default function MidiEditor(props: { pattern: string }) {
                 y: Math.max(y, _selectionOrigin.current.y)
             });
 
-            let startX = Math.floor((selectionStart.x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact));
-            let startY = Math.floor(selectionStart.y / 36);
-            let endX = Math.floor((selectionEnd.x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact));
-            let endY = Math.floor(selectionEnd.y / 36);
+            let startX = (selectionStart.x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact);
+            let startY = selectionStart.y / 36;
+            let endX = (selectionEnd.x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact);
+            let endY = selectionEnd.y / 36;
 
             Object.keys(notes).forEach(id => {
                 if ((
                     notes[id].start + notes[id].length > startX && notes[id].start <= endX ||
                     notes[id].start >= endX && notes[id].start <= startX) && (
                         notes[id].pitch >= startY && notes[id].pitch <= endY ||
-                        notes[id].pitch <= startY && notes[id].pitch >= endY
-                    )
+                        notes[id].pitch <= startY && notes[id].pitch >= endY)
                 ) {
                     selectedNotes.add(id);
                 } else {
