@@ -22,10 +22,8 @@ export default function Knob({value, onChange, min, max, step, ...rest} : KnobPr
   const clamp = (num: number, min: number, max: number) => Math.min(Math.max(num, min), max)
 
   useEffect(() => {
-    if(!isMouseDown){
-      onChange(_value); 
-    }
-  }, [isMouseDown]);
+    onChange(_value); 
+  }, [_value]);
     
   useEffect(() => {
     if(!mouseDown){
@@ -35,9 +33,9 @@ export default function Knob({value, onChange, min, max, step, ...rest} : KnobPr
   
   useEffect(() => {
     if(!isMouseDown) return;
-    let tval = _value + (mousePosition.y - mousePositionOrigin.y)*-1;
+    let tval = _value - (mousePosition.y - mousePositionOrigin.y) / 360;
     
-    _setValue(clamp(tval, min ? min : 0, max ? max : 180)) 
+    _setValue(clamp(tval, min ? min : 0, max ? max : 1)) 
     setMousePositionOrigin({x: mousePosition.x, y: mousePosition.y});  
   }, [mousePosition])
 
@@ -47,7 +45,8 @@ export default function Knob({value, onChange, min, max, step, ...rest} : KnobPr
         setMousePositionOrigin({x: e.clientX, y: e.clientY});  
         setIsMouseDown(true); 
       }
-    } className='knob' style={{transform: `rotate(${_value * 2}deg)`}}>
+    } className='knob' style={{transform: `rotate(${_value * 360}deg)`}}>
+      <p>{_value}</p>
     </div>
   );
 }
