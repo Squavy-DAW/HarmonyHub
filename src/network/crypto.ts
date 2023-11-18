@@ -17,13 +17,13 @@ export async function encrypt(key: CryptoKey, content: any): Promise<ArrayBuffer
     );
 }
 
-export async function decrypt(key: CryptoKey, content: ArrayBuffer) {
+export async function decrypt<T>(key: CryptoKey, content: ArrayBuffer) {
     const decrypted = await window.crypto.subtle.decrypt(
         { name: "AES-GCM", iv: new Uint8Array(12) },
         key,
         content,
     );
-    return JSON.parse(decoder.decode(decrypted));
+    return JSON.parse(decoder.decode(decrypted)) as T;
 }
 
 export async function extract(key: CryptoKey): Promise<string> {

@@ -1,20 +1,24 @@
 import MidiEditor from "@components/editor/MidiEditor";
 import Pattern from "@models/pattern";
+import { broadcast, handle, survey } from "@network/sessions";
 import ModalContext from "@src/context/modalcontext";
+import NetworkContext from "@src/context/networkcontext";
 // import MouseMoveContext from "@src/context/mousemove";
 import ProjectContext from "@src/context/projectcontext";
 import useMouse from "@src/hooks/mouse";
-import { useContext, useEffect, useState } from "react";
+import { useSignal } from "@src/hooks/signal";
+import { useCallback, useContext, useEffect, useState } from "react";
 
 export default function Patterns(props: { overlay: React.RefObject<HTMLDivElement> }) {
 
-    const [patterns, setPatterns] = useState<{ [name: string]: Pattern }>({});
+    const [patterns, setPatterns, getPatterns] = useSignal<{ [name: string]: Pattern }>({});
     const [newPatternName, setNewPatternName] = useState<string>('');
     const { project, setProject } = useContext(ProjectContext);
     const [draggedPattern, setDraggedPattern] = useState<HTMLElement>();
     // const { mousePosition, mouseDelta, mouseDown } = useContext(MouseMoveContext);
 
     const { mousePosition, mouseDelta, mouseDown } = useMouse();
+    const { socket, cryptoKey } = useContext(NetworkContext);
 
     const { setModalContent } = useContext(ModalContext);
 
@@ -30,22 +34,58 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
         setDraggedPattern(clone);
     }
 
-    function handleNewPattern(ev: React.MouseEvent) {
+    async function handleNewPattern(ev: React.MouseEvent) {
         if (!newPatternName) return;
-        if (!patterns[newPatternName] && true /* TODO: ask other members if this name is free */) {
-            setPatterns(prev => ({
-                ...prev, [newPatternName]: {
-                    color: '#000000',
-                    data: {},
-                    locked: false,
-                }
-            }))
+        if (!patterns[newPatternName]) {
+            // if the socket exists, but the survey fails, then we don't want to add the pattern
+            if (socket && !await survey(socket, cryptoKey!, 'hh:survey-pattern', { pattern: newPatternName })) {
+                return;
+            }
+
+            setPatterns(prev => {
+                return {
+                    ...prev,
+                    [newPatternName]: {
+                        color: '#000000',
+                        data: {},
+                        locked: false,
+                    }
+                };
+            });
+
+            if (socket) {
+                // notify other clients that a new pattern has been created
+                broadcast(socket, cryptoKey!, 'hh:pattern-created', { pattern: newPatternName });
+            }
         }
     }
 
     useEffect(() => {
         setPatterns(project.data.patterns);
     }, [])
+
+    useEffect(() => {
+        if (socket) {
+            handle(socket, cryptoKey!, 'hh:survey-pattern', (_id, { pattern }) => {
+                console.log('survey-pattern', getPatterns());
+                
+                return !getPatterns()[pattern];
+            })
+
+            handle(socket, cryptoKey!, 'hh:pattern-created', (_id, { pattern }) => {
+                setPatterns(prev => {
+                    return {
+                        ...prev,
+                        [pattern]: {
+                            color: '#000000',
+                            data: {},
+                            locked: false,
+                        }
+                    };
+                });
+            })
+        }
+    }, [socket])
 
     useEffect(() => {
         if (project) {
