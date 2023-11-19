@@ -1,3 +1,4 @@
+import Pattern from "@models/pattern";
 import Project from "@models/project";
 import { Socket } from "socket.io-client";
 
@@ -18,8 +19,7 @@ export interface ClientToClientEvents {
     'hh:request-project': (args: null) => Project;
     'hh:user-joined': (args: { name: string }) => void;
     'hh:mouse-position': (args: { x: number, y: number }) => void;
-    'hh:survey-pattern': (args: { pattern: string }) => boolean;
-    'hh:pattern-created': (args: { pattern: string }) => void;
+    'hh:pattern-created': (args: { pattern: Pattern }) => void;
 }
 
 export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;

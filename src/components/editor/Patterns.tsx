@@ -1,18 +1,15 @@
 import MidiEditor from "@components/editor/MidiEditor";
-import Pattern from "@models/pattern";
-import { broadcast, handle, survey } from "@network/sessions";
+import { broadcast, handle } from "@network/sessions";
 import ModalContext from "@src/context/modalcontext";
 import NetworkContext from "@src/context/networkcontext";
 // import MouseMoveContext from "@src/context/mousemove";
 import ProjectContext from "@src/context/projectcontext";
 import useMouse from "@src/hooks/mouse";
-import { useSignal } from "@src/hooks/signal";
 import { useContext, useEffect, useState } from "react";
 import { produce } from "immer"
+import Pattern from "@models/pattern";
 
 export default function Patterns(props: { overlay: React.RefObject<HTMLDivElement> }) {
-
-    const [patterns, setPatterns, getPatterns] = useSignal<{ [name: string]: Pattern }>({});
     const [newPatternName, setNewPatternName] = useState<string>('');
     const { project, setProject } = useContext(ProjectContext);
     const [draggedPattern, setDraggedPattern] = useState<HTMLElement>();
@@ -23,9 +20,10 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
 
     const { setModalContent } = useContext(ModalContext);
 
-    function handlePatternClick(patternName: string) {
+    function handlePatternClick(ev: React.MouseEvent) {
+        const index = parseInt(ev.currentTarget.getAttribute('data-index')!);
         setModalContent(
-            <MidiEditor pattern={patternName} />
+            <MidiEditor patternIndex={index} />
         )
     }
 
@@ -35,60 +33,34 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
         setDraggedPattern(clone);
     }
 
-    async function handleNewPattern(ev: React.MouseEvent) {
+    async function handleNewPattern(_ev: React.MouseEvent) {
         if (!newPatternName) return;
-        if (!patterns[newPatternName]) {
-            // if the socket exists, but the survey fails, then we don't want to add the pattern
-            if (socket && !await survey(socket, cryptoKey!, 'hh:survey-pattern', { pattern: newPatternName })) {
-                return;
-            }
+        const pattern: Pattern = {
+            name: newPatternName,
+            color: '#000000',
+            locked: false,
+            data: [],
+        };
 
-            setPatterns(produce(draft => {
-                draft[newPatternName] = {
-                    color: '#000000',
-                    data: {},
-                    locked: false,
-                }
-            }))
+        setProject(produce(draft => {
+            draft.data.patterns.push(pattern);
+        }));
 
-            if (socket) {
-                // notify other clients that a new pattern has been created
-                broadcast(socket, cryptoKey!, 'hh:pattern-created', { pattern: newPatternName });
-            }
+        if (socket) {
+            // notify other clients that a new pattern has been created
+            broadcast(socket, cryptoKey!, 'hh:pattern-created', { pattern: pattern });
         }
     }
 
     useEffect(() => {
-        setPatterns(project.data.patterns);
-    }, [])
-
-    useEffect(() => {
         if (socket) {
-            handle(socket, cryptoKey!, 'hh:survey-pattern', (_id, { pattern }) => {
-                console.log('survey-pattern', getPatterns());
-
-                return !getPatterns()[pattern];
-            })
-
             handle(socket, cryptoKey!, 'hh:pattern-created', (_id, { pattern }) => {
-                setPatterns(produce(draft => {
-                    draft[pattern] = {
-                        color: '#000000',
-                        data: {},
-                        locked: false,
-                    }
-                }))
+                setProject(produce(draft => {
+                    draft.data.patterns.push(pattern);
+                }));
             })
         }
     }, [socket])
-
-    useEffect(() => {
-        if (project) {
-            setProject(produce(draft => {
-                draft.data.patterns = patterns;
-            }));
-        }
-    }, [patterns])
 
     useEffect(() => {
         if (!mouseDown && draggedPattern) {
@@ -115,16 +87,17 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
     return (
         <section className='music-patterns'>
             <ul>
-                {Object.keys(patterns).map((name, i) =>
+                {project.data.patterns.map((pattern, i) =>
                     <li key={`pattern[${i}]`} className='pattern'
-                        onClick={() => handlePatternClick(name)}
+                        data-index={i}
+                        onClick={handlePatternClick}
                         onMouseDown={handlePatternMouseDown}>
-                        {name}
+                        {pattern.name}
                     </li>
                 )}
             </ul>
             <div className='controls'>
-                <button className='control add-pattern' onClick={handleNewPattern} disabled={!newPatternName || !!patterns[newPatternName]} />
+                <button className='control add-pattern' onClick={handleNewPattern} disabled={!newPatternName /*|| !!patterns[newPatternName]*/} />
                 <input className='control new-pattern-name' type="text" value={newPatternName}
                     onChange={(ev) => setNewPatternName(ev.target.value)}
                     onKeyPress={(ev) => ev.key == 'Enter' && handleNewPattern(ev as any)} />
