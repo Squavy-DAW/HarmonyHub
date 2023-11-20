@@ -1,6 +1,8 @@
 import { ClientToClientEvents, TypedSocket as Socket } from "@network/packets";
 import { io } from "socket.io-client";
 import { decrypt, encrypt } from "./crypto";
+import { useContext } from "react";
+import NetworkContext from "@src/context/networkcontext";
 
 export function createSocket(): Socket | undefined {
     try {
@@ -50,7 +52,22 @@ export async function request<T extends keyof ClientToClientEvents>(socket: Sock
                 data: data
             })
         }, async ({ data }) => {
-            resolve(await decrypt(key, data));
+            resolve(await decrypt<ReturnType<ClientToClientEvents[T]>>(key, data));
+        });
+    })
+}
+
+export function survey<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, data: EventParameters<T>): Promise<boolean> {
+    return new Promise(async resolve => {
+        socket.emit('hh:survey', {
+            data: await encrypt(key, {
+                type: type,
+                data: data
+            })
+        }, async ({ data }) => {
+            if (data === null) return resolve(false);
+            const replies = await Promise.all(data.map(res => decrypt<boolean>(key, res)));
+            resolve(replies.every(reply => reply));
         });
     })
 }
@@ -59,7 +76,7 @@ type EventCallback<T extends keyof ClientToClientEvents> = (id: string, data: Ev
 
 export async function handle<T extends keyof ClientToClientEvents>(socket: Socket, key: CryptoKey, type: T, callback: EventCallback<T>) {
     socket.on('hh:data', async ({ id, data }, ack) => {
-        let decrypted = await decrypt(key, data);
+        let decrypted = await decrypt<{ type: T, data: EventParameters<T> }>(key, data);
         if (decrypted.type === type) {
             const result = await callback(id, decrypted.data);
             if (result instanceof Promise) {
