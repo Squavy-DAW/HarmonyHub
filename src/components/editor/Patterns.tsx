@@ -8,6 +8,7 @@ import useMouse from "@src/hooks/mouse";
 import { useContext, useEffect, useState } from "react";
 import { produce } from "immer"
 import Pattern from "@models/pattern";
+import { generateId } from "@network/crypto";
 
 export default function Patterns(props: { overlay: React.RefObject<HTMLDivElement> }) {
     const [newPatternName, setNewPatternName] = useState<string>('');
@@ -21,9 +22,9 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
     const { setModalContent } = useContext(ModalContext);
 
     function handlePatternClick(ev: React.MouseEvent) {
-        const index = parseInt(ev.currentTarget.getAttribute('data-index')!);
+        const id = ev.currentTarget.getAttribute('data-id')!;
         setModalContent(
-            <MidiEditor patternIndex={index} />
+            <MidiEditor patternId={id} />
         )
     }
 
@@ -35,28 +36,29 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
 
     async function handleNewPattern(_ev: React.MouseEvent) {
         if (!newPatternName) return;
+        const id = generateId(new Set(Object.keys(project.data.patterns)));
         const pattern: Pattern = {
             name: newPatternName,
             color: '#000000',
             locked: false,
-            data: [],
+            notes: {}
         };
 
         setProject(produce(draft => {
-            draft.data.patterns.push(pattern);
+            draft.data.patterns[id] = pattern;
         }));
 
         if (socket) {
             // notify other clients that a new pattern has been created
-            broadcast(socket, cryptoKey!, 'hh:pattern-created', { pattern: pattern });
+            broadcast(socket, cryptoKey!, 'hh:pattern-created', { id: id, pattern: pattern });
         }
     }
 
     useEffect(() => {
         if (socket) {
-            handle(socket, cryptoKey!, 'hh:pattern-created', (_id, { pattern }) => {
+            handle(socket, cryptoKey!, 'hh:pattern-created', (_id, { id, pattern }) => {
                 setProject(produce(draft => {
-                    draft.data.patterns.push(pattern);
+                    draft.data.patterns[id] = pattern;
                 }));
             })
         }
@@ -87,12 +89,12 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
     return (
         <section className='music-patterns'>
             <ul>
-                {project.data.patterns.map((pattern, i) =>
-                    <li key={`pattern[${i}]`} className='pattern'
-                        data-index={i}
+                {Object.keys(project.data.patterns).map(id =>
+                    <li key={`pattern[${id}]`} className='pattern'
+                        data-id={id}
                         onClick={handlePatternClick}
                         onMouseDown={handlePatternMouseDown}>
-                        {pattern.name}
+                        {project.data.patterns[id].name}
                     </li>
                 )}
             </ul>

@@ -45,3 +45,11 @@ export async function importKey(key: string): Promise<CryptoKey> {
         ["encrypt", "decrypt"],
     );
 }
+
+export function generateId(set: Set<string> = new Set()): string {
+    let id: string;
+    do {
+        id = crypto.randomUUID();
+    } while (set.has(id));
+    return id;
+}
