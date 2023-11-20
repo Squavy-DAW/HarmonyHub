@@ -47,7 +47,7 @@ export default function ConnectModal(props: ConnectModalProps) {
     }
 
     return (
-        <div className={'connect-modal'}>
+        <div className={['connect-modal', 'overlay-center'].join(' ')}>
             <input type="text" placeholder="Username" value={userName} onChange={(event) => setUserName(event.target.value)} />
             <button onClick={handleJoinSession}>Continue</button>
         </div>
