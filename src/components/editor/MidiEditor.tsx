@@ -7,29 +7,34 @@ import NumberUpDown from "@components/editor/NumberUpDown";
 import Key from "@components/synthesizer/Key";
 import ProjectContext from "@src/context/projectcontext";
 import Note from "@models/note";
+import { generateId } from "@network/crypto";
+import { broadcast } from "@network/sessions";
+import NetworkContext from "@src/context/networkcontext";
 
-export default function MidiEditor(props: { patternIndex: number }) {
+export default function MidiEditor(props: { patternId: string }) {
 
     const { project, setProject } = useContext(ProjectContext);
+    const { socket, cryptoKey } = useContext(NetworkContext);
 
-    const [snap, setSnap] = useState(project.data.patterns[props.patternIndex].snap ?? 4);
-    const [tact, setTact] = useState(project.data.patterns[props.patternIndex].tact ?? 4);
+    const [snap, setSnap] = useState(project.data.patterns[props.patternId].snap ?? 4);
+    const [tact, setTact] = useState(project.data.patterns[props.patternId].tact ?? 4);
 
     const mode = useRef<{ x: 'move' | 'resize_right' | 'resize_left' | undefined, y: 'move' | undefined }>()
 
     const contentRef = createRef<HTMLDivElement>();
+    const editorRef = createRef<HTMLDivElement>();
+
 
     //Freq = note x 2^(N/12)
     const noteList = Array.from(genLookupTable()).sort(([, v1], [, v2]) => v2 - v1);
 
-    const [zoom, setZoom] = useState(project.data.patterns[props.patternIndex].zoom ?? 1);
+    const [zoom, setZoom] = useState(project.data.patterns[props.patternId].zoom ?? 1);
     const _zoom = useRef(zoom);
 
-    const [position, setPosition] = useState(project.data.patterns[props.patternIndex].position ?? 1);
+    const [position, setPosition] = useState(project.data.patterns[props.patternId].position ?? 1);
     const _position = useRef(position);
 
-    const [notes, setNotes] = useState(project.data.patterns[props.patternIndex].data ?? []);
-    const [selectedNotes, setSelectedNotes] = useState<Set<number>>(new Set());
+    const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
     const [mouseMoveRelative, setMouseMoveRelative] = useState({ x: 0, y: 0 });
     const _mouseDownOrigin = useRef({ x: 0, y: 0 });
     const [selectionStart, setSelectionStart] = useState({ x: 0, y: 0 });
@@ -38,15 +43,16 @@ export default function MidiEditor(props: { patternIndex: number }) {
 
     const zoomBase = 100;
 
-    const editorRef = createRef<HTMLDivElement>();
-
     function slipFloor(num: number, decimal: number) {
         return Math.floor(num / decimal) * decimal;
     }
 
     function correctNoteErrors() {
-        setNotes(produce(draft => {
-            draft.forEach(note => {
+        setProject(produce(draft => {
+            Object.keys(draft.data.patterns[props.patternId].notes).forEach(id => {
+                const note = draft.data.patterns[props.patternId].notes[id];
+                if (!note) return;
+
                 if (note.length < 0) {
                     note.start += note.length;
                     note.length *= -1;
@@ -66,12 +72,13 @@ export default function MidiEditor(props: { patternIndex: number }) {
             note.length = slipFloor(note.length, 1 / snap);
         }
 
-        setNotes(produce(draft => {
+        setProject(produce(draft => {
+            const notes = draft.data.patterns[props.patternId].notes;
             if (selectedNotes.size == 0) {
-                draft.forEach(note => run(note));
+                Object.keys(draft).forEach(id => run(notes[id]));
             }
             else {
-                selectedNotes.forEach(index => run(draft[index]));
+                selectedNotes.forEach(id => run(notes[id]));
             }
         }));
 
@@ -118,7 +125,7 @@ export default function MidiEditor(props: { patternIndex: number }) {
         let y = ev.clientY - rect.top;
         let start = slipFloor((x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact), 1 / snap);
         let pitch = Math.floor(y / 36);
-
+        
         if (ev.buttons == 1 && ev.shiftKey) {
             _selectionOrigin.current = { x: x, y: y };
             setSelectionStart({ x: x, y: y });
@@ -126,16 +133,27 @@ export default function MidiEditor(props: { patternIndex: number }) {
             return;
         }
 
-        setNotes(produce(draft => {
-            draft.push({
-                start: start,
-                pitch: pitch,
-                length: 1 / snap
-            });
+        const id = generateId(new Set(Object.keys(project.data.patterns[props.patternId].notes)));
+        const note = {
+            start: start,
+            pitch: pitch,
+            length: 1 / snap
+        };
+
+        setProject(produce(draft => {
+            draft.data.patterns[props.patternId].notes[id] = note
         }))
 
+        if (socket) {
+            broadcast(socket, cryptoKey!, 'hh:note-created', {
+                patternId: props.patternId,
+                id: id,
+                note: note
+            });
+        }
+
         _mouseDownOrigin.current = { x: start, y: pitch };
-        setSelectedNotes(new Set([notes.length]));
+        setSelectedNotes(new Set([id]));
         mode.current = { x: 'resize_right', y: 'move' };
     }
 
@@ -166,16 +184,17 @@ export default function MidiEditor(props: { patternIndex: number }) {
             let endX = (selectionEnd.x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact);
             let endY = selectionEnd.y / 36;
 
-            notes.forEach((note, index) => {
+            Object.keys(project.data.patterns[props.patternId].notes).forEach(id => {
+                const note = project.data.patterns[props.patternId].notes[id];
                 if ((
                     note.start + note.length > startX && note.start <= endX ||
                     note.start >= endX && note.start <= startX) && (
                         note.pitch >= startY && note.pitch <= endY ||
                         note.pitch <= startY && note.pitch >= endY)
                 ) {
-                    selectedNotes.add(index);
+                    selectedNotes.add(id);
                 } else {
-                    selectedNotes.delete(index);
+                    selectedNotes.delete(id);
                 }
             });
 
@@ -196,9 +215,9 @@ export default function MidiEditor(props: { patternIndex: number }) {
     useEffect(() => {
         if (!mode.current) return;
 
-        setNotes(produce(draft => {
+        setProject(produce(draft => {
             selectedNotes.forEach(selectedNote => {
-                const note = draft[selectedNote];
+                const note = draft.data.patterns[props.patternId].notes[selectedNote];
                 if (!note) return;
 
                 if (mode.current?.x == 'resize_left') {
@@ -244,15 +263,15 @@ export default function MidiEditor(props: { patternIndex: number }) {
         let start = slipFloor((x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact), 1 / snap);
         let pitch = Math.floor(y / 36);
 
-        const index = parseInt(ev.currentTarget.getAttribute("data-index")!);
+        const id = ev.currentTarget.getAttribute("data-id")!
 
         if (ev.shiftKey) {
-            if (selectedNotes.has(index)) {
-                selectedNotes.delete(index);
+            if (selectedNotes.has(id)) {
+                selectedNotes.delete(id);
                 setSelectedNotes(new Set(selectedNotes));
             }
             else {
-                selectedNotes.add(index);
+                selectedNotes.add(id);
                 setSelectedNotes(new Set(selectedNotes));
             }
             return;
@@ -260,10 +279,10 @@ export default function MidiEditor(props: { patternIndex: number }) {
 
         mode.current = { x: 'move', y: 'move' }
         _mouseDownOrigin.current = { x: start, y: pitch };
-        if (selectedNotes.has(index)) {
-            setSelectedNotes(new Set([...selectedNotes, index]));
+        if (selectedNotes.has(id)) {
+            setSelectedNotes(new Set([...selectedNotes, id]));
         } else {
-            setSelectedNotes(new Set([index]));
+            setSelectedNotes(new Set([id]));
         }
     }
 
@@ -271,10 +290,10 @@ export default function MidiEditor(props: { patternIndex: number }) {
         if (ev.nativeEvent.which != 3) return;
         ev.stopPropagation();
 
-        setNotes(produce(draft => {
+        setProject(produce(draft => {
             if (ev.currentTarget === null) return; // idk why this is needed, but it is
-            const index = parseInt(ev.currentTarget.getAttribute("data-index")!);
-            delete draft[index];
+            const id = ev.currentTarget.getAttribute("data-id")!;
+            delete draft.data.patterns[props.patternId].notes[id];
         }));
     }
 
@@ -332,15 +351,18 @@ export default function MidiEditor(props: { patternIndex: number }) {
     }, [])
 
     useEffect(() => {
+        // TODO: handle events
+    })
+
+    useEffect(() => {
         setProject(produce(draft => {
-            let pattern = draft.data.patterns[props.patternIndex]
+            let pattern = draft.data.patterns[props.patternId]
             pattern.zoom = zoom;
             pattern.position = position;
             pattern.snap = snap;
             pattern.tact = tact;
-            pattern.data = notes;
         }));
-    }, [notes, zoom, position, snap, tact])
+    }, [zoom, position, snap, tact])
 
     useEffect(() => {
         document.addEventListener("mousedown", onMouseDown);
@@ -461,11 +483,12 @@ export default function MidiEditor(props: { patternIndex: number }) {
                         top: `${Math.min(selectionStart.y, selectionEnd.y)}px`,
                     }} />}
                     <div style={{ position: 'absolute', left: -position }}>
-                        {notes.map((note, i) => {
+                        {Object.keys(project.data.patterns[props.patternId].notes).map(id => {
+                            const note = project.data.patterns[props.patternId].notes[id];
                             const factor = zoomBase * Math.E ** zoom / tact;
                             return (
-                                <li key={`note-[${i}]`} data-index={i}
-                                    className={["note", selectedNotes.has(i) && "selected"].join(" ")}
+                                <li key={`note-[${id}]`} data-id={id}
+                                    className={["note", selectedNotes.has(id) ? "selected" : ""].join(" ")}
                                     style={{
                                         width: `${Math.abs(note.length) < 0.001
                                             ? factor * 0.2

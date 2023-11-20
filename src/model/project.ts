@@ -6,7 +6,7 @@ export default interface Project {
     editDate: Date,
     createDate: Date,
     data: {
-        patterns: Pattern[]
+        patterns: { [id: string]: Pattern }
     },
 }
 
@@ -16,6 +16,6 @@ export const defaultProject: Project = {
     editDate: new Date(),
     createDate: new Date(),
     data: {
-        patterns: []
+        patterns: {}
     }
 }

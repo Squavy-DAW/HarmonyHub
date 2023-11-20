@@ -8,5 +8,5 @@ export default interface Pattern {
     position?: number,
     snap?: number,
     locked: boolean,
-    data: Note[],
+    notes: { [id: string]: Note },
 }
