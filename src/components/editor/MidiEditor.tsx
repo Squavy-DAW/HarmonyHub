@@ -75,7 +75,7 @@ export default function MidiEditor(props: { patternId: string }) {
         setProject(produce(draft => {
             const notes = draft.data.patterns[props.patternId].notes;
             if (selectedNotes.size == 0) {
-                Object.keys(draft).forEach(id => run(notes[id]));
+                Object.keys(draft.data.patterns[props.patternId].notes).forEach(id => run(notes[id]));
             }
             else {
                 selectedNotes.forEach(id => run(notes[id]));
