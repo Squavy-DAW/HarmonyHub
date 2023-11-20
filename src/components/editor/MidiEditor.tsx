@@ -212,16 +212,17 @@ export default function MidiEditor(props: { patternId: string }) {
         }
 
         if (socket) {
-            broadcast(socket, cryptoKey!, 'hh:mouse-position', {
-                x: ev.nativeEvent.clientX - editorRef.current!.getBoundingClientRect().left,
-                y: ev.nativeEvent.clientY - editorRef.current!.getBoundingClientRect().top,
+            broadcast(socket, cryptoKey!, 'hh:mouse-position-pattern', {
+                x: (x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact),
+                y: y,
+                patternId: props.patternId
             });
         }
     }
 
     useEffect(() => {
         if (socket) {
-            handle(socket, cryptoKey!, 'hh:mouse-position-pattern', async (id, { x, y, patternId }) => {
+            handle(socket, cryptoKey!, 'hh:mouse-position-pattern', (id, { x, y, patternId }) => {
                 if (patternId != props.patternId) return;
                 
                 setMousePositions({
@@ -530,10 +531,11 @@ export default function MidiEditor(props: { patternId: string }) {
                             )
                         })}
                     </div>
-                    <section className="mouse-cursors">
+                    <section className="mouse-cursors" style={{ left: -position }}>
                         {Object.keys(mousePositions).map(id => {
                             const pos = mousePositions[id];
-                            return <div key={id} className="cursor" style={{ left: pos.x, top: pos.y }}>
+                            const factor = zoomBase * Math.E ** zoom / tact;
+                            return <div key={id} className="cursor" style={{ left: pos.x * factor, top: pos.y }}>
                                 <span className="cursor-name">{id}</span>
                             </div>
                         })}
