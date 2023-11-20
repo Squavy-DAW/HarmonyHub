@@ -39,7 +39,7 @@ export default function Music(props: { project: Project, network: Network }) {
 
     function handleMouseMove(ev: React.MouseEvent) {
         if (socket) {
-            broadcast(socket, cryptoKey!, 'hh:mouse-position', {
+            broadcast(socket, cryptoKey!, 'hh:mouse-position',   {
                 x: ev.nativeEvent.clientX - musicNotes.current!.getBoundingClientRect().left,
                 y: ev.nativeEvent.clientY - musicNotes.current!.getBoundingClientRect().top
             });

@@ -8,11 +8,10 @@ import Key from "@components/synthesizer/Key";
 import ProjectContext from "@src/context/projectcontext";
 import Note from "@models/note";
 import { generateId } from "@network/crypto";
-import { broadcast } from "@network/sessions";
+import { broadcast, handle } from "@network/sessions";
 import NetworkContext from "@src/context/networkcontext";
 
 export default function MidiEditor(props: { patternId: string }) {
-
     const { project, setProject } = useContext(ProjectContext);
     const { socket, cryptoKey } = useContext(NetworkContext);
 
@@ -23,7 +22,6 @@ export default function MidiEditor(props: { patternId: string }) {
 
     const contentRef = createRef<HTMLDivElement>();
     const editorRef = createRef<HTMLDivElement>();
-
 
     //Freq = note x 2^(N/12)
     const noteList = Array.from(genLookupTable()).sort(([, v1], [, v2]) => v2 - v1);
@@ -40,6 +38,8 @@ export default function MidiEditor(props: { patternId: string }) {
     const [selectionStart, setSelectionStart] = useState({ x: 0, y: 0 });
     const [selectionEnd, setSelectionEnd] = useState({ x: 0, y: 0 });
     const _selectionOrigin = useRef<{ x: number, y: number }>();
+
+    const [mousePositions, setMousePositions] = useState<{ [id: string]: { x: number, y: number } }>({});
 
     const zoomBase = 100;
 
@@ -125,7 +125,7 @@ export default function MidiEditor(props: { patternId: string }) {
         let y = ev.clientY - rect.top;
         let start = slipFloor((x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact), 1 / snap);
         let pitch = Math.floor(y / 36);
-        
+
         if (ev.buttons == 1 && ev.shiftKey) {
             _selectionOrigin.current = { x: x, y: y };
             setSelectionStart({ x: x, y: y });
@@ -210,7 +210,28 @@ export default function MidiEditor(props: { patternId: string }) {
             setMouseMoveRelative({ x: start - _mouseDownOrigin.current.x, y: pitch - _mouseDownOrigin.current.y });
             _mouseDownOrigin.current = { x: start, y: pitch };
         }
+
+
+        if (socket) {
+            broadcast(socket, cryptoKey!, 'hh:mouse-position', {
+                x: ev.nativeEvent.clientX - editorRef.current!.getBoundingClientRect().left,
+                y: ev.nativeEvent.clientY - editorRef.current!.getBoundingClientRect().top,
+            });
+        }
     }
+
+    useEffect(() => {
+        if (socket) {
+            handle(socket, cryptoKey!, 'hh:mouse-position-pattern', async (id, { x, y, patternId }) => {
+                if (patternId != props.patternId) return;
+                
+                setMousePositions({
+                    ...mousePositions,
+                    [id]: { x, y }
+                });
+            })
+        }
+    }, [socket])
 
     useEffect(() => {
         if (!mode.current) return;
@@ -349,10 +370,6 @@ export default function MidiEditor(props: { patternId: string }) {
             editorRef.current?.removeEventListener('wheel', handleWheel);
         }
     }, [])
-
-    useEffect(() => {
-        // TODO: handle events
-    })
 
     useEffect(() => {
         setProject(produce(draft => {
@@ -508,6 +525,14 @@ export default function MidiEditor(props: { patternId: string }) {
                             )
                         })}
                     </div>
+                    <section className="mouse-cursors">
+                        {Object.keys(mousePositions).map(id => {
+                            const pos = mousePositions[id];
+                            return <div key={id} className="cursor" style={{ left: pos.x, top: pos.y }}>
+                                <span className="cursor-name">{id}</span>
+                            </div>
+                        })}
+                    </section>
                 </section>
             </div>
         </section>

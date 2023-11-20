@@ -19,9 +19,10 @@ export interface ClientToServerEvents {
 export interface ClientToClientEvents {
     'hh:request-project': (args: null) => Project;
     'hh:user-joined': (args: { name: string }) => void;
-    'hh:mouse-position': (args: { x: number, y: number }) => void;
-    'hh:pattern-created': (args: { id: string, pattern: Pattern }) => void;
     'hh:note-created': (args: { patternId: string, id: string, note: Note }) => void;
+    'hh:pattern-created': (args: { id: string, pattern: Pattern }) => void;
+    'hh:mouse-position': (args: { x: number, y: number}) => void;
+    'hh:mouse-position-pattern': (args: {x: number, y: number, patternId: string}) => void;
 }
 
 export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
