@@ -33,14 +33,15 @@ export default function Music(props: { project: Project, network: Network }) {
     const [socket, setSocket] = useState(props.network.socket);
 
     const patternDragOverlay = createRef<HTMLDivElement>();
+    const musicNotes = createRef<HTMLDivElement>();
 
     const [mousePositions, setMousePositions] = useState<{ [id: string]: { x: number, y: number } }>({});
 
     function handleMouseMove(ev: React.MouseEvent) {
         if (socket) {
             broadcast(socket, cryptoKey!, 'hh:mouse-position', {
-                x: ev.nativeEvent.offsetX,
-                y: ev.nativeEvent.offsetY
+                x: ev.nativeEvent.clientX - musicNotes.current!.getBoundingClientRect().left,
+                y: ev.nativeEvent.clientY - musicNotes.current!.getBoundingClientRect().top
             });
         }
     }
@@ -122,7 +123,7 @@ export default function Music(props: { project: Project, network: Network }) {
 
                             <Allotment vertical={false} separator={true} proportionalLayout={false}>
                                 <Allotment.Pane priority={LayoutPriority.High}>
-                                    <section className="music-notes" onMouseMove={handleMouseMove}>
+                                    <section className="music-notes" onMouseMove={handleMouseMove} ref={musicNotes}>
                                         <SongEditor />
 
                                         <section className="mouse-cursors">
