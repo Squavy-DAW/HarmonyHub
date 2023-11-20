@@ -211,7 +211,6 @@ export default function MidiEditor(props: { patternId: string }) {
             _mouseDownOrigin.current = { x: start, y: pitch };
         }
 
-
         if (socket) {
             broadcast(socket, cryptoKey!, 'hh:mouse-position', {
                 x: ev.nativeEvent.clientX - editorRef.current!.getBoundingClientRect().left,
@@ -229,6 +228,12 @@ export default function MidiEditor(props: { patternId: string }) {
                     ...mousePositions,
                     [id]: { x, y }
                 });
+            })
+
+            handle(socket, cryptoKey!, 'hh:note-created', (_id, { patternId, id, note }) => {
+                setProject(produce(draft => {
+                    draft.data.patterns[patternId].notes[id] = note;
+                }));
             })
         }
     }, [socket])
