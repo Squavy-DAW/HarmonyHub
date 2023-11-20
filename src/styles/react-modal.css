@@ -42,6 +42,7 @@
     image-rendering: pixelated !important;
     z-index: 55;
     animation: modal-popup 0.3s cubic-bezier(.31,1.61,.36,.86) forwards;
+    overflow: hidden !important;
 }
 
 .ReactModalPortal .ReactModal__Overlay:has( .overlay-fill) {

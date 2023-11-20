@@ -16,6 +16,7 @@ import { init } from '@synth/engineOLD';
 import SongEditor from './editor/SongEditor';
 import Patterns from './editor/Patterns';
 import ProjectContext from '@src/context/projectcontext';
+import { produce } from 'immer';
 
 export default function Music(props: { project: Project, network: Network }) {
 
@@ -87,18 +88,24 @@ export default function Music(props: { project: Project, network: Network }) {
                     ...mousePositions,
                     [id]: { x: 0, y: 0 }
                 });
-            })
+            });
 
             handle(socket, cryptoKey!, 'hh:request-project', () => {
                 console.log("Requested project");
                 return _project.current;
-            })
+            });
 
             handle(socket, cryptoKey!, 'hh:mouse-position', async (id, { x, y }) => {
                 setMousePositions({
                     ...mousePositions,
                     [id]: { x, y }
                 });
+            });
+
+            handle(socket, cryptoKey!, 'hh:note-created', (_id, { patternId, id, note }) => {
+                setProject(produce(draft => {
+                    draft.data.patterns[patternId].notes[id] = note;
+                }));
             })
         }
     }, [socket]);

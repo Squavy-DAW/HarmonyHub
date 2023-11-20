@@ -231,11 +231,7 @@ export default function MidiEditor(props: { patternId: string }) {
                 });
             })
 
-            handle(socket, cryptoKey!, 'hh:note-created', (_id, { patternId, id, note }) => {
-                setProject(produce(draft => {
-                    draft.data.patterns[patternId].notes[id] = note;
-                }));
-            })
+            // todo cleanup function
         }
     }, [socket])
 
