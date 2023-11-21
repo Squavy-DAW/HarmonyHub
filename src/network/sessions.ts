@@ -1,8 +1,6 @@
 import { ClientToClientEvents, TypedSocket as Socket } from "@network/packets";
 import { io } from "socket.io-client";
 import { decrypt, encrypt } from "./crypto";
-import { useContext } from "react";
-import NetworkContext from "@src/context/networkcontext";
 
 export function createSocket(): Socket | undefined {
     try {

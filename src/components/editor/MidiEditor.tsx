@@ -40,6 +40,7 @@ export default function MidiEditor(props: { patternId: string }) {
     const _selectionOrigin = useRef<{ x: number, y: number }>();
 
     const [mousePositions, setMousePositions] = useState<{ [id: string]: { x: number, y: number } }>({});
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
     const zoomBase = 100;
 
@@ -211,13 +212,7 @@ export default function MidiEditor(props: { patternId: string }) {
             _mouseDownOrigin.current = { x: start, y: pitch };
         }
 
-        if (socket) {
-            broadcast(socket, cryptoKey!, 'hh:mouse-position-pattern', {
-                x: (x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact),
-                y: y,
-                patternId: props.patternId
-            });
-        }
+        setMousePosition({ x, y })
     }
 
     useEffect(() => {
@@ -382,6 +377,14 @@ export default function MidiEditor(props: { patternId: string }) {
             pattern.tact = tact;
         }));
     }, [zoom, position, snap, tact])
+
+    useEffect(() => {
+        socket && broadcast(socket, cryptoKey!, 'hh:mouse-position-pattern', {
+            x: (mousePosition.x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact),
+            y: mousePosition.y,
+            patternId: props.patternId
+        });
+    }, [zoom, position, mousePosition])
 
     useEffect(() => {
         document.addEventListener("mousedown", onMouseDown);
