@@ -41,7 +41,7 @@
     border-image-repeat: repeat;
     border-image-width: 8px;
     display: grid;
-    grid-template-rows: 1fr 2rem;
+    grid-template-rows: 1fr auto;
     overflow: hidden;
 }
 
@@ -108,15 +108,21 @@
     background-color: #0000003a;
     border-top: #2b2b2b 5px solid;
     display: flex;
+    padding: 8px;
+    gap: 8px;
+    align-items: center;
 }
 
-.music-layout .music-patterns .controls .control {
-    padding: 12px;
-    line-height: 0;
+.music-layout .music-patterns .controls .control.add-pattern {
+    background-image: url("/src/assets/pattern/new.png");
+    image-rendering: pixelated;
+    background-size: contain;
+    height: 12px;
+    aspect-ratio: 1 / 1;
     border: none;
 }
 
-.music-layout .music-patterns .controls .control img {
-    height: 100%;
-    image-rendering: pixelated;
+.music-layout .music-patterns .controls .control.new-pattern-name {
+    flex: 1;
+    width: 0;
 }

@@ -29,25 +29,25 @@ export default function CollaborationModal() {
         if (!room) return;
     }
 
-    async function handleCryptoKeyGeneration() : Promise<CryptoKey> {
+    async function handleCryptoKeyGeneration(): Promise<CryptoKey> {
         let key = await generateKey();
         setCryptoKey(key);
         return key;
     }
 
-    async function handleSocketCreation() : Promise<Socket | undefined> {
+    async function handleSocketCreation(): Promise<Socket | undefined> {
         let socket = createSocket();
         setSocket(socket);
         return socket;
     }
 
-    async function handleCreateSession(socket: Socket) : Promise<string | undefined> {
+    async function handleCreateSession(socket: Socket): Promise<string | undefined> {
         let room = await createSession(socket)
         setRoom(room);
         return room;
     }
 
-    async function handleExtractKey(key: CryptoKey) : Promise<string> {
+    async function handleExtractKey(key: CryptoKey): Promise<string> {
         return await extract(key);
     }
 
@@ -60,19 +60,20 @@ export default function CollaborationModal() {
         setMousePositions({});
     }
 
-    let copyTimeout : number | undefined;
+    let copyTimeout: number | undefined;
     function handleCopyInviteLink(event: React.MouseEvent<HTMLPreElement, MouseEvent>) {
         if (copyTimeout) clearTimeout(copyTimeout);
         navigator.clipboard.writeText(inviteLink!);
         event.currentTarget.classList.add('copied');
         copyTimeout = setTimeout(() => {
-            event.currentTarget.classList.remove('copied');
+            (event.target as HTMLElement).classList.remove('copied');
         }, 1000);
     }
 
     return (
         <div className={['collaboration-modal', 'overlay-center', socket && 'active'].join(' ')}>
             <img src="/src/assets/collaboration-lock.png" alt="lock" className='collaboration-lock' />
+            { socket && <button className='stop-collaboration' onClick={handleStopCollaboration} /> }
             <div>
                 <h1 className='title' style={{ margin: 0, lineHeight: 0.9 }}>Collaborate</h1>
                 <p>Securely via E2E encryption - <a href={/*TODO*/ ""}>Learn more</a></p>
@@ -83,13 +84,9 @@ export default function CollaborationModal() {
                     <pre className='invite-link' onClick={handleCopyInviteLink}>{inviteLink}</pre>
                 </> : <>
                     <p>To start collaborating, click the button below to generate an invitation:</p>
-                    <button onClick={handleStartCollaboration}>Start collaboration</button>
+                    <button className='start-collaboration' onClick={handleStartCollaboration}>Start collaboration</button>
                 </>}
             </div>
-            { socket && <div style={{ gridColumn: '1/3', display: 'flex' }}>
-                <div style={{flex: 1}} />
-                <button onClick={handleStopCollaboration}>Stop collaboration</button>
-            </div> }
         </div>
     );
 };

@@ -30,10 +30,6 @@
     grid-row-start: 2;
     display: grid;
     background-color: #362523;
-    background-image:
-        linear-gradient(0deg, #00000000 50%, #00000044 50%),
-        linear-gradient(90deg, #6e6e6e 0px, #6e6e6e 4px, #00000000 4px),
-        linear-gradient(90deg, #a0a0a0 0%, #a0a0a0 1%, #00000000 1%, #00000000 25%, #a0a0a0 25%, #a0a0a0 26%, #00000000 26%, #00000000 50%, #a0a0a0 50%, #a0a0a0 51%, #00000000 51%, #00000000 75%, #a0a0a0 75%, #a0a0a0 76%, #00000000 76%);
     background-blend-mode: multiply;
     background-repeat: repeat;
     overflow: hidden;
@@ -52,9 +48,19 @@
     margin: 0;
     padding: 0;
     height: 36px;
-    background-color: #6e6e6e;
+    background-color: #6f282888;
     display: flex;
     justify-content: space-between;
+}
+
+@keyframes note-select {
+    from { box-shadow: 0 0 0 0 #4a42bd4a; }
+    to { box-shadow: 0 0 0 20px #4a42bd00; }
+}
+
+.music-layout .piano-roll .midi-editor .note.selected {
+    animation: note-select 0.3s ease-out forwards;
+    background-color: #4a42bdb1;
 }
 
 .music-layout .piano-roll .midi-editor .note *:nth-child(1) {
@@ -183,4 +189,28 @@
 
 .music-layout .piano-roll ul.keys .pressed-black::after {
     background-image: url("src/assets/piano/black-key-pressed.png");
+}
+
+.music-layout .piano-roll .midi-editor .mouse-cursors {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    user-select: none;
+    overflow: hidden;
+}
+  
+.music-layout .piano-roll .midi-editor .mouse-cursors .cursor {
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    background-image: url('/src/assets/cursor.png');
+    background-size: 1rem 1rem;
+    image-rendering: pixelated;
+    filter: hue-rotate(attr(data-hue)deg) drop-shadow(0 0 0.2rem white);
+    transition: left 0.1s linear, top 0.1s linear;
+    list-style: none;
+}
+
+.music-layout .piano-roll .midi-editor .mouse-cursors .cursor .cursor-name {
+    margin-left: 1rem;
 }

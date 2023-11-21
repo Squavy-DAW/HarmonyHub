@@ -1,0 +1,8 @@
+div.knob {
+    background-image: url('/src/assets/knob.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    width: 5rem;
+    height: 5rem;
+    image-rendering: pixelated;
+}
