@@ -58,7 +58,7 @@ export function createModRoM():ModRoM{
     }
 
     function removeElement(element:string){
-        elements = elements.filter(e => e==element);
+        elements = elements.filter(e => e!=element);
     
         routes.forEach(e => {
             if(e.getSelf()==element){

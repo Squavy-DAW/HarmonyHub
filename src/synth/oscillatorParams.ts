@@ -11,7 +11,7 @@ export interface OscillatorParams extends AdvancedAudioNodeParams{
     unisonPercentage:number,    // 0% to 100%, how far apart the voices of unison are (if even, the middle one is let out.)
 }
 
-export function setOscillatorParams(
+export function createOscillatorParams(
     waveform:string, 
     gain:number, 
     pan:number, 
@@ -36,7 +36,7 @@ export interface AdvancedOscillator extends AdvancedAudioNode{
     params: OscillatorParams,
     osc:() => OscillatorNode
 }
-export function setAdvancedOscillator(
+export function createAdvancedOscillator(
     params: OscillatorParams,
     ctx: AudioContext
 ): AdvancedOscillator{  //TODO: Take another look at this one

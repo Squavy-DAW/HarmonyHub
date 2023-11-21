@@ -16,6 +16,7 @@ import Modal from 'react-modal';
 import ConnectModal from '@components/modal/Connect';
 import TabContext from './context/tabcontext';
 import SoundContext from './context/soundcontext';
+import { createAudioEngine } from '@synth/audioengine';
 
 function App() {
 
@@ -24,6 +25,7 @@ function App() {
   const [modalContent, setModalContent] = useState<React.ReactNode>(null);
 
   const audioCtx = new AudioContext();
+  const audioEngine = createAudioEngine();
 
   Modal.setAppElement('#root');
 
@@ -44,7 +46,7 @@ function App() {
       <div id="darken"></div>
       <div id="vignette"></div>
 
-      <SoundContext.Provider value={{ctx: audioCtx}}>
+      <SoundContext.Provider value={{ctx: audioCtx, engine: audioEngine}}>
         <Tabs style={{ "display": "contents" }} onSelect={(index) => setTabIndex(index)} selectedIndex={tabIndex} forceRenderTabPanel={true}>
           <TabList>
             <Tab key={"home"}>

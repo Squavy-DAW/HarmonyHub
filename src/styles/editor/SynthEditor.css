@@ -10,6 +10,7 @@
 }
 
 .synth-editor ul{
+    z-index: 20;
     position: relative;
     left: 0;
     top: 0;
@@ -18,12 +19,11 @@
     padding: 0;
 }
 
-.audionode{
+.synth-editor .audionode{
     position: absolute;
     width: 100px;
     height: 100px;
-    left: 0px;
-    right: 0px;
+    left: 50%;
     background-repeat: no-repeat;
     background-size: cover;
     image-rendering: pixelated;
@@ -33,50 +33,117 @@
     transform-origin: left top;
 }
 
-.audionode[data-id= "AudioEndNode"]{
-    border-image-source: url("src/assets/synth-editor/audionode-nineslice.png");
-    border-image-slice: 6 fill;
-    border-image-width: 1rem;
+.synth-editor .audionode:hover{
+    cursor: grab;
 }
 
-.audionode[data-id= "Oscillator"]{
-    background-image: url("src/assets/synth-editor/oscillator.png");
+.synth-editor .audionode[data-grab= "grab"]:hover{
+    cursor: grabbing;
 }
 
-.audionode[data-id= "Envelope"]{
-    background-image: url("src/assets/synth-editor/envelope.png");
+.synth-editor:has( *[data-grab= "grab"]):hover{
+    cursor:grabbing
 }
 
-.audio-connection-node{
+.synth-editor .audionode[data-id= "AudioEndNode"]{
+    background-color: rgb(245, 157, 248);
+    border-color: black;
+    border-width: 3px;
+    border-style: solid;
+    
+}
+
+.synth-editor .audionode[data-id= "Oscillator"]{
+    background-color: rgb(201, 248, 157);
+    border-color: black;
+    border-width: 3px;
+    border-style: solid;
+}
+
+.synth-editor .audionode[data-id= "Envelope"]{
+    background-color: rgb(157, 222, 248);
+    border-color: black;
+    border-width: 3px;
+    border-style: solid;
+}
+
+.synth-editor line{
+    stroke-dasharray: 10;
+    stroke-linecap: round;
+    stroke-dashoffset: 200;
+    animation: dashedLine 5s linear infinite;
+}
+@keyframes dashedLine {
+    from{
+        stroke-dashoffset: 200;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+.synth-editor .audio-connection-node{
     position: absolute;
     width: 20px;
     height: 20px;
-    right: 0;
-    bottom: 0;
+    right: 0px;
+    bottom: 0%;
     background-repeat: no-repeat;
     background-size: cover;
     image-rendering: pixelated;
+    z-index: 100;
 }
 
-.audio-connection-node[data-id="in"]{
-    background-image: url("src/assets/synth-editor/input-connector.png");
+.synth-editor .audio-connection-node:hover{
+    cursor: default;
 }
 
-.audio-connection-node[data-id="out"]{
-    background-image: url("src/assets/synth-editor/output-connector.png");
+.synth-editor .audio-connection-node[data-allowed=true]:hover{
+    cursor: cell;
 }
 
-.audio-connection-node[data-id="mod"]{
-    background-image: url("src/assets/synth-editor/modulation-connector.png");
+.synth-editor .audio-connection-node[data-allowed=false]:hover{
+    cursor: not-allowed;
 }
 
-.connection-lines{
+.synth-editor .audio-connection-node[data-id="in"]{
+    background-color: rgb(0, 128, 0);
+    border-color: black;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.synth-editor .audio-connection-node[data-id="out"]{
+    background-color: rgb(128, 0, 0);
+    border-color: black;
+    border-width: 1px;
+    border-style: solid;
+}
+.synth-editor .audio-connection-node[data-id="mod"]{
+    background-color: rgb(0, 0, 128);
+    border-color: black;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.synth-editor .connection-lines{
     position: absolute;
     pointer-events: none;
     top: 0;
     left: 0;
 }
 
-.connection-lines > .placed-line{
+.synth-editor .connection-lines > .placed-line{
     pointer-events: auto;
+}
+
+.synth-editor .controls{
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    
+    background-color: aquamarine;
+    padding-right: 10px;
+    border-right: 4px solid black;
 }

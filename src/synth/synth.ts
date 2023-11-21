@@ -1,4 +1,4 @@
-import { AdvancedOscillator, OscillatorParams, setAdvancedOscillator, setOscillatorParams } from "@src/synth/oscillatorParams"
+import { AdvancedOscillator, OscillatorParams, createAdvancedOscillator, createOscillatorParams } from "@src/synth/oscillatorParams"
 import { ADSREnvelope, createADSREnvelope } from "./envelope";
 import { ModRoM, createModRoM } from "./routeSelector";
 
