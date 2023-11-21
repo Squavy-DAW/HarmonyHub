@@ -312,6 +312,7 @@ export default function MidiEditor(props: { patternId: string }) {
             if (ev.currentTarget === null) return; // idk why this is needed, but it is
             const id = ev.currentTarget.getAttribute("data-id")!;
             delete draft.data.patterns[props.patternId].notes[id];
+            selectedNotes.delete(id);
         }));
     }
 
