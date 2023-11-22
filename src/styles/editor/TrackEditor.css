@@ -1,0 +1,73 @@
+.track-layout {
+    position: relative;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.track-layout .misc {
+    margin-top: -32px;
+    min-height: 10rem;
+    flex: 1;
+}
+
+.track-layout .controls {
+    position: sticky;
+    bottom: 0;
+    height: 32px;
+    border-top: 5px solid #2b2b2b;
+    background-color: #191919;
+    padding-left: 4rem;
+}
+
+.track-layout .controls .add-track {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: -5px;
+    background-color: #191717;
+    border: 5px solid #2b2b2b;
+    border-top: none;
+    width: 6rem;
+    height: 100%;
+}
+
+.track-layout .controls .add-track::before {
+    content: '';
+    background-image: url("/src/assets/track-editor/new.png");
+    image-rendering: pixelated;
+    background-size: contain;
+    background-repeat: no-repeat;
+    height: 12px;
+    width: 12px;
+    aspect-ratio: 1 / 1;
+    display: inline-block;
+}
+
+.track-layout .track-list {
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+}
+
+.track-layout .track-list li {
+    height: 3rem;
+}
+
+.track-layout .track-list li:nth-child(even) {
+    background-color: #00000077;
+}
+
+.track-layout .track-list li:nth-child(odd) {
+    background-color: #00000044;
+}
+
+.track-layout .mouse-cursors {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    user-select: none;
+    overflow: hidden;
+}

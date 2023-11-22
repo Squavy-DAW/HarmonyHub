@@ -5,21 +5,7 @@
     grid-template-columns: auto;
 }
 
-.music-layout .music-notes {
-    position: relative;
-    overflow: auto;
-    display: grid;
-}
-
-.music-layout .music-notes .mouse-cursors {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    user-select: none;
-    overflow: hidden;
-}
-  
-.music-layout .music-notes .mouse-cursors .cursor {
+.cursor {
     position: absolute;
     width: 1rem;
     height: 1rem;
@@ -31,7 +17,7 @@
     list-style: none;
 }
 
-.music-layout .music-notes .mouse-cursors .cursor .cursor-name {
+.cursor .cursor-name {
     margin-left: 1rem;
 }
 

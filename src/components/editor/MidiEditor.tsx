@@ -190,7 +190,7 @@ export default function MidiEditor(props: { patternId: string }) {
                 if ((
                     note.start + note.length > startX && note.start <= endX ||
                     note.start >= endX && note.start <= startX) && (
-                        note.pitch >= startY && note.pitch <= endY ||
+                        note.pitch+1 >= startY && note.pitch <= endY ||
                         note.pitch <= startY && note.pitch >= endY)
                 ) {
                     selectedNotes.add(id);
@@ -525,7 +525,7 @@ export default function MidiEditor(props: { patternId: string }) {
                                     }} onMouseDown={handleNoteMouseDown}
                                     onMouseMove={handleNoteMouseMove}>
                                     <div onMouseDown={handleResizeLeftMouseDown} />
-                                    <div style={{ fontSize: '0.8em' }}>{`${note.start.toPrecision(3)}, ${note.length.toPrecision(3)}`}</div>
+                                    <div style={{ fontSize: '0.8em' }}>{/*`${note.start.toPrecision(3)}, ${note.length.toPrecision(3)}`*/}</div>
                                     <div onMouseDown={handleResizeRightMouseDown} />
                                 </li>
                             )

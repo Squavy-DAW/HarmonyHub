@@ -12,16 +12,14 @@
 * {
     color: rgb(225, 225, 225);
     font-family: 'VT323-Regular';
-    text-shadow: 0px 0px 2px hsl(0, 100%, 70%),
-                 0px 0px 15px red,
-                 0px 0px 60px green;
+    text-shadow: 0px 0px 2px #ff6666,
+                 0px 0px 15px red;
     backface-visibility: hidden;
 }
 
 #content svg {
     filter: drop-shadow(0px 0px 2px hsl(0, 100%, 70%))
-            drop-shadow(0px 0px 15px red)
-            drop-shadow(0px 0px 60px green);
+            drop-shadow(0px 0px 15px red);
 }
 
 #crt-lines {

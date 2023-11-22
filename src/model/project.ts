@@ -1,4 +1,6 @@
 import Pattern from "@models/pattern";
+import Track, { defaultTrack } from "./track";
+import { generateId } from "@network/crypto";
 
 export default interface Project {
     name: string,
@@ -6,7 +8,8 @@ export default interface Project {
     editDate: Date,
     createDate: Date,
     data: {
-        patterns: { [id: string]: Pattern }
+        patterns: { [id: string]: Pattern },
+        tracks: { [id: string]: Track },
     },
 }
 
@@ -16,6 +19,12 @@ export const defaultProject: Project = {
     editDate: new Date(),
     createDate: new Date(),
     data: {
-        patterns: {}
+        patterns: {},
+        tracks: { 
+            [generateId()]: defaultTrack,
+            [generateId()]: defaultTrack,
+            [generateId()]: defaultTrack,
+            [generateId()]: defaultTrack,
+        },
     }
 }
