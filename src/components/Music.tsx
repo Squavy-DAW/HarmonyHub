@@ -1,5 +1,5 @@
 import '@styles/Music.css';
-import Project from "@models/project";
+import Project, { zoomBase } from "@models/project";
 import Modal from 'react-modal';
 import { createRef, useContext, useEffect, useRef, useState } from "react";
 import { handle } from "@network/sessions";
@@ -15,6 +15,8 @@ import TrackEditor from './editor/TrackEditor';
 import Patterns from './editor/Patterns';
 import ProjectContext from '@src/context/projectcontext';
 import { produce } from 'immer';
+import { DraggingPattern } from '@models/pattern';
+import DraggedPatternContext from '@src/context/draggedpatterncontext';
 
 export default function Music(props: { project: Project, network: Network }) {
 
@@ -30,6 +32,7 @@ export default function Music(props: { project: Project, network: Network }) {
     const [cryptoKey, setCryptoKey] = useState(props.network.cryptoKey);
     const [room, setRoom] = useState(props.network.room);
     const [socket, setSocket] = useState(props.network.socket);
+    const [draggedPattern, setDraggedPattern] = useState<DraggingPattern>();
 
     const patternDragOverlay = createRef<HTMLDivElement>();
 
@@ -54,7 +57,7 @@ export default function Music(props: { project: Project, network: Network }) {
 
     useEffect(() => {
         _project.current = project;
-    }, [project])
+    }, [project]);
 
     useEffect(() => {
         if (socket) {
@@ -91,27 +94,47 @@ export default function Music(props: { project: Project, network: Network }) {
                 <ModalContext.Provider value={{
                     modalContent, setModalContent
                 }}>
-                    <section className="music-layout" ref={ref => setLayoutRef(ref)}>
-                        <Toolbar />
+                    <DraggedPatternContext.Provider value={{
+                        draggedPattern, setDraggedPattern
+                    }}>
+                        <section className="music-layout" ref={ref => setLayoutRef(ref)}>
+                            <Toolbar />
 
-                        <Allotment vertical={false} separator={true} proportionalLayout={false}>
-                            <Allotment.Pane priority={LayoutPriority.High}>
-                                <TrackEditor />
-                            </Allotment.Pane>
-                            <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
-                                <Patterns overlay={patternDragOverlay} />
-                            </Allotment.Pane>
-                        </Allotment>
+                            <Allotment vertical={false} separator={true} proportionalLayout={false}>
+                                <Allotment.Pane priority={LayoutPriority.High}>
+                                    <TrackEditor />
+                                </Allotment.Pane>
+                                <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
+                                    <Patterns overlay={patternDragOverlay} />
+                                </Allotment.Pane>
+                            </Allotment>
 
-                        <div className="pattern-drag-overlay" ref={patternDragOverlay} />
+                            <div className="pattern-drag-overlay" ref={patternDragOverlay}>
+                               {draggedPattern && <li className={['pattern',
+                                    draggedPattern.active ? 'active' : null,
+                                    draggedPattern.dropped ? 'dropped' : null,
+                                    draggedPattern.over ? 'over' : null
+                                ].join(' ')}
+                                    style={{
+                                        left: draggedPattern.left,
+                                        top: draggedPattern.top,
+                                        rotate: `${draggedPattern.rotate}deg`,
+                                        "--pattern-width": `${zoomBase * Math.E ** project.zoom}px` /* * project.data.patterns[draggedPattern.id].length */
+                                    }}
+                                    data-id={draggedPattern.id}
+                                    data-length={16} /* project.data.patterns[draggedPattern.id].length */>
+                                    {/* Pattern preview */}
+                                </li>}
+                            </div>
 
-                        {layoutRef && <Modal
-                            isOpen={!!modalContent}
-                            onRequestClose={() => setModalContent(null)}
-                            parentSelector={() => layoutRef}>
-                            {modalContent}
-                        </Modal>}
-                    </section>
+                            {layoutRef && <Modal
+                                isOpen={!!modalContent}
+                                onRequestClose={() => setModalContent(null)}
+                                parentSelector={() => layoutRef}>
+                                {modalContent}
+                            </Modal>}
+                        </section>
+                    </DraggedPatternContext.Provider>
                 </ModalContext.Provider>
             </NetworkContext.Provider>
         </ProjectContext.Provider>

@@ -2,7 +2,7 @@
     display: flex;
     margin: 0;
     padding: 0;
-    background-color: rgba(37, 2, 2, 0.402);
+    background-color: #25020267;
     z-index: 25; /* overlay is on 20 */
 }
 

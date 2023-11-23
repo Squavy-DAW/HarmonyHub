@@ -17,7 +17,7 @@
     height: 32px;
     border-top: 5px solid #2b2b2b;
     background-color: #191919;
-    padding-left: 4rem;
+    padding-left: 6rem;
 }
 
 .track-layout .controls .add-track {
@@ -52,16 +52,73 @@
     overflow: auto;
 }
 
-.track-layout .track-list li {
+.track-layout .track-list > li {
+    position: relative;
     height: 3rem;
+    list-style: none;
+    display: grid;
+    grid-template-columns: 6rem auto;
+    grid-template-rows: 1rem auto;
+    font-size: 0.8rem;
 }
 
-.track-layout .track-list li:nth-child(even) {
-    background-color: #00000077;
+.track-layout .track-list > li:nth-child(even) {
+    background-color: #161414;
 }
 
-.track-layout .track-list li:nth-child(odd) {
-    background-color: #00000044;
+.track-layout .track-list > li:nth-child(odd) {
+    background-color: #100c0c;
+}
+
+.track-layout .track-list > li .sidebar {
+    grid-row: 1 / 3;
+    grid-column: 1 / 2;
+    display: grid;
+    grid-template-rows: 1fr 2rem;
+    background-color: #25101067;
+}
+
+.track-layout .track-list > li .track-mixer {
+    grid-row: 2 / 3;
+    grid-column: 1 / 2;
+    display: flex;
+    align-items: center;
+}
+
+.track-layout .track-list > li .track-name {
+    position: relative;
+    grid-row: 1 / 2;
+    grid-column: 1 / 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.track-layout .track-list > li .track-name::after {
+    content: '';
+    height: 3rem;
+    position: absolute;
+    inset: 0;
+    border-right: 4px solid #2b2b2b;
+}
+
+.track-layout .track-list > li .pattern-list {
+    grid-row: 1 / 3;
+    grid-column: 2 / 3;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.track-layout .track-list > li .pattern-list .pattern-drop-preview {
+    list-style: none;
+    transform: translateX(-50%);
+    position: absolute;
+    top: 0;
+    height: 3rem;
+    background-color: #02fa4422;
+    border: 3px dashed #02fa44;
+    border-radius: 8px;
 }
 
 .track-layout .mouse-cursors {
