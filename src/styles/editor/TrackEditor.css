@@ -2,7 +2,7 @@
     position: relative;
     overflow: auto;
     display: grid;
-    grid-template-rows: auto 32px 1fr;
+    grid-template-rows: 20px auto 32px 1fr;
     grid-template-columns: 1fr;
 }
 
@@ -46,13 +46,13 @@
 }
 
 .track-layout .allotment {
-    grid-row: 1 / 2;
+    grid-row: 2 / 3;
     grid-column: 1 / 2;
     pointer-events: none;
 }
 
 .track-layout .track-list {
-    grid-row: 1 / 2;
+    grid-row: 2 / 3;
     grid-column: 1 / 2;
     margin: 0;
     padding: 0;
@@ -123,12 +123,12 @@
 
 .track-layout .track-list > li .pattern-list .pattern-drop-preview {
     list-style: none;
-    transform: translateX(-50%);
     position: absolute;
     top: 0;
     height: 3rem;
     background-color: #02fa4422;
     border: 3px dashed #02fa44;
+    opacity: 0.5;
     border-radius: 8px;
 }
 
@@ -138,4 +138,19 @@
     pointer-events: none;
     user-select: none;
     overflow: hidden;
+}
+
+.track-layout .timeline {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    background-color: #25020267;
+    list-style: none;
+    overflow: hidden;
+    border-bottom: 3px solid #2b2b2b;
+}
+
+.track-layout .timeline-item {
+    line-height: 100%;
+    position: absolute;
 }

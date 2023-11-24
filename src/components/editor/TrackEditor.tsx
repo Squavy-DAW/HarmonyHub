@@ -1,14 +1,14 @@
 import { broadcast, handle } from "@network/sessions";
 import NetworkContext from "@src/context/networkcontext";
 import ProjectContext from "@src/context/projectcontext";
-import { createRef, useContext, useEffect, useState } from "react";
+import { createRef, useContext, useEffect, useRef, useState } from "react";
 import "@styles/editor/TrackEditor.css";
 import { produce } from "immer";
 import { generateId } from "@network/crypto";
 import { defaultTrack } from "@models/track";
 import DraggedPatternContext from "@src/context/draggedpatterncontext";
 import { zoomBase } from "@models/project";
-import { slipFloor } from "@src/scripts/math";
+import { slipCeil, slipFloor } from "@src/scripts/math";
 import { Allotment, LayoutPriority } from "allotment";
 
 export default function TrackEditor() {
@@ -19,14 +19,54 @@ export default function TrackEditor() {
     const [mousePositions, setMousePositions] = useState<{ [id: string]: { x: number, y: number } }>({});
     const [sidebarSize, setSidebarSize] = useState(150);
 
-    const musicNotes = createRef<HTMLDivElement>();
+    const trackEditorRef = createRef<HTMLDivElement>();
+    const _zoom = useRef(project.zoom);
+    const _position = useRef(project.position);
 
     function handleMouseMove(ev: React.MouseEvent) {
         if (socket) {
             broadcast(socket, cryptoKey!, 'hh:mouse-position', {
-                x: ev.nativeEvent.clientX - musicNotes.current!.getBoundingClientRect().left,
-                y: ev.nativeEvent.clientY - musicNotes.current!.getBoundingClientRect().top
+                x: ev.nativeEvent.clientX - trackEditorRef.current!.getBoundingClientRect().left,
+                y: ev.nativeEvent.clientY - trackEditorRef.current!.getBoundingClientRect().top
             });
+        }
+    }
+
+    function handleEditorWheel(ev: WheelEvent) {
+        if (ev.ctrlKey) {
+            ev.preventDefault();
+
+            setProject(produce(draft => {
+                const oldSize = zoomBase * Math.E ** _zoom.current;
+                const value = _zoom.current - ev.deltaY / 300;
+                _zoom.current = value // Math.max(Math.min(value, 2), -1);
+                const newSize = zoomBase * Math.E ** _zoom.current;
+                draft.zoom = _zoom.current;
+
+                const counterWeight = ev.offsetX - ev.offsetX * newSize / oldSize;
+                _position.current = Math.max(_position.current / oldSize * newSize - counterWeight, 0);
+                draft.position = _position.current;
+            }))
+        }
+
+        else if (ev.shiftKey) {
+            ev.preventDefault();
+
+            setProject(produce(draft => {
+                const value = _position.current + ev.deltaY;
+                _position.current = Math.max(value, 0);
+                draft.position = _position.current;
+            }))
+        }
+
+        else if (Math.abs(ev.deltaX) > 0) {
+            ev.preventDefault();
+
+            setProject(produce(draft => {
+                const value = _position.current + ev.deltaX;
+                _position.current = Math.max(value, 0);
+                draft.position = _position.current;
+            }))
         }
     }
 
@@ -38,7 +78,7 @@ export default function TrackEditor() {
     }
 
     function handlePatternListMouseMove(ev: React.MouseEvent) {
-        const { x: offsetX, y: offsetY } = musicNotes.current!.getBoundingClientRect();
+        const { x: offsetX, y: offsetY } = trackEditorRef.current!.getBoundingClientRect();
         if (draggedPattern) {
             const x = ev.nativeEvent.clientX - offsetX;
             const y = ev.nativeEvent.clientY - offsetY;
@@ -63,6 +103,13 @@ export default function TrackEditor() {
             }))
         }
     }
+
+    useEffect(() => {
+        trackEditorRef.current?.addEventListener('wheel', handleEditorWheel);
+        return () => {
+            trackEditorRef.current?.removeEventListener('wheel', handleEditorWheel);
+        }
+    }, [])
 
     useEffect(() => {
         if (socket) {
@@ -94,40 +141,76 @@ export default function TrackEditor() {
     }, [socket]);
 
     return (
-        <section className="track-layout" onMouseMove={handleMouseMove} ref={musicNotes} style={{ "--sidebar-width": `${sidebarSize}px` }}>
-            <ul className="track-list">
-                {Object.keys(project.data.tracks).map((id, i) => {
-                    const track = project.data.tracks[id];
-                    return <li key={`track[${id}]`} data-id={id}>
-                        <div className={["sidebar", sidebarSize <= Number.EPSILON ? "hidden" : ""].join(' ')}>
-                            <div className="track-mixer">
-                                {/* Mixer */}
-                            </div>
-                            <span className="track-name">
-                                {track.name}
-                            </span>
-                        </div>
+        <section className="track-layout" onMouseMove={handleMouseMove} ref={trackEditorRef} style={{ "--sidebar-width": `${sidebarSize}px` }}>
+            {(() => {
+                const factor = zoomBase * Math.E ** project.zoom;
 
-                        <ul className="pattern-list" data-id={id}
-                            onMouseMove={handlePatternListMouseMove}
-                            onMouseEnter={handlePatternListMouseEnter}
-                            onMouseLeave={handlePatternListMouseLeave}>
-                            {track.patterns.map((pattern, i) => {
-                                return <li key={`track[${id}]:pattern[${i}]`}>
-                                    Pattern {i}
+                return <>
+                    <ul className="timeline">
+                        {(() => {
+                            const timeline: Array<{ time: number, size: number }> = [];
+                            const start = Math.floor(project.position / factor);
+                            const end = Math.ceil((project.position + window.innerWidth) / factor);
+
+                            for (let i = start; i < end; i += 1) {
+                                const time = i;
+                                timeline.push({ time, size: 1 });
+                            }
+
+                            return timeline.map(({ time, size }, i) => {
+                                return <li key={i} className="timeline-item" style={{
+                                    left: time * factor - project.position + sidebarSize,
+                                    fontSize: `${size}rem`,
+                                    opacity: `${size}`
+                                }}>
+                                    {time.toFixed(2)}s
                                 </li>
-                            })}
+                            });
+                        })()}
+                    </ul>
+                    <ul className="track-list">
+                        {Object.keys(project.data.tracks).map((id, i) => {
+                            const track = project.data.tracks[id];
 
-                            {!draggedPattern?.dropped && draggedPattern?.over == id && (
-                                <li className="pattern-drop-preview" style={{
-                                    left: slipFloor(draggedPattern.left + project.position, zoomBase * Math.E ** project.zoom / project.snap),
-                                    width: zoomBase * Math.E ** project.zoom /* * draggedPattern.length */
-                                }} />
-                            )}
-                        </ul>
-                    </li>
-                })}
-            </ul>
+                            return <li key={`track[${id}]`} data-id={id}>
+                                <div className={["sidebar", sidebarSize < Number.EPSILON ? "hidden" : ""].join(' ')}>
+                                    <div className="track-mixer">
+                                        {/* Mixer */}
+                                    </div>
+                                    <span className="track-name">
+                                        {track.name}
+                                    </span>
+                                </div>
+
+                                <ul className="pattern-list" data-id={id}
+                                    onMouseMove={handlePatternListMouseMove}
+                                    onMouseEnter={handlePatternListMouseEnter}
+                                    onMouseLeave={handlePatternListMouseLeave}
+                                    style={{
+                                        backgroundSize: `${zoomBase * Math.E ** project.zoom}px 72px`,
+                                        backgroundPositionX: -project.position,
+                                        backgroundImage: `linear-gradient(90deg, #332b2b 0px, #332b2b 2px, #00000000 4px)`
+                                    }}>
+                                    {track.patterns.map((pattern, i) => {
+                                        return <li key={`track[${id}]:pattern[${i}]`}>
+                                            Pattern {i}
+                                        </li>
+                                    })}
+
+                                    {!draggedPattern?.dropped && draggedPattern?.over == id && (() => {
+                                        const width = factor; /* * draggedPattern.length */
+                                        const left = draggedPattern.left + project.position - sidebarSize - width / 2;
+                                        return <li className="pattern-drop-preview" style={{
+                                            left: slipFloor(left, width / project.snap),
+                                            width: width,
+                                        }} />
+                                    })()}
+                                </ul>
+                            </li>
+                        })}
+                    </ul>
+                </>
+            })()}
 
             <Allotment className="allotment" vertical={false} separator={true} proportionalLayout={false} onChange={(sizes => {
                 setSidebarSize(sizes[0]);
