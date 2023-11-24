@@ -4,13 +4,11 @@ import { useContext, useEffect, useState } from 'react';
 import { TypedSocket as Socket } from '@network/packets';
 import '@styles/modal/Collaboration.css'
 import NetworkContext from '@src/context/networkcontext';
-import MousePositionsContext from '@src/context/mousepositions';
 
 export default function CollaborationModal() {
     const [inviteLink, setInviteLink] = useState<string>();
 
     const { cryptoKey, setCryptoKey, room, setRoom, socket, setSocket } = useContext(NetworkContext);
-    const { setMousePositions } = useContext(MousePositionsContext);
 
     useEffect(() => {
         if (cryptoKey) {
@@ -57,7 +55,6 @@ export default function CollaborationModal() {
         setRoom(undefined);
         setInviteLink(undefined);
         setSocket(undefined);
-        setMousePositions({});
     }
 
     let copyTimeout: number | undefined;

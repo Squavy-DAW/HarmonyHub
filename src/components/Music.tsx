@@ -1,22 +1,22 @@
 import '@styles/Music.css';
-import Project from "@models/project";
+import Project, { zoomBase } from "@models/project";
 import Modal from 'react-modal';
 import { createRef, useContext, useEffect, useRef, useState } from "react";
-import { broadcast, handle } from "@network/sessions";
+import { handle } from "@network/sessions";
 import Network from "@models/network";
 import NetworkContext from "@src/context/networkcontext";
 import Toolbar from "./editor/Toolbar";
 import ModalContext from "@src/context/modalcontext";
 import useTabs from "@stores/tabs";
 import TabContext from "@src/context/tabcontext";
-import MousePositionsContext from "@src/context/mousepositions";
 import { Allotment, LayoutPriority } from "allotment";
-import Pattern from '@models/pattern';
 import { init } from '@synth/engineOLD';
-import SongEditor from './editor/SongEditor';
+import TrackEditor from './editor/TrackEditor';
 import Patterns from './editor/Patterns';
 import ProjectContext from '@src/context/projectcontext';
 import { produce } from 'immer';
+import { DraggingPattern } from '@models/pattern';
+import DraggedPatternContext from '@src/context/draggedpatterncontext';
 import { generateId } from '@network/crypto';
 
 export default function Music(props: { project: Project, network: Network }) {
@@ -32,30 +32,17 @@ export default function Music(props: { project: Project, network: Network }) {
     const [cryptoKey, setCryptoKey] = useState(props.network.cryptoKey);
     const [room, setRoom] = useState(props.network.room);
     const [socket, setSocket] = useState(props.network.socket);
+    const [draggedPattern, setDraggedPattern] = useState<DraggingPattern>();
 
     const patternDragOverlay = createRef<HTMLDivElement>();
-    const id = useRef(generateId());
-
     const musicNotes = createRef<HTMLDivElement>();
-    const layoutRef = createRef<HTMLElement>();
-
-    const [mousePositions, setMousePositions] = useState<{ [id: string]: { x: number, y: number } }>({});
-
-    function handleMouseMove(ev: React.MouseEvent) {
-        if (socket) {
-            broadcast(socket, cryptoKey!, 'hh:mouse-position',   {
-                x: ev.nativeEvent.clientX - musicNotes.current!.getBoundingClientRect().left,
-                y: ev.nativeEvent.clientY - musicNotes.current!.getBoundingClientRect().top
-            });
-        }
-    }
+    const id = useRef(generateId());
 
     function handleStopCollaboration() {
         socket?.disconnect();
         setCryptoKey(undefined);
         setRoom(undefined);
         setSocket(undefined);
-        setMousePositions({});
     }
 
     useEffect(() => {
@@ -72,37 +59,21 @@ export default function Music(props: { project: Project, network: Network }) {
 
     useEffect(() => {
         _project.current = project;
-    }, [project])
+    }, [project]);
 
     useEffect(() => {
         if (socket) {
             socket.on('hh:user-disconnected', ({ id }) => {
                 console.log(`User with id=${id} disconnected`);
-                setMousePositions((prevMousePositions) => {
-                    const updatedMousePositions = { ...prevMousePositions };
-                    delete updatedMousePositions[id];
-                    return updatedMousePositions;
-                });
             });
 
             handle(socket, cryptoKey!, 'hh:user-joined', (id, { name }) => {
                 console.log(`${name} with id=${id} joined the session`);
-                setMousePositions({
-                    ...mousePositions,
-                    [id]: { x: 0, y: 0 }
-                });
             });
 
             handle(socket, cryptoKey!, 'hh:request-project', () => {
                 console.log("Requested project");
                 return _project.current;
-            });
-
-            handle(socket, cryptoKey!, 'hh:mouse-position', async (id, { x, y }) => {
-                setMousePositions({
-                    ...mousePositions,
-                    [id]: { x, y }
-                });
             });
 
             handle(socket, cryptoKey!, 'hh:note-created', (_id, { patternId, id, note }) => {
@@ -125,44 +96,47 @@ export default function Music(props: { project: Project, network: Network }) {
                 <ModalContext.Provider value={{
                     modalContent, setModalContent
                 }}>
-                    <MousePositionsContext.Provider value={{
-                        mousePositions, setMousePositions
+                    <DraggedPatternContext.Provider value={{
+                        draggedPattern, setDraggedPattern
                     }}>
-                        <section className="music-layout" id={id.current} ref={layoutRef}>
+                        <section className="music-layout" id={id.current}>
                             <Toolbar />
 
                             <Allotment vertical={false} separator={true} proportionalLayout={false}>
                                 <Allotment.Pane priority={LayoutPriority.High}>
-                                    <section className="music-notes" onMouseMove={handleMouseMove} ref={musicNotes}>
-                                        <SongEditor />
-
-                                        <section className="mouse-cursors">
-                                            {Object.keys(mousePositions).map(id => {
-                                                const pos = mousePositions[id];
-                                                return <div key={id} className="cursor" style={{ left: pos.x, top: pos.y }}>
-                                                    <span className="cursor-name">{id}</span>
-                                                </div>
-                                            })}
-                                        </section>
-                                    </section>
+                                    <TrackEditor />
                                 </Allotment.Pane>
                                 <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
                                     <Patterns overlay={patternDragOverlay} />
                                 </Allotment.Pane>
                             </Allotment>
 
-                            <div className="pattern-drag-overlay" ref={patternDragOverlay} />
+                            <div className="pattern-drag-overlay" ref={patternDragOverlay}>
+                                {draggedPattern && <li className={['pattern',
+                                    draggedPattern.active ? 'active' : null,
+                                    draggedPattern.dropped ? 'dropped' : null,
+                                    draggedPattern.over ? 'over' : null
+                                ].join(' ')}
+                                    style={{
+                                        left: draggedPattern.left,
+                                        top: draggedPattern.top,
+                                        rotate: `${draggedPattern.rotate}deg`,
+                                        "--pattern-width": `${zoomBase * Math.E ** project.zoom}px` /* * project.data.patterns[draggedPattern.id].length */
+                                    }}
+                                    data-id={draggedPattern.id}
+                                    data-length={16} /* project.data.patterns[draggedPattern.id].length */>
+                                    {/* Pattern preview */}
+                                </li>}
+                            </div>
 
-                            {(() => {
-                                return <Modal
-                                    isOpen={!!modalContent}
-                                    onRequestClose={() => setModalContent(null)}
-                                    parentSelector={() => document.getElementById(id.current)!}>
-                                    {modalContent}
-                                </Modal>
-                            })()}
+                            {<Modal
+                                isOpen={!!modalContent}
+                                onRequestClose={() => setModalContent(null)}
+                                parentSelector={() => document.getElementById(id.current)!}>
+                                {modalContent}
+                            </Modal>}
                         </section>
-                    </MousePositionsContext.Provider>
+                    </DraggedPatternContext.Provider>
                 </ModalContext.Provider>
             </NetworkContext.Provider>
         </ProjectContext.Provider>

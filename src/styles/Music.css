@@ -5,21 +5,7 @@
     grid-template-columns: auto;
 }
 
-.music-layout .music-notes {
-    position: relative;
-    overflow: auto;
-    display: grid;
-}
-
-.music-layout .music-notes .mouse-cursors {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    user-select: none;
-    overflow: hidden;
-}
-  
-.music-layout .music-notes .mouse-cursors .cursor {
+.cursor {
     position: absolute;
     width: 1rem;
     height: 1rem;
@@ -31,7 +17,7 @@
     list-style: none;
 }
 
-.music-layout .music-notes .mouse-cursors .cursor .cursor-name {
+.cursor .cursor-name {
     margin-left: 1rem;
 }
 
@@ -52,7 +38,7 @@
     overflow: auto;
 }
 
-.music-layout .music-patterns ul li.pattern, .pattern {
+.music-layout .music-patterns .pattern, .pattern {
     padding: 8px 20px;
     border-image-source: url("/src/assets/pattern-background.png");
     border-image-slice: 2 2 2 3 fill;
@@ -63,6 +49,11 @@
     overflow: hidden;
     cursor: grab;
     user-select: none;
+    display: grid;
+}
+
+.music-layout .music-patterns .pattern .pattern-name {
+    color: #ffffff;
 }
 
 @keyframes pattern-drag-begin {
@@ -78,17 +69,25 @@
 }
 
 .pattern-drag-overlay .pattern {
-    animation: pattern-drag-begin 1s cubic-bezier(.13,1.3,.1,1) forwards;
     display: none;
     position: absolute;
     width: 8rem;
     transform: translate(-50%, -50%);
-    transition: rotate 0.1s ease-out;
+    transition: rotate 0.1s ease-out, filter 0.3s ease, width 0.3s cubic-bezier(.31,1.61,.36,.86);
     transform-origin: left top;
+    pointer-events: none;
+    height: 3rem;
+}
+
+.pattern-drag-overlay .pattern.over {
+    filter: opacity(0.5);
+    width: var(--pattern-width);
+    /* width is set through javascript (Music.tsx) */
 }
 
 .pattern-drag-overlay .pattern.active {
     display: block;
+    animation: pattern-drag-begin 1s cubic-bezier(.13,1.3,.1,1) forwards;
 }
 
 @keyframes pattern-dropped {
@@ -100,7 +99,7 @@
     animation: pattern-dropped 0.2s ease-out forwards;
 }
 
-.music-layout .music-patterns ul li.pattern:not(:last-child) {
+.music-layout .music-patterns .pattern:not(:last-child) {
     margin-bottom: 1rem;
 }
 
@@ -113,7 +112,7 @@
     align-items: center;
 }
 
-.music-layout .music-patterns .controls .control.add-pattern {
+.music-layout .music-patterns .controls .add-pattern {
     background-image: url("/src/assets/pattern/new.png");
     image-rendering: pixelated;
     background-size: contain;
@@ -122,7 +121,7 @@
     border: none;
 }
 
-.music-layout .music-patterns .controls .control.new-pattern-name {
+.music-layout .music-patterns .controls .new-pattern-name {
     flex: 1;
     width: 0;
 }

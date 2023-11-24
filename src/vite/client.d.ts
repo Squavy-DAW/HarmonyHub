@@ -2,11 +2,11 @@
 
 interface ImportMetaEnv {
   // more env variables...
-    readonly VITE_WEBSOCKET: string,
-    readonly VITE_WEBSERVER: string,
-    readonly VITE_HARMONYHUB: string,
-  }
-  
-  interface ImportMeta {
-    readonly env: ImportMetaEnv
-  }
+  readonly VITE_WEBSOCKET: string,
+  readonly VITE_WEBSERVER: string,
+  readonly VITE_HARMONYHUB: string,
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}

@@ -10,6 +10,8 @@ import Note from "@models/note";
 import { generateId } from "@network/crypto";
 import { broadcast, handle } from "@network/sessions";
 import NetworkContext from "@src/context/networkcontext";
+import { zoomBase } from "@models/project";
+import { slipFloor } from "@src/scripts/math";
 
 export default function MidiEditor(props: { patternId: string }) {
     const { project, setProject } = useContext(ProjectContext);
@@ -41,12 +43,6 @@ export default function MidiEditor(props: { patternId: string }) {
 
     const [mousePositions, setMousePositions] = useState<{ [id: string]: { x: number, y: number } }>({});
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-    const zoomBase = 100;
-
-    function slipFloor(num: number, decimal: number) {
-        return Math.floor(num / decimal) * decimal;
-    }
 
     function correctNoteErrors() {
         setProject(produce(draft => {
@@ -190,7 +186,7 @@ export default function MidiEditor(props: { patternId: string }) {
                 if ((
                     note.start + note.length > startX && note.start <= endX ||
                     note.start >= endX && note.start <= startX) && (
-                        note.pitch >= startY && note.pitch <= endY ||
+                        note.pitch+1 >= startY && note.pitch <= endY ||
                         note.pitch <= startY && note.pitch >= endY)
                 ) {
                     selectedNotes.add(id);
@@ -393,6 +389,8 @@ export default function MidiEditor(props: { patternId: string }) {
         document.addEventListener("keydown", onKeyPressed);
         document.addEventListener("keyup", onKeyUp);
         return () => {
+            document.removeEventListener("mousedown", onMouseDown);
+            document.removeEventListener("mouseup", onMouseUp);
             document.removeEventListener("keydown", onKeyPressed);
             document.removeEventListener("keyup", onKeyUp);
         }
@@ -525,7 +523,7 @@ export default function MidiEditor(props: { patternId: string }) {
                                     }} onMouseDown={handleNoteMouseDown}
                                     onMouseMove={handleNoteMouseMove}>
                                     <div onMouseDown={handleResizeLeftMouseDown} />
-                                    <div style={{ fontSize: '0.8em' }}>{`${note.start.toPrecision(3)}, ${note.length.toPrecision(3)}`}</div>
+                                    <div style={{ fontSize: '0.8em' }}>{/*`${note.start.toPrecision(3)}, ${note.length.toPrecision(3)}`*/}</div>
                                     <div onMouseDown={handleResizeRightMouseDown} />
                                 </li>
                             )
