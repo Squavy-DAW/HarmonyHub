@@ -17,6 +17,7 @@ import ProjectContext from '@src/context/projectcontext';
 import { produce } from 'immer';
 import { DraggingPattern } from '@models/pattern';
 import DraggedPatternContext from '@src/context/draggedpatterncontext';
+import { generateId } from '@network/crypto';
 
 export default function Music(props: { project: Project, network: Network }) {
 
@@ -26,7 +27,6 @@ export default function Music(props: { project: Project, network: Network }) {
     const [project, setProject] = useState<Project>(props.project);
     const _project = useRef<Project>(props.project);
 
-    const [layoutRef, setLayoutRef] = useState<HTMLElement | null>(null);
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
 
     const [cryptoKey, setCryptoKey] = useState(props.network.cryptoKey);
@@ -35,6 +35,7 @@ export default function Music(props: { project: Project, network: Network }) {
     const [draggedPattern, setDraggedPattern] = useState<DraggingPattern>();
 
     const patternDragOverlay = createRef<HTMLDivElement>();
+    const id = useRef(generateId());
 
     function handleStopCollaboration() {
         socket?.disconnect();
@@ -97,7 +98,7 @@ export default function Music(props: { project: Project, network: Network }) {
                     <DraggedPatternContext.Provider value={{
                         draggedPattern, setDraggedPattern
                     }}>
-                        <section className="music-layout" ref={ref => setLayoutRef(ref)}>
+                        <section className="music-layout" id={id.current}>
                             <Toolbar />
 
                             <Allotment vertical={false} separator={true} proportionalLayout={false}>
@@ -110,7 +111,7 @@ export default function Music(props: { project: Project, network: Network }) {
                             </Allotment>
 
                             <div className="pattern-drag-overlay" ref={patternDragOverlay}>
-                               {draggedPattern && <li className={['pattern',
+                                {draggedPattern && <li className={['pattern',
                                     draggedPattern.active ? 'active' : null,
                                     draggedPattern.dropped ? 'dropped' : null,
                                     draggedPattern.over ? 'over' : null
@@ -127,10 +128,10 @@ export default function Music(props: { project: Project, network: Network }) {
                                 </li>}
                             </div>
 
-                            {layoutRef && <Modal
+                            {<Modal
                                 isOpen={!!modalContent}
                                 onRequestClose={() => setModalContent(null)}
-                                parentSelector={() => layoutRef}>
+                                parentSelector={() => document.getElementById(id.current)!}>
                                 {modalContent}
                             </Modal>}
                         </section>

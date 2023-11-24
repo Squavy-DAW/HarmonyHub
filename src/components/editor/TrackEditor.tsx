@@ -9,6 +9,7 @@ import { defaultTrack } from "@models/track";
 import DraggedPatternContext from "@src/context/draggedpatterncontext";
 import { zoomBase } from "@models/project";
 import { slipFloor } from "@src/scripts/math";
+import { Allotment, LayoutPriority } from "allotment";
 
 export default function TrackEditor() {
     const { socket, cryptoKey } = useContext(NetworkContext);
@@ -16,6 +17,7 @@ export default function TrackEditor() {
     const { draggedPattern, setDraggedPattern } = useContext(DraggedPatternContext);
 
     const [mousePositions, setMousePositions] = useState<{ [id: string]: { x: number, y: number } }>({});
+    const [sidebarSize, setSidebarSize] = useState(150);
 
     const musicNotes = createRef<HTMLDivElement>();
 
@@ -92,12 +94,12 @@ export default function TrackEditor() {
     }, [socket]);
 
     return (
-        <section className="track-layout" onMouseMove={handleMouseMove} ref={musicNotes}>
+        <section className="track-layout" onMouseMove={handleMouseMove} ref={musicNotes} style={{ "--sidebar-width": `${sidebarSize}px` }}>
             <ul className="track-list">
                 {Object.keys(project.data.tracks).map((id, i) => {
                     const track = project.data.tracks[id];
                     return <li key={`track[${id}]`} data-id={id}>
-                        <div className="sidebar">
+                        <div className={["sidebar", sidebarSize <= Number.EPSILON ? "hidden" : ""].join(' ')}>
                             <div className="track-mixer">
                                 {/* Mixer */}
                             </div>
@@ -105,6 +107,7 @@ export default function TrackEditor() {
                                 {track.name}
                             </span>
                         </div>
+
                         <ul className="pattern-list" data-id={id}
                             onMouseMove={handlePatternListMouseMove}
                             onMouseEnter={handlePatternListMouseEnter}
@@ -115,7 +118,7 @@ export default function TrackEditor() {
                                 </li>
                             })}
 
-                            { !draggedPattern?.dropped && draggedPattern?.over == id && (
+                            {!draggedPattern?.dropped && draggedPattern?.over == id && (
                                 <li className="pattern-drop-preview" style={{
                                     left: slipFloor(draggedPattern.left + project.position, zoomBase * Math.E ** project.zoom / project.snap),
                                     width: zoomBase * Math.E ** project.zoom /* * draggedPattern.length */
@@ -124,13 +127,20 @@ export default function TrackEditor() {
                         </ul>
                     </li>
                 })}
-
-                <div className="controls">
-                    <button className="add-track" onClick={handleAddTrack}>
-                        <span>Add Track</span>
-                    </button>
-                </div>
             </ul>
+
+            <Allotment className="allotment" vertical={false} separator={true} proportionalLayout={false} onChange={(sizes => {
+                setSidebarSize(sizes[0]);
+            })}>
+                <Allotment.Pane snap minSize={100} maxSize={200} preferredSize={150} children />
+                <Allotment.Pane priority={LayoutPriority.High} children />
+            </Allotment>
+
+            <div className="controls">
+                <button className="add-track" onClick={handleAddTrack}>
+                    <span>Add Track</span>
+                </button>
+            </div>
 
             <div className="misc">
                 {/* TODO: Add cool stuff (pixel art, oscilloscope, etc...) */}
