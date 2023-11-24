@@ -17,6 +17,7 @@ import SongEditor from './editor/SongEditor';
 import Patterns from './editor/Patterns';
 import ProjectContext from '@src/context/projectcontext';
 import { produce } from 'immer';
+import { generateId } from '@network/crypto';
 
 export default function Music(props: { project: Project, network: Network }) {
 
@@ -26,7 +27,6 @@ export default function Music(props: { project: Project, network: Network }) {
     const [project, setProject] = useState<Project>(props.project);
     const _project = useRef<Project>(props.project);
 
-    const [layoutRef, setLayoutRef] = useState<HTMLElement | null>(null);
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
 
     const [cryptoKey, setCryptoKey] = useState(props.network.cryptoKey);
@@ -34,7 +34,10 @@ export default function Music(props: { project: Project, network: Network }) {
     const [socket, setSocket] = useState(props.network.socket);
 
     const patternDragOverlay = createRef<HTMLDivElement>();
+    const id = useRef(generateId());
+
     const musicNotes = createRef<HTMLDivElement>();
+    const layoutRef = createRef<HTMLElement>();
 
     const [mousePositions, setMousePositions] = useState<{ [id: string]: { x: number, y: number } }>({});
 
@@ -125,7 +128,7 @@ export default function Music(props: { project: Project, network: Network }) {
                     <MousePositionsContext.Provider value={{
                         mousePositions, setMousePositions
                     }}>
-                        <section className="music-layout" ref={ref => setLayoutRef(ref)}>
+                        <section className="music-layout" id={id.current} ref={layoutRef}>
                             <Toolbar />
 
                             <Allotment vertical={false} separator={true} proportionalLayout={false}>
@@ -150,12 +153,14 @@ export default function Music(props: { project: Project, network: Network }) {
 
                             <div className="pattern-drag-overlay" ref={patternDragOverlay} />
 
-                            {layoutRef && <Modal
-                                isOpen={!!modalContent}
-                                onRequestClose={() => setModalContent(null)}
-                                parentSelector={() => layoutRef}>
-                                {modalContent}
-                            </Modal>}
+                            {(() => {
+                                return <Modal
+                                    isOpen={!!modalContent}
+                                    onRequestClose={() => setModalContent(null)}
+                                    parentSelector={() => document.getElementById(id.current)!}>
+                                    {modalContent}
+                                </Modal>
+                            })()}
                         </section>
                     </MousePositionsContext.Provider>
                 </ModalContext.Provider>
