@@ -12,6 +12,7 @@ import { broadcast, handle } from "@network/sessions";
 import NetworkContext from "@src/context/networkcontext";
 import { zoomBase } from "@models/project";
 import { slipFloor } from "@src/scripts/math";
+import Timeline from "./Timeline";
 
 export default function MidiEditor(props: { patternId: string }) {
     const { project, setProject } = useContext(ProjectContext);
@@ -186,7 +187,7 @@ export default function MidiEditor(props: { patternId: string }) {
                 if ((
                     note.start + note.length > startX && note.start <= endX ||
                     note.start >= endX && note.start <= startX) && (
-                        note.pitch+1 >= startY && note.pitch <= endY ||
+                        note.pitch + 1 >= startY && note.pitch <= endY ||
                         note.pitch <= startY && note.pitch >= endY)
                 ) {
                     selectedNotes.add(id);
@@ -215,7 +216,7 @@ export default function MidiEditor(props: { patternId: string }) {
         if (socket) {
             handle(socket, cryptoKey!, 'hh:mouse-position-pattern', (id, { x, y, patternId }) => {
                 if (patternId != props.patternId) return;
-                
+
                 setMousePositions({
                     ...mousePositions,
                     [id]: { x, y }
@@ -449,6 +450,8 @@ export default function MidiEditor(props: { patternId: string }) {
                 <button onClick={handleSnapNotes}>Snap notes to rythm</button>
             </div>
 
+            <Timeline zoom={zoom} position={position} offset={170} />
+
             <div className="content" ref={contentRef}>
                 <ul className="octaves">
                     {noteList.map(([key, value]) => key.split("-")[1] == 'C' && <li key={key + value + "octave"} className={"octave " + (key.split("-")[0] == '4' ? "base-octave" : "")}>
@@ -482,13 +485,13 @@ export default function MidiEditor(props: { patternId: string }) {
                         backgroundSize: `${zoomBase * Math.E ** zoom}px 72px`,
                         backgroundPositionX: -position,
                         backgroundImage: ` \
-                            linear-gradient(0deg, #00000000 50%, #00000044 50%), \
-                            linear-gradient(90deg, #6e6e6e 0px, #6e6e6e 4px, #00000000 4px), \
+                            linear-gradient(0deg,#00000000 50%,#00000044 50%), \
+                            linear-gradient(90deg,#6e6e6e 0px,#6e6e6e 4px,#00000000 4px), \
                             linear-gradient(90deg, ${(function () {
                                 let result = [];
                                 for (let i = 0; i < tact; i++) {
                                     let percent = 100 / tact * i;
-                                    result.push(`#00000000 ${percent}%, #a0a0a0 ${percent}%,#a0a0a0 ${percent + 1}%,#00000000 ${percent + 1}%`)
+                                    result.push(`#00000000 ${percent}%,#a0a0a0 ${percent}%,#a0a0a0 ${percent + 1}%,#00000000 ${percent + 1}%`)
                                 }
                                 return result.join(',');
                             })()})`
@@ -503,7 +506,7 @@ export default function MidiEditor(props: { patternId: string }) {
                         left: `${Math.min(selectionStart.x, selectionEnd.x)}px`,
                         top: `${Math.min(selectionStart.y, selectionEnd.y)}px`,
                     }} />}
-                    <div style={{ position: 'absolute', left: -position }}>
+                    <div className="note-container" style={{ left: -position }}>
                         {Object.keys(project.data.patterns[props.patternId].notes).map(id => {
                             const note = project.data.patterns[props.patternId].notes[id];
                             const factor = zoomBase * Math.E ** zoom / tact;
