@@ -122,6 +122,10 @@
     transition: background-position 0.1s ease-out, background-size 0.1s ease-out;
 }
 
+.track-layout .track-list > li .pattern-list .pattern {
+    /* TODO */
+}
+
 .track-layout .track-list > li .pattern-list .pattern-drop-preview {
     list-style: none;
     position: absolute;

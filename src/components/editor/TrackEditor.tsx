@@ -40,7 +40,7 @@ export default function TrackEditor() {
             setProject(produce(draft => {
                 const oldSize = zoomBase * Math.E ** _zoom.current;
                 const value = _zoom.current - ev.deltaY / 300;
-                _zoom.current = Math.max(Math.min(value, 5), -2);
+                _zoom.current = Math.max(Math.min(value, 2), -2);
                 const newSize = zoomBase * Math.E ** _zoom.current;
                 draft.zoom = _zoom.current;
 
@@ -169,7 +169,16 @@ export default function TrackEditor() {
                                     style={{
                                         backgroundSize: `${zoomBase * Math.E ** project.zoom}px 72px`,
                                         backgroundPositionX: -project.position,
-                                        backgroundImage: `linear-gradient(90deg, #332b2b 0px, #332b2b 2px, #00000000 4px)`
+                                        backgroundImage: ` \
+                                            linear-gradient(90deg, #332b2b 0px, #332b2b 2px, #00000000 4px), \
+                                            linear-gradient(90deg, ${(function () {
+                                                let result = [];
+                                                for (let i = 0; i < 8; i++) {
+                                                    let percent = 100 / 8 * i;
+                                                    result.push(`#00000000 ${percent}%,#241e1e ${percent}%,#241e1e ${percent + 0.5}%,#00000000 ${percent + 0.5}%`)
+                                                }
+                                                return result.join(',');
+                                            })()})`
                                     }}>
                                     {track.patterns.map((pattern, i) => {
                                         return <li key={`track[${id}]:pattern[${i}]`}>
