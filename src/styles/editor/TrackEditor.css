@@ -144,9 +144,7 @@
     overflow: hidden;
 }
 
-.track-layout .timeline-container {
+.track-layout .timeline {
     border-bottom: 3px solid #2b2b2b;
     background-color: #25020267;
-    padding-left: var(--sidebar-width);
-    display: grid;
 }

@@ -145,9 +145,8 @@ export default function TrackEditor() {
         <section className="track-layout" onMouseMove={handleMouseMove} ref={trackEditorRef} style={{ "--sidebar-width": `${sidebarSize}px` }}>
             {(() => {
                 return <>
-                    <div className="timeline-container">
-                        <Timeline zoom={project.zoom} position={project.position} />
-                    </div>
+                    <Timeline zoom={project.zoom} position={project.position} offset={sidebarSize} />
+
                     <ul className="track-list">
                         {Object.keys(project.data.tracks).map((id, i) => {
                             const track = project.data.tracks[id];
