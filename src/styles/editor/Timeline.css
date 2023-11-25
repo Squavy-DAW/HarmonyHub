@@ -1,0 +1,14 @@
+.timeline {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow: hidden;
+}
+
+.timeline-item {
+    line-height: 100%;
+    position: absolute;
+    bottom: 0;
+    transition: left 0.1s ease-out;
+}
