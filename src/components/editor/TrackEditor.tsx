@@ -54,7 +54,7 @@ export default function TrackEditor() {
             ev.preventDefault();
 
             setProject(produce(draft => {
-                const value = _position.current + ev.deltaX;
+                const value = _position.current + ev.deltaX + ev.deltaY;
                 _position.current = Math.max(value, 0);
                 draft.position = _position.current;
             }))
