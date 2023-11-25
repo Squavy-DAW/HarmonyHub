@@ -82,7 +82,7 @@ export default function MidiEditor(props: { patternId: string }) {
         setMouseMoveRelative({ x: 0, y: 0 });
     }
 
-    function handleWheel(ev: WheelEvent) {
+    function handleEditorWheel(ev: WheelEvent) {
         if (ev.ctrlKey) {
             ev.preventDefault();
 
@@ -99,7 +99,7 @@ export default function MidiEditor(props: { patternId: string }) {
 
         else if (ev.shiftKey) {
             ev.preventDefault();
-            let value = _position.current + ev.deltaY;
+            let value = _position.current + ev.deltaX;
             _position.current = Math.max(value, 0);
             setPosition(_position.current);
         }
@@ -359,9 +359,9 @@ export default function MidiEditor(props: { patternId: string }) {
 
     useEffect(() => {
         contentRef.current!.scrollTop = contentRef.current!.children[0].clientHeight / 2 - contentRef.current!.clientHeight * 0.8;
-        editorRef.current?.addEventListener('wheel', handleWheel);
+        editorRef.current?.addEventListener('wheel', handleEditorWheel);
         return () => {
-            editorRef.current?.removeEventListener('wheel', handleWheel);
+            editorRef.current?.removeEventListener('wheel', handleEditorWheel);
         }
     }, [])
 
