@@ -119,7 +119,6 @@
     padding: 0;
     position: relative;
     overflow: hidden;
-    transition: background-position 0.1s ease-out, background-size 0.1s ease-out;
 }
 
 .track-layout .track-list > li .pattern-list .pattern {
