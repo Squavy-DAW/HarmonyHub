@@ -2,9 +2,10 @@ import { zoomBase } from "@models/project";
 import { slipCeil, slipFloor } from "@src/scripts/math";
 import "@styles/editor/Timeline.css";
 
-export default function Timeline(props: { zoom: number, position: number }) {
+export default function Timeline(props: { zoom: number, position: number, offset?: number }) {
 
     const factor = zoomBase * Math.E ** props.zoom;
+    const offset = (props.offset ?? 0);
 
     function timelinePointSizingFunction(num: number) {
         return Math.sqrt(1 - num ** 2);
@@ -22,8 +23,8 @@ export default function Timeline(props: { zoom: number, position: number }) {
                 //     `floorPow2: ${nearest}`,
                 //     `size: ${(1-(distance-nearest)/nearest).toFixed(4)}`
                 // );
-
-                const start = slipFloor((props.position - window.innerWidth) / factor, nearest);
+                
+                const start = slipFloor((props.position - window.innerWidth + offset) / factor, nearest);
                 const end = slipCeil((props.position + window.innerWidth * 2) / factor, nearest);
 
                 for (let i = start - nearest; i < end; i += nearest) {
@@ -35,7 +36,7 @@ export default function Timeline(props: { zoom: number, position: number }) {
 
                 return timeline.map(({ time, size }) => {
                     return <li key={time} className="timeline-item" style={{
-                        left: time * factor - props.position,
+                        left: time * factor - props.position + offset,
                         fontSize: `${size / 2 + 0.5}rem`,
                         opacity: `${size}`
                     }}>

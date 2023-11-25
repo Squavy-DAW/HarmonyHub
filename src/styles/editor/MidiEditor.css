@@ -1,6 +1,6 @@
 .music-layout .piano-roll {
     display: grid;
-    grid-template-rows: 2rem auto;
+    grid-template-rows: 2rem 20px auto;
     width: 100%;
     height: 100%;
 }
@@ -24,6 +24,11 @@
     border-bottom: 6px solid #221210;
 }
 
+.music-layout .piano-roll .timeline {
+    border-bottom: 3px solid #2b2b2b;
+    background-color: #25020267;
+}
+
 .music-layout .piano-roll .midi-editor {
     position: relative;
     grid-column: 3 / 4;
@@ -40,6 +45,10 @@
     position: absolute;
     z-index: 1;
     background-color: #7629294a;
+}
+
+.music-layout .piano-roll .midi-editor .note-container {
+    position: absolute;
 }
 
 .music-layout .piano-roll .midi-editor .note {
@@ -207,7 +216,6 @@
     background-size: 1rem 1rem;
     image-rendering: pixelated;
     filter: hue-rotate(attr(data-hue)deg) drop-shadow(0 0 0.2rem white);
-    transition: left 0.1s linear, top 0.1s linear;
     list-style: none;
 }
 
