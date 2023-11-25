@@ -1,8 +1,8 @@
 import Music from "@components/Music";
 import { importKey } from "@network/crypto";
 import { broadcast, createSocket, joinSession, request } from "@network/sessions";
-import { useTabs } from "@stores/tabs";
-import { useState } from "react";
+import TabsContext from "@src/context/tabscontext";
+import { useContext, useState } from "react";
 
 export interface ConnectModalProps {
     room: string,
@@ -12,7 +12,7 @@ export interface ConnectModalProps {
 
 export default function ConnectModal(props: ConnectModalProps) {
     const [userName, setUserName] = useState<string>("");
-    const { setTabIndex, tabs, setTabs } = useTabs();
+    const { setTabIndex, tabs, setTabs } = useContext(TabsContext);
     
     const { room, jwkKey } = props;
 

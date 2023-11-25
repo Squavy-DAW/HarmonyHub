@@ -57,7 +57,7 @@ export default function CollaborationModal() {
         setSocket(undefined);
     }
 
-    let copyTimeout: number | undefined;
+    let copyTimeout: NodeJS.Timeout;
     function handleCopyInviteLink(event: React.MouseEvent<HTMLPreElement, MouseEvent>) {
         if (copyTimeout) clearTimeout(copyTimeout);
         navigator.clipboard.writeText(inviteLink!);

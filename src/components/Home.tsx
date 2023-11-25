@@ -1,16 +1,16 @@
 import 'react-toastify/dist/ReactToastify.css';
-import { useTabs } from "@stores/tabs";
 import '@styles/Home.css';
 import OpenIcon from 'remixicon-react/ArrowRightFillIcon';
 import NewIcon from 'remixicon-react/AddFillIcon';
-import { createRef, useEffect, useState } from 'react';
+import { createRef, useContext, useEffect, useState } from 'react';
 import Project, { defaultProject } from '@models/project';
 import Music from './Music';
 import AsciiLogo from './AsciiLogo';
+import TabsContext from '@src/context/tabscontext';
 
 export default function Home() {
 
-    const { tabs, setTabs, setTabIndex } = useTabs();
+    const { tabs, setTabs, setTabIndex } = useContext(TabsContext);
 
     const [recentProjects, setRecentProjects] = useState<Project[]>();
 

@@ -7,7 +7,6 @@ import Network from "@models/network";
 import NetworkContext from "@src/context/networkcontext";
 import Toolbar from "./editor/Toolbar";
 import ModalContext from "@src/context/modalcontext";
-import useTabs from "@stores/tabs";
 import TabContext from "@src/context/tabcontext";
 import { Allotment, LayoutPriority } from "allotment";
 import { init } from '@synth/engineOLD';
@@ -18,10 +17,11 @@ import { produce } from 'immer';
 import { DraggingPattern } from '@models/pattern';
 import DraggedPatternContext from '@src/context/draggedpatterncontext';
 import { generateId } from '@network/crypto';
+import TabsContext from '@src/context/tabscontext';
 
 export default function Music(props: { project: Project, network: Network }) {
 
-    const { tabs } = useTabs();
+    const { tabs } = useContext(TabsContext);
     const { tab } = useContext(TabContext);
 
     const [project, setProject] = useState<Project>(props.project);
