@@ -10,6 +10,7 @@ import DraggedPatternContext from "@src/context/draggedpatterncontext";
 import { zoomBase } from "@models/project";
 import { slipCeil, slipFloor } from "@src/scripts/math";
 import { Allotment, LayoutPriority } from "allotment";
+import Timeline from "./Timeline";
 
 export default function TrackEditor() {
     const { socket, cryptoKey } = useContext(NetworkContext);
@@ -39,7 +40,7 @@ export default function TrackEditor() {
             setProject(produce(draft => {
                 const oldSize = zoomBase * Math.E ** _zoom.current;
                 const value = _zoom.current - ev.deltaY / 300;
-                _zoom.current = value // Math.max(Math.min(value, 2), -1);
+                _zoom.current = Math.max(Math.min(value, 2), -2);
                 const newSize = zoomBase * Math.E ** _zoom.current;
                 draft.zoom = _zoom.current;
 
@@ -53,7 +54,7 @@ export default function TrackEditor() {
             ev.preventDefault();
 
             setProject(produce(draft => {
-                const value = _position.current + ev.deltaY;
+                const value = _position.current + ev.deltaX;
                 _position.current = Math.max(value, 0);
                 draft.position = _position.current;
             }))
@@ -143,31 +144,10 @@ export default function TrackEditor() {
     return (
         <section className="track-layout" onMouseMove={handleMouseMove} ref={trackEditorRef} style={{ "--sidebar-width": `${sidebarSize}px` }}>
             {(() => {
-                const factor = zoomBase * Math.E ** project.zoom;
-
                 return <>
-                    <ul className="timeline">
-                        {(() => {
-                            const timeline: Array<{ time: number, size: number }> = [];
-                            const start = Math.floor(project.position / factor);
-                            const end = Math.ceil((project.position + window.innerWidth) / factor);
-
-                            for (let i = start; i < end; i += 1) {
-                                const time = i;
-                                timeline.push({ time, size: 1 });
-                            }
-
-                            return timeline.map(({ time, size }, i) => {
-                                return <li key={i} className="timeline-item" style={{
-                                    left: time * factor - project.position + sidebarSize,
-                                    fontSize: `${size}rem`,
-                                    opacity: `${size}`
-                                }}>
-                                    {time.toFixed(2)}s
-                                </li>
-                            });
-                        })()}
-                    </ul>
+                    <div className="timeline-container">
+                        <Timeline zoom={project.zoom} position={project.position} />
+                    </div>
                     <ul className="track-list">
                         {Object.keys(project.data.tracks).map((id, i) => {
                             const track = project.data.tracks[id];
@@ -189,7 +169,16 @@ export default function TrackEditor() {
                                     style={{
                                         backgroundSize: `${zoomBase * Math.E ** project.zoom}px 72px`,
                                         backgroundPositionX: -project.position,
-                                        backgroundImage: `linear-gradient(90deg, #332b2b 0px, #332b2b 2px, #00000000 4px)`
+                                        backgroundImage: ` \
+                                            linear-gradient(90deg, #332b2b 0px, #332b2b 2px, #00000000 4px), \
+                                            linear-gradient(90deg, ${(function () {
+                                                let result = [];
+                                                for (let i = 0; i < 8; i++) {
+                                                    let percent = 100 / 8 * i;
+                                                    result.push(`#00000000 ${percent}%,#241e1e ${percent}%,#241e1e ${percent + 0.5}%,#00000000 ${percent + 0.5}%`)
+                                                }
+                                                return result.join(',');
+                                            })()})`
                                     }}>
                                     {track.patterns.map((pattern, i) => {
                                         return <li key={`track[${id}]:pattern[${i}]`}>
@@ -198,7 +187,7 @@ export default function TrackEditor() {
                                     })}
 
                                     {!draggedPattern?.dropped && draggedPattern?.over == id && (() => {
-                                        const width = factor; /* * draggedPattern.length */
+                                        const width = zoomBase * Math.E ** project.zoom; /* * draggedPattern.length */
                                         const left = draggedPattern.left + project.position - sidebarSize - width / 2;
                                         return <li className="pattern-drop-preview" style={{
                                             left: slipFloor(left, width / project.snap),

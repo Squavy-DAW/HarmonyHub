@@ -99,7 +99,7 @@ export default function MidiEditor(props: { patternId: string }) {
 
         else if (ev.shiftKey) {
             ev.preventDefault();
-            let value = _position.current + ev.deltaY;
+            let value = _position.current + ev.deltaX;
             _position.current = Math.max(value, 0);
             setPosition(_position.current);
         }

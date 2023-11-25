@@ -121,6 +121,10 @@
     overflow: hidden;
 }
 
+.track-layout .track-list > li .pattern-list .pattern {
+    /* TODO */
+}
+
 .track-layout .track-list > li .pattern-list .pattern-drop-preview {
     list-style: none;
     position: absolute;
@@ -140,17 +144,9 @@
     overflow: hidden;
 }
 
-.track-layout .timeline {
-    position: relative;
-    margin: 0;
-    padding: 0;
-    background-color: #25020267;
-    list-style: none;
-    overflow: hidden;
+.track-layout .timeline-container {
     border-bottom: 3px solid #2b2b2b;
-}
-
-.track-layout .timeline-item {
-    line-height: 100%;
-    position: absolute;
+    background-color: #25020267;
+    padding-left: var(--sidebar-width);
+    display: grid;
 }
