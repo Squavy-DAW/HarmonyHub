@@ -1,10 +1,19 @@
 import { zoomBase } from "@models/project";
+import PositionContext from "@src/context/positioncontext";
+import ZoomContext from "@src/context/zoomcontext";
 import { slipCeil, slipFloor } from "@src/scripts/math";
 import "@styles/editor/Timeline.css";
+import { useContext } from "react";
 
-export default function Timeline(props: { zoom: number, position: number, offset?: number }) {
+export interface TimelineProps extends React.HTMLAttributes<HTMLUListElement> {
+    offset?: number
+}
 
-    const factor = zoomBase * Math.E ** props.zoom;
+export default function Timeline(props: TimelineProps) {
+
+    const { factor } = useContext(ZoomContext);
+    const { position } = useContext(PositionContext);
+
     const offset = (props.offset ?? 0);
 
     function timelinePointSizingFunction(num: number) {
@@ -12,7 +21,7 @@ export default function Timeline(props: { zoom: number, position: number, offset
     }
 
     return (
-        <ul className="timeline">
+        <ul className="timeline" {...props}>
             {(() => {
                 const timeline: Array<{ time: number, size: number }> = [];
                 const diff = window.innerWidth / factor;
@@ -24,8 +33,8 @@ export default function Timeline(props: { zoom: number, position: number, offset
                 //     `size: ${(1-(distance-nearest)/nearest).toFixed(4)}`
                 // );
                 
-                const start = slipFloor((props.position - window.innerWidth + offset) / factor, nearest);
-                const end = slipCeil((props.position + window.innerWidth * 2) / factor, nearest);
+                const start = slipFloor((position - window.innerWidth + offset) / factor, nearest);
+                const end = slipCeil((position + window.innerWidth * 2) / factor, nearest);
 
                 for (let i = start - nearest; i < end; i += nearest) {
                     timeline.push({
@@ -36,7 +45,7 @@ export default function Timeline(props: { zoom: number, position: number, offset
 
                 return timeline.map(({ time, size }) => {
                     return <li key={time} className="timeline-item" style={{
-                        left: time * factor - props.position + offset,
+                        left: time * factor - position + offset,
                         fontSize: `${size / 2 + 0.5}rem`,
                         opacity: `${size}`
                     }}>

@@ -122,18 +122,22 @@
 }
 
 .track-layout .track-list > li .pattern-list .pattern {
-    /* TODO */
-}
-
-.track-layout .track-list > li .pattern-list .pattern-drop-preview {
     list-style: none;
     position: absolute;
     top: 0;
     height: 3rem;
-    background-color: #02fa4422;
-    border: 3px dashed #02fa44;
-    opacity: 0.5;
     border-radius: 8px;
+}
+
+.track-layout .track-list > li .pattern-list .pattern:not(.preview) {
+    border: 3px solid #2b2b2b;
+    background-color: #00000000;
+}
+
+.track-layout .track-list > li .pattern-list .pattern.preview {
+    border: 3px dashed white;
+    background-color: #ffffff22;
+    opacity: 0.5;
 }
 
 .track-layout .mouse-cursors {

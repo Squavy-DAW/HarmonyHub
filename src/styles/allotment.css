@@ -5,6 +5,10 @@
   --sash-hover-size: 5px;
 }
 
+.split-view {
+  z-index: 0;
+}
+
 .split-view-view {
   display: grid;
 }
