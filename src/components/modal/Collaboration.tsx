@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from 'react';
 import { TypedSocket as Socket } from '@network/packets';
 import '@styles/modal/Collaboration.css'
 import NetworkContext from '@src/context/networkcontext';
+import ModalContainer from './ModalContainer';
 
 export default function CollaborationModal() {
     const [inviteLink, setInviteLink] = useState<string>();
@@ -68,9 +69,9 @@ export default function CollaborationModal() {
     }
 
     return (
-        <div className={['collaboration-modal', 'overlay-center', socket && 'active'].join(' ')}>
+        <ModalContainer className={['collaboration-modal', socket ? 'active' : null].join(' ')} mode='center'>
             <img src="/src/assets/collaboration-lock.png" alt="lock" className='collaboration-lock' />
-            { socket && <button className='stop-collaboration' onClick={handleStopCollaboration} /> }
+            {socket && <button className='stop-collaboration' onClick={handleStopCollaboration} />}
             <div>
                 <h1 className='title' style={{ margin: 0, lineHeight: 0.9 }}>Collaborate</h1>
                 <p>Securely via E2E encryption - <a href={/*TODO*/ ""}>Learn more</a></p>
@@ -84,6 +85,6 @@ export default function CollaborationModal() {
                     <button className='start-collaboration' onClick={handleStartCollaboration}>Start collaboration</button>
                 </>}
             </div>
-        </div>
+        </ModalContainer>
     );
 };

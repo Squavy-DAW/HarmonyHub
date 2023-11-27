@@ -2,7 +2,7 @@
     padding: 8px;
     display: grid;
     grid-template-rows: 3rem auto;
-    grid-template-columns: auto minmax(12rem, 28rem);
+    grid-template-columns: 6rem minmax(12rem, 28rem);
     image-rendering: pixelated;
     gap: 1rem;
     overflow: hidden;

@@ -36,7 +36,6 @@ export default function TrackEditor() {
     function handleEditorWheel(ev: WheelEvent) {
         if (ev.ctrlKey) {
             ev.preventDefault();
-
             setProject(produce(draft => {
                 const oldSize = zoomBase * Math.E ** _zoom.current;
                 const value = _zoom.current - ev.deltaY / 300;
@@ -52,7 +51,6 @@ export default function TrackEditor() {
 
         else if (ev.shiftKey) {
             ev.preventDefault();
-
             setProject(produce(draft => {
                 const value = _position.current + ev.deltaX + ev.deltaY;
                 _position.current = Math.max(value, 0);
@@ -62,7 +60,6 @@ export default function TrackEditor() {
 
         else if (Math.abs(ev.deltaX) > 0) {
             ev.preventDefault();
-
             setProject(produce(draft => {
                 const value = _position.current + ev.deltaX;
                 _position.current = Math.max(value, 0);

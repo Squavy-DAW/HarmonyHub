@@ -31,8 +31,6 @@
 }
 
 .ReactModalPortal .ReactModal__Content {
-    height: 100%;
-    width: 100%;
     position: initial !important;
     background: none !important;
     border-radius: none !important;
@@ -45,13 +43,19 @@
     overflow: hidden !important;
 }
 
-.ReactModalPortal .ReactModal__Overlay:has( .overlay-fill) {
-    height: 100%;
-    width: 100%;
-    padding: 1rem;
+.ReactModalPortal .ReactModal__Content.fill {
+    /* empty */
 }
 
-.ReactModalPortal .ReactModal__Overlay:has( .overlay-center) {
+.ReactModalPortal .ReactModal__Content.center {
+    justify-self: center;
+    align-self: center;
+}
+
+.ReactModalPortal .ReactModal__Overlay {
+    padding: 16px;
     display: grid;
     place-content: center;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
 }
