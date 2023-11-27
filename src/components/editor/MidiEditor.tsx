@@ -13,6 +13,9 @@ import NetworkContext from "@src/context/networkcontext";
 import { zoomBase } from "@models/project";
 import { slipFloor } from "@src/scripts/math";
 import Timeline from "./Timeline";
+import ZoomContext from "@src/context/zoomcontext";
+import PositionContext from "@src/context/positioncontext";
+import PositionContainer from "./PositionContainer";
 
 export default function MidiEditor(props: { patternId: string }) {
     const { project, setProject } = useContext(ProjectContext);
@@ -431,118 +434,127 @@ export default function MidiEditor(props: { patternId: string }) {
     }
 
     return (
-        <section className="piano-roll overlay-fill">
-            <div className="toolbar">
-                <span>Notes / Beat: </span>
-                <NumberUpDown
-                    value={tact}
-                    onChange={(value) => setTact(value)}
-                    min={1}
-                    max={16}
-                    step={1} />
-                <span>Snapping: </span>
-                <NumberUpDown
-                    value={snap}
-                    onChange={(value) => setSnap(value)}
-                    min={1}
-                    max={8}
-                    step={1} />
-                <button onClick={handleSnapNotes}>Snap notes to rythm</button>
-            </div>
+        <ZoomContext.Provider value={{
+            zoom, factor: zoomBase * Math.E ** zoom
+        }}>
+            <PositionContext.Provider value={{
+                position
+            }}>
+                <section className="piano-roll overlay-fill">
+                    <div className="toolbar">
+                        <span>Notes / Beat: </span>
+                        <NumberUpDown
+                            value={tact}
+                            onChange={(value) => setTact(value)}
+                            min={1}
+                            max={16}
+                            step={1} />
+                        <span>Snapping: </span>
+                        <NumberUpDown
+                            value={snap}
+                            onChange={(value) => setSnap(value)}
+                            min={1}
+                            max={8}
+                            step={1} />
+                        <button onClick={handleSnapNotes}>Snap notes to rythm</button>
+                    </div>
 
-            <Timeline zoom={zoom} position={position} offset={170} />
+                    <Timeline offset={170} />
 
-            <div className="content" ref={contentRef}>
-                <ul className="octaves">
-                    {noteList.map(([key, value]) => key.split("-")[1] == 'C' && <li key={key + value + "octave"} className={"octave " + (key.split("-")[0] == '4' ? "base-octave" : "")}>
-                        {key.split("-")[0]}
-                    </li>
-                    )}
-                </ul>
-                <ul className="keys">
-                    {noteList.map(([key, value]) =>
-                        <li key={key + value + "key"}>
-                            <Key
-                                onMouseEnter={(e: React.MouseEvent) => onNoteStart(e, value, key)}
-                                onMouseLeave={(e: React.MouseEvent) => onNoteStop(e, value, key)}
-                                onMouseDown={(e: React.MouseEvent) => {
-                                    clickedFreq.value = value;
-                                    if (!pressedFrequencies.includes(value)) {
-                                        startFreq(value);
-                                        e.currentTarget.classList.add(key.includes('#') ? "pressed-black" : "pressed-white");
-                                    }
-                                }}
-                                keyName={key.split("-")[1]}
-                                frequency={value} />
-                        </li>
-                    )}
-                </ul>
+                    <div className="content" ref={contentRef}>
+                        <ul className="octaves">
+                            {noteList.map(([key, value]) => key.split("-")[1] == 'C' && <li key={key + value + "octave"} className={"octave " + (key.split("-")[0] == '4' ? "base-octave" : "")}>
+                                {key.split("-")[0]}
+                            </li>
+                            )}
+                        </ul>
+                        <ul className="keys">
+                            {noteList.map(([key, value]) =>
+                                <li key={key + value + "key"}>
+                                    <Key
+                                        onMouseEnter={(e: React.MouseEvent) => onNoteStart(e, value, key)}
+                                        onMouseLeave={(e: React.MouseEvent) => onNoteStop(e, value, key)}
+                                        onMouseDown={(e: React.MouseEvent) => {
+                                            clickedFreq.value = value;
+                                            if (!pressedFrequencies.includes(value)) {
+                                                startFreq(value);
+                                                e.currentTarget.classList.add(key.includes('#') ? "pressed-black" : "pressed-white");
+                                            }
+                                        }}
+                                        keyName={key.split("-")[1]}
+                                        frequency={value} />
+                                </li>
+                            )}
+                        </ul>
 
-                <section
-                    className="midi-editor"
-                    ref={editorRef}
-                    style={{
-                        backgroundSize: `${zoomBase * Math.E ** zoom}px 72px`,
-                        backgroundPositionX: -position,
-                        backgroundImage: ` \
+                        <section
+                            className="midi-editor"
+                            ref={editorRef}
+                            style={{
+                                backgroundSize: `${zoomBase * Math.E ** zoom}px 72px`,
+                                backgroundPositionX: -position,
+                                backgroundImage: ` \
                             linear-gradient(0deg,#00000000 50%,#00000044 50%), \
                             linear-gradient(90deg,#6e6e6e 0px,#6e6e6e 4px,#00000000 4px), \
                             linear-gradient(90deg, ${(function () {
-                                let result = [];
-                                for (let i = 0; i < tact; i++) {
-                                    let percent = 100 / tact * i;
-                                    result.push(`#00000000 ${percent}%,#a0a0a0 ${percent}%,#a0a0a0 ${percent + 1}%,#00000000 ${percent + 1}%`)
-                                }
-                                return result.join(',');
-                            })()})`
-                    }}
-                    onMouseDown={handleEditorMouseDown}
-                    onMouseMove={handleEditorMouseMove}
-                    onMouseUp={handleEditorMouseUp}
-                    onContextMenu={ev => ev.preventDefault()}>
-                    {selectionStart.x != selectionEnd.x && selectionStart.y != selectionEnd.y && <div className="selection" style={{
-                        width: `${Math.abs(selectionStart.x - selectionEnd.x)}px`,
-                        height: `${Math.abs(selectionStart.y - selectionEnd.y)}px`,
-                        left: `${Math.min(selectionStart.x, selectionEnd.x)}px`,
-                        top: `${Math.min(selectionStart.y, selectionEnd.y)}px`,
-                    }} />}
-                    <div className="note-container" style={{ left: -position }}>
-                        {Object.keys(project.data.patterns[props.patternId].notes).map(id => {
-                            const note = project.data.patterns[props.patternId].notes[id];
-                            const factor = zoomBase * Math.E ** zoom / tact;
-                            return (
-                                <li key={`note-[${id}]`} data-id={id}
-                                    className={["note", selectedNotes.has(id) ? "selected" : ""].join(" ")}
-                                    style={{
-                                        width: `${Math.abs(note.length) < 0.001
-                                            ? factor * 0.2
-                                            : factor * Math.abs(note.length)}px`,
-                                        left: `${Math.abs(note.length) < 0.001
-                                            ? factor * note.start - factor * 0.2 / 2
-                                            : note.length < 0
-                                                ? factor * (note.start + note.length)
-                                                : factor * note.start}px`,
-                                        top: `${note.pitch * 36}px`,
-                                    }} onMouseDown={handleNoteMouseDown}
-                                    onMouseMove={handleNoteMouseMove}>
-                                    <div onMouseDown={handleResizeLeftMouseDown} />
-                                    <div style={{ fontSize: '0.8em' }}>{/*`${note.start.toPrecision(3)}, ${note.length.toPrecision(3)}`*/}</div>
-                                    <div onMouseDown={handleResizeRightMouseDown} />
-                                </li>
-                            )
-                        })}
+                                        let result = [];
+                                        for (let i = 0; i < tact; i++) {
+                                            let percent = 100 / tact * i;
+                                            result.push(`#00000000 ${percent}%,#a0a0a0 ${percent}%,#a0a0a0 ${percent + 1}%,#00000000 ${percent + 1}%`)
+                                        }
+                                        return result.join(',');
+                                    })()})`
+                            }}
+                            onMouseDown={handleEditorMouseDown}
+                            onMouseMove={handleEditorMouseMove}
+                            onMouseUp={handleEditorMouseUp}
+                            onContextMenu={ev => ev.preventDefault()}>
+                            {selectionStart.x != selectionEnd.x && selectionStart.y != selectionEnd.y && <div className="selection" style={{
+                                width: `${Math.abs(selectionStart.x - selectionEnd.x)}px`,
+                                height: `${Math.abs(selectionStart.y - selectionEnd.y)}px`,
+                                left: `${Math.min(selectionStart.x, selectionEnd.x)}px`,
+                                top: `${Math.min(selectionStart.y, selectionEnd.y)}px`,
+                            }} />}
+                            <PositionContainer>
+                                {Object.keys(project.data.patterns[props.patternId].notes).map(id => {
+                                    const note = project.data.patterns[props.patternId].notes[id];
+                                    const factor = zoomBase * Math.E ** zoom / tact;
+                                    return (
+                                        <li key={`note-[${id}]`} data-id={id}
+                                            className={["note", selectedNotes.has(id) ? "selected" : ""].join(" ")}
+                                            onMouseDown={handleNoteMouseDown}
+                                            onMouseMove={handleNoteMouseMove}
+                                            style={{
+                                                width: `${Math.abs(note.length) < Number.EPSILON
+                                                    ? factor * 0.2
+                                                    : factor * Math.abs(note.length)}px`,
+                                                left: `${Math.abs(note.length) < Number.EPSILON
+                                                    ? factor * note.start - factor * 0.2 / 2
+                                                    : note.length < 0
+                                                        ? factor * (note.start + note.length)
+                                                        : factor * note.start}px`,
+                                                top: `${note.pitch * 36}px`,
+                                            }}>
+                                            <div onMouseDown={handleResizeLeftMouseDown} />
+                                            <div style={{ fontSize: '0.8em' }}>{/*`${note.start.toPrecision(3)}, ${note.length.toPrecision(3)}`*/}</div>
+                                            <div onMouseDown={handleResizeRightMouseDown} />
+                                        </li>
+                                    )
+                                })}
+                            </PositionContainer>
+                            <section className="mouse-cursors" style={{ left: -position }}>
+                                {Object.keys(mousePositions).map(id => {
+                                    const pos = mousePositions[id];
+                                    const factor = zoomBase * Math.E ** zoom / tact;
+                                    return <div key={id} className="cursor" style={{ left: pos.x * factor, top: pos.y }}>
+                                        <span className="cursor-name">{id}</span>
+                                    </div>
+                                })}
+                            </section>
+                        </section>
                     </div>
-                    <section className="mouse-cursors" style={{ left: -position }}>
-                        {Object.keys(mousePositions).map(id => {
-                            const pos = mousePositions[id];
-                            const factor = zoomBase * Math.E ** zoom / tact;
-                            return <div key={id} className="cursor" style={{ left: pos.x * factor, top: pos.y }}>
-                                <span className="cursor-name">{id}</span>
-                            </div>
-                        })}
-                    </section>
                 </section>
-            </div>
-        </section>
+            </PositionContext.Provider>
+        </ZoomContext.Provider>
     )
 }

@@ -8,14 +8,17 @@ import { generateId } from "@network/crypto";
 import { defaultTrack } from "@models/track";
 import DraggedPatternContext from "@src/context/draggedpatterncontext";
 import { zoomBase } from "@models/project";
-import { slipCeil, slipFloor } from "@src/scripts/math";
+import { slipFloor } from "@src/scripts/math";
 import { Allotment, LayoutPriority } from "allotment";
 import Timeline from "./Timeline";
+import PositionContainer from "./PositionContainer";
+import ZoomContext from "@src/context/zoomcontext";
 
 export default function TrackEditor() {
     const { socket, cryptoKey } = useContext(NetworkContext);
     const { project, setProject } = useContext(ProjectContext);
     const { draggedPattern, setDraggedPattern } = useContext(DraggedPatternContext);
+    const { factor } = useContext(ZoomContext);
 
     const [mousePositions, setMousePositions] = useState<{ [id: string]: { x: number, y: number } }>({});
     const [sidebarSize, setSidebarSize] = useState(150);
@@ -78,12 +81,8 @@ export default function TrackEditor() {
         }))
     }
 
-    function handlePatternListMouseMove(ev: React.MouseEvent) {
-        const { x: offsetX, y: offsetY } = trackEditorRef.current!.getBoundingClientRect();
-        if (draggedPattern) {
-            const x = ev.nativeEvent.clientX - offsetX;
-            const y = ev.nativeEvent.clientY - offsetY;
-        }
+    function handlePatternListAddPattern(ev: React.MouseEvent) {
+
     }
 
     function handlePatternListMouseEnter(ev: React.MouseEvent) {
@@ -145,7 +144,7 @@ export default function TrackEditor() {
         <section className="track-layout" onMouseMove={handleMouseMove} ref={trackEditorRef} style={{ "--sidebar-width": `${sidebarSize}px` }}>
             {(() => {
                 return <>
-                    <Timeline zoom={project.zoom} position={project.position} offset={sidebarSize} />
+                    <Timeline offset={sidebarSize} />
 
                     <ul className="track-list">
                         {Object.keys(project.data.tracks).map((id, i) => {
@@ -162,15 +161,14 @@ export default function TrackEditor() {
                                 </div>
 
                                 <ul className="pattern-list" data-id={id}
-                                    onMouseMove={handlePatternListMouseMove}
+                                    onMouseUp={handlePatternListAddPattern}
                                     onMouseEnter={handlePatternListMouseEnter}
                                     onMouseLeave={handlePatternListMouseLeave}
                                     style={{
-                                        backgroundSize: `${zoomBase * Math.E ** project.zoom}px 72px`,
+                                        backgroundSize: `${factor}px 72px`,
                                         backgroundPositionX: -project.position,
-                                        backgroundImage: ` \
-                                            linear-gradient(90deg, #332b2b 0px, #332b2b 2px, #00000000 4px), \
-                                            linear-gradient(90deg, ${(function () {
+                                        backgroundImage: `linear-gradient(90deg, #332b2b 0px, #332b2b 2px, #00000000 4px), \
+                                                          linear-gradient(90deg, ${(function () {
                                                 let result = [];
                                                 for (let i = 0; i < 8; i++) {
                                                     let percent = 100 / 8 * i;
@@ -179,20 +177,31 @@ export default function TrackEditor() {
                                                 return result.join(',');
                                             })()})`
                                     }}>
-                                    {track.patterns.map((pattern, i) => {
-                                        return <li key={`track[${id}]:pattern[${i}]`}>
-                                            Pattern {i}
-                                        </li>
-                                    })}
+                                    <PositionContainer>
+                                        {track.patterns.map((pattern, i) => {
+                                            const width = factor; /* * draggedPattern.length */
+                                            const left = pattern.start * factor - sidebarSize
+                                            return (
+                                                <li className="pattern" key={`track[${id}]:pattern[${i}]`} style={{
+                                                    left: pattern.start,
+                                                    width: width,
+                                                }}>
+                                                    Pattern {i}
+                                                </li>
+                                            )
+                                        })}
 
-                                    {!draggedPattern?.dropped && draggedPattern?.over == id && (() => {
-                                        const width = zoomBase * Math.E ** project.zoom; /* * draggedPattern.length */
-                                        const left = draggedPattern.left + project.position - sidebarSize - width / 2;
-                                        return <li className="pattern-drop-preview" style={{
-                                            left: slipFloor(left, width / project.snap),
-                                            width: width,
-                                        }} />
-                                    })()}
+                                        {!draggedPattern?.dropped && draggedPattern?.over == id && (() => {
+                                            const width = factor; /* * draggedPattern.length */
+                                            const left = draggedPattern.left - sidebarSize + project.position;
+                                            return (
+                                                <li className="pattern preview" style={{
+                                                    left: slipFloor(left, width / project.snap),
+                                                    width: width,
+                                                }} />
+                                            )
+                                        })()}
+                                    </PositionContainer>
                                 </ul>
                             </li>
                         })}
