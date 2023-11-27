@@ -70,7 +70,7 @@ export default function CollaborationModal() {
 
     return (
         <ModalContainer className={['collaboration-modal', socket ? 'active' : null].join(' ')} mode='center'>
-            <img src="/src/assets/collaboration-lock.png" alt="lock" className='collaboration-lock' />
+            <div className='collaboration-lock' />
             {socket && <button className='stop-collaboration' onClick={handleStopCollaboration} />}
             <div>
                 <h1 className='title' style={{ margin: 0, lineHeight: 0.9 }}>Collaborate</h1>
