@@ -47,10 +47,6 @@
     background-color: #7629294a;
 }
 
-.music-layout .piano-roll .midi-editor .note-container {
-    position: absolute;
-}
-
 .music-layout .piano-roll .midi-editor .note {
     position: absolute;
     list-style: none;

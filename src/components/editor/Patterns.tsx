@@ -4,7 +4,7 @@ import ModalContext from "@src/context/modalcontext";
 import NetworkContext from "@src/context/networkcontext";
 import ProjectContext from "@src/context/projectcontext";
 import useMouse from "@src/hooks/mouse";
-import { useContext, useEffect, useState } from "react";
+import { forwardRef, useContext, useEffect, useState } from "react";
 import { produce } from "immer"
 import Pattern from "@models/pattern";
 import { generateId } from "@network/crypto";
@@ -88,7 +88,7 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
                 draft.active = true;
                 draft.left = mousePosition.x - props.overlay.current!.getBoundingClientRect().left;
                 draft.top = mousePosition.y - props.overlay.current!.getBoundingClientRect().top;
-                draft.rotate = Math.min(Math.max(mouseDelta.x, -30), 30);
+                draft.rotate = mouseDelta.x;
             }));
         }
     }, [mousePosition, mouseDelta])
@@ -119,3 +119,27 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
         </section>
     )
 }
+
+export const PatternDragOverlay = forwardRef(function (props: React.HTMLAttributes<HTMLDivElement>, ref: React.Ref<HTMLDivElement>) {
+
+    const { draggedPattern } = useContext(DraggedPatternContext);
+    const { project } = useContext(ProjectContext);
+
+    return (
+        <div className="pattern-drag-overlay" ref={ref} {...props}>
+            {draggedPattern && <li
+                className={['pattern',
+                    draggedPattern.active ? 'active' : null,
+                    draggedPattern.dropped ? 'dropped' : null,
+                    draggedPattern.over ? 'over' : null
+                ].join(' ')}
+                style={{
+                    left: draggedPattern.left,
+                    top: draggedPattern.top,
+                    rotate: `${Math.min(Math.max(draggedPattern.rotate, -30), 30)}deg`,
+                }}>
+                {/* Pattern preview */}
+            </li>}
+        </div>
+    )
+})

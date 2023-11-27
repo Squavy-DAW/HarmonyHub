@@ -73,16 +73,16 @@
     position: absolute;
     width: 8rem;
     transform: translate(-50%, -50%);
-    transition: rotate 0.1s ease-out, filter 0.3s ease, width 0.3s cubic-bezier(.31,1.61,.36,.86);
+    transform-origin: center center;
+    transition: rotate 0.1s ease-out, filter 0.3s ease, transform 1s ease;
     transform-origin: left top;
     pointer-events: none;
     height: 3rem;
 }
 
 .pattern-drag-overlay .pattern.over {
+    transform: scale(0.7);
     filter: opacity(0.5);
-    width: var(--pattern-width);
-    /* width is set through javascript (Music.tsx) */
 }
 
 .pattern-drag-overlay .pattern.active {

@@ -11,13 +11,16 @@ import TabContext from "@src/context/tabcontext";
 import { Allotment, LayoutPriority } from "allotment";
 import { init } from '@synth/engineOLD';
 import TrackEditor from './editor/TrackEditor';
-import Patterns from './editor/Patterns';
+import Patterns, { PatternDragOverlay } from './editor/Patterns';
 import ProjectContext from '@src/context/projectcontext';
 import { produce } from 'immer';
 import { DraggingPattern } from '@models/pattern';
 import DraggedPatternContext from '@src/context/draggedpatterncontext';
 import { generateId } from '@network/crypto';
 import TabsContext from '@src/context/tabscontext';
+import ZoomContext from '@src/context/zoomcontext';
+import PositionContext from '@src/context/positioncontext';
+import { throttle } from 'throttle-debounce';
 
 export default function Music(props: { project: Project, network: Network }) {
 
@@ -99,43 +102,35 @@ export default function Music(props: { project: Project, network: Network }) {
                     <DraggedPatternContext.Provider value={{
                         draggedPattern, setDraggedPattern
                     }}>
-                        <section className="music-layout" id={id.current}>
-                            <Toolbar />
+                        <ZoomContext.Provider value={{
+                            zoom: project.zoom, factor: zoomBase * Math.E ** project.zoom
+                        }}>
+                            <PositionContext.Provider value={{
+                                position: project.position
+                            }}>
+                                <section className="music-layout" id={id.current}>
+                                    <Toolbar />
 
-                            <Allotment vertical={false} separator={true} proportionalLayout={false}>
-                                <Allotment.Pane priority={LayoutPriority.High}>
-                                    <TrackEditor />
-                                </Allotment.Pane>
-                                <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
-                                    <Patterns overlay={patternDragOverlay} />
-                                </Allotment.Pane>
-                            </Allotment>
+                                    <Allotment vertical={false} separator={true} proportionalLayout={false}>
+                                        <Allotment.Pane priority={LayoutPriority.High}>
+                                            <TrackEditor />
+                                        </Allotment.Pane>
+                                        <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
+                                            <Patterns overlay={patternDragOverlay} />
+                                        </Allotment.Pane>
+                                    </Allotment>
 
-                            <div className="pattern-drag-overlay" ref={patternDragOverlay}>
-                                {draggedPattern && <li className={['pattern',
-                                    draggedPattern.active ? 'active' : null,
-                                    draggedPattern.dropped ? 'dropped' : null,
-                                    draggedPattern.over ? 'over' : null
-                                ].join(' ')}
-                                    style={{
-                                        left: draggedPattern.left,
-                                        top: draggedPattern.top,
-                                        rotate: `${draggedPattern.rotate}deg`,
-                                        "--pattern-width": `${zoomBase * Math.E ** project.zoom}px` /* * project.data.patterns[draggedPattern.id].length */
-                                    }}
-                                    data-id={draggedPattern.id}
-                                    data-length={16} /* project.data.patterns[draggedPattern.id].length */>
-                                    {/* Pattern preview */}
-                                </li>}
-                            </div>
+                                    <PatternDragOverlay ref={patternDragOverlay} />
 
-                            {<Modal
-                                isOpen={!!modalContent}
-                                onRequestClose={() => setModalContent(null)}
-                                parentSelector={() => document.getElementById(id.current)!}>
-                                {modalContent}
-                            </Modal>}
-                        </section>
+                                    {<Modal
+                                        isOpen={!!modalContent}
+                                        onRequestClose={() => setModalContent(null)}
+                                        parentSelector={() => document.getElementById(id.current)!}>
+                                        {modalContent}
+                                    </Modal>}
+                                </section>
+                            </PositionContext.Provider>
+                        </ZoomContext.Provider>
                     </DraggedPatternContext.Provider>
                 </ModalContext.Provider>
             </NetworkContext.Provider>
