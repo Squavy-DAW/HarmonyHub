@@ -9,7 +9,6 @@ import { produce } from "immer"
 import Pattern from "@models/pattern";
 import { generateId } from "@network/crypto";
 import DraggedPatternContext from "@src/context/draggedpatterncontext";
-import ModalContainer from "@components/modal/ModalContainer";
 
 export default function Patterns(props: { overlay: React.RefObject<HTMLDivElement> }) {
     const { project, setProject } = useContext(ProjectContext);
@@ -23,9 +22,7 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
     function handlePatternClick(ev: React.MouseEvent) {
         const id = ev.currentTarget.getAttribute('data-id')!;
         setModalContent(
-            <ModalContainer mode="fill">
-                <MidiEditor patternId={id} />
-            </ModalContainer>
+            <MidiEditor patternId={id} />
         )
     }
 

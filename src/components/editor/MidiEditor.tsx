@@ -16,6 +16,7 @@ import Timeline from "./Timeline";
 import ZoomContext from "@src/context/zoomcontext";
 import PositionContext from "@src/context/positioncontext";
 import PositionContainer from "./PositionContainer";
+import ModalContainer from "@components/modal/ModalContainer";
 
 export default function MidiEditor(props: { patternId: string }) {
     const { project, setProject } = useContext(ProjectContext);
@@ -440,7 +441,7 @@ export default function MidiEditor(props: { patternId: string }) {
             <PositionContext.Provider value={{
                 position
             }}>
-                <section className="piano-roll overlay-fill">
+                <ModalContainer mode="fill" className="piano-roll overlay-fill">
                     <div className="toolbar">
                         <span>Notes / Beat: </span>
                         <NumberUpDown
@@ -553,7 +554,7 @@ export default function MidiEditor(props: { patternId: string }) {
                             </section>
                         </section>
                     </div>
-                </section>
+                </ModalContainer>
             </PositionContext.Provider>
         </ZoomContext.Provider>
     )
