@@ -71,7 +71,7 @@ export default function TrackEditor() {
         }
     }
 
-    function handleAddTrack(ev: React.MouseEvent) {
+    function handleAddTrack(_ev: React.MouseEvent) {
         setProject(produce(draft => {
             const id = generateId(new Set(Object.keys(draft.data.tracks)));
             draft.data.tracks[id] = { ...defaultTrack };
@@ -79,7 +79,18 @@ export default function TrackEditor() {
     }
 
     function handlePatternListAddPattern(ev: React.MouseEvent) {
-
+        if (!draggedPattern) return;
+        const id = ev.currentTarget.getAttribute('data-id')!;
+        setProject(produce(draft => {
+            const track = draft.data.tracks[id];
+            const width = factor; /* * draggedPattern.length */
+            const left = draggedPattern.left + project.position - sidebarSize;
+            const start = slipFloor(left, width / project.snap) / factor;
+            track.patterns.push({
+                ...draggedPattern,
+                start: start,
+            });
+        }))
     }
 
     function handlePatternListMouseEnter(ev: React.MouseEvent) {
@@ -176,12 +187,10 @@ export default function TrackEditor() {
                                     }}>
                                     <PositionContainer>
                                         {track.patterns.map((pattern, i) => {
-                                            const width = factor; /* * draggedPattern.length */
-                                            const left = pattern.start * factor - sidebarSize
                                             return (
-                                                <li className="pattern" key={`track[${id}]:pattern[${i}]`} style={{
-                                                    left: pattern.start,
-                                                    width: width,
+                                                <li key={`track[${id}]:pattern[${i}]`} className="pattern" style={{
+                                                    width: factor /* * draggedPattern.length */,
+                                                    left: pattern.start * factor,
                                                 }}>
                                                     Pattern {i}
                                                 </li>
@@ -193,8 +202,8 @@ export default function TrackEditor() {
                                             const left = draggedPattern.left - sidebarSize + project.position;
                                             return (
                                                 <li className="pattern preview" style={{
-                                                    left: slipFloor(left, width / project.snap),
                                                     width: width,
+                                                    left: slipFloor(left, width / project.snap),
                                                 }} />
                                             )
                                         })()}

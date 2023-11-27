@@ -494,9 +494,9 @@ export default function MidiEditor(props: { patternId: string }) {
                                 backgroundSize: `${zoomBase * Math.E ** zoom}px 72px`,
                                 backgroundPositionX: -position,
                                 backgroundImage: ` \
-                            linear-gradient(0deg,#00000000 50%,#00000044 50%), \
-                            linear-gradient(90deg,#6e6e6e 0px,#6e6e6e 4px,#00000000 4px), \
-                            linear-gradient(90deg, ${(function () {
+                                    linear-gradient(0deg,#00000000 50%,#00000044 50%), \
+                                    linear-gradient(90deg,#6e6e6e 0px,#6e6e6e 4px,#00000000 4px), \
+                                    linear-gradient(90deg, ${(function () {
                                         let result = [];
                                         for (let i = 0; i < tact; i++) {
                                             let percent = 100 / tact * i;
