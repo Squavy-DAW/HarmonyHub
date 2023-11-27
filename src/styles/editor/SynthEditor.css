@@ -1,6 +1,6 @@
 .synth-editor{
     position: relative;
-    background-image: url("src/assets/infinite-background-tile-center-cross-dark.png");
+    background-image: url("/src/assets/infinite-background-tile-center-cross-dark.png");
     background-repeat: repeat;
     background-size: 56px;
     image-rendering: pixelated;

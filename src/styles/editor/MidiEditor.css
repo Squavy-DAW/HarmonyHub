@@ -110,7 +110,7 @@
     user-select: none;
     display: grid;
     place-content: center;
-    background-image: url("src/assets/piano/octave.png");
+    background-image: url("/src/assets/piano/octave.png");
     background-repeat: no-repeat;
     background-size: contain;
     image-rendering: pixelated;
@@ -139,7 +139,7 @@
     top: 0;
     transform: translateY(-50%);
     background-position: right;
-    background-image: url("src/assets/piano/black-key.png");
+    background-image: url("/src/assets/piano/black-key.png");
     background-repeat: no-repeat;
     background-size: contain;
     image-rendering: pixelated;
@@ -163,37 +163,37 @@
 }
 
 .music-layout .piano-roll ul.keys .white-key.general {
-    background-image: url("src/assets/piano/general-key.png");
+    background-image: url("/src/assets/piano/general-key.png");
     height: 72px;
     line-height: 72px;
 }
 
 .music-layout .piano-roll ul.keys .white-key.c-f {
-    background-image: url("src/assets/piano/c-f-key.png");
+    background-image: url("/src/assets/piano/c-f-key.png");
     height: 54px;
     line-height: 62px;
 }
 
 .music-layout .piano-roll ul.keys .white-key.e-b {
-    background-image: url("src/assets/piano/e-b-key.png");
+    background-image: url("/src/assets/piano/e-b-key.png");
     height: 54px;
     line-height: 46px;
 }
 
 .music-layout .piano-roll ul.keys .general.pressed-white {
-    background-image: url("src/assets/piano/general-key-pressed.png");
+    background-image: url("/src/assets/piano/general-key-pressed.png");
 }
 
 .music-layout .piano-roll ul.keys .c-f.pressed-white {
-    background-image: url("src/assets/piano/c-f-key-pressed.png");
+    background-image: url("/src/assets/piano/c-f-key-pressed.png");
 }
 
 .music-layout .piano-roll ul.keys .e-b.pressed-white {
-    background-image: url("src/assets/piano/e-b-key-pressed.png");
+    background-image: url("/src/assets/piano/e-b-key-pressed.png");
 }
 
 .music-layout .piano-roll ul.keys .pressed-black::after {
-    background-image: url("src/assets/piano/black-key-pressed.png");
+    background-image: url("/src/assets/piano/black-key-pressed.png");
 }
 
 .music-layout .piano-roll .midi-editor .mouse-cursors {

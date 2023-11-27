@@ -1,6 +1,6 @@
 @font-face {
     font-family: "VT323-Regular";
-    src: url("src/assets/fonts/VT323-Regular.ttf") format("truetype");
+    src: url("/src/assets/fonts/VT323-Regular.ttf") format("truetype");
 }
 
 :root {
@@ -25,7 +25,7 @@
 #crt-lines {
     position: absolute;
     inset: 0;
-    background: url(src/assets/lines.gif);
+    background: url('/src/assets/lines.gif');
     background-size: 9px auto;
     mix-blend-mode: overlay;
     pointer-events: none;
@@ -44,7 +44,7 @@
 #vignette {
     position: absolute;
     inset: 0;
-    background: url(src/assets/vignette.png);
+    background: url('/src/assets/vignette.png');
     z-index: 110;
     background-size: 100% 100%;
     mix-blend-mode: overlay;

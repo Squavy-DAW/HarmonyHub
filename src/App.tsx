@@ -44,7 +44,7 @@ function App() {
 
     useEffect(() => {
         const toggleEffects = (event: KeyboardEvent) => {
-            if (event.key === "E") {
+            if (event.key === "E" && import.meta.env.DEV) {
                 console.log("toggle effects", _effectsEnabled.current);
 
                 setEffectsEnabled(!_effectsEnabled.current);
@@ -60,7 +60,7 @@ function App() {
 
     return (
         <>
-            {import.meta.env.DEV && effectsEnabled && <>
+            {effectsEnabled && <>
                 <div id="crt-lines"></div>
                 <div id="darken"></div>
                 <div id="vignette"></div>

@@ -3,6 +3,19 @@ import NetworkContext from "@src/context/networkcontext";
 import { useContext, useEffect, useState } from "react";
 import CollaborationModal from "../modal/Collaboration";
 import '@styles/Toolbar.css'
+import FileIcon from '@src/assets/toolbar/file.png';
+import NewIcon from '@src/assets/toolbar/new.png';
+import OpenIcon from '@src/assets/toolbar/open.png';
+import DiskIcon from '@src/assets/toolbar/disk.png';
+import BrowserIcon from '@src/assets/toolbar/browser.png';
+import RecentsIcon from '@src/assets/toolbar/recents.png';
+import SaveIcon from '@src/assets/toolbar/save.png';
+import ExportIcon from '@src/assets/toolbar/export.png';
+import EditIcon from '@src/assets/toolbar/edit.png';
+import UndoIcon from '@src/assets/toolbar/undo.png';
+import RedoIcon from '@src/assets/toolbar/redo.png';
+import CollaborationIcon from '@src/assets/toolbar/collaboration.png';
+
 
 export default function Toolbar() {
 
@@ -15,29 +28,29 @@ export default function Toolbar() {
 
     const toolbarItems: ToolbarItem[] = [{
         name: 'File',
-        icon: '/src/assets/toolbar/file.png',
+        icon: FileIcon,
         items: [{
             name: 'New',
-            icon: '/src/assets/toolbar/new.png',
+            icon: NewIcon,
         }, {
             name: 'Open',
-            icon: '/src/assets/toolbar/open.png',
+            icon: OpenIcon,
             items: [{
                 name: 'From disk',
-                icon: '/src/assets/toolbar/disk.png',
+                icon: DiskIcon,
             }, {
                 name: 'Browser storage',
-                icon: '/src/assets/toolbar/browser.png',
+                icon: BrowserIcon,
             }, {
                 name: 'Recently opened',
-                icon: '/src/assets/toolbar/recents.png',
+                icon: RecentsIcon,
             }]
         }, {
             name: 'Save',
-            icon: '/src/assets/toolbar/save.png',
+            icon: SaveIcon,
         }, {
             name: 'Export',
-            icon: '/src/assets/toolbar/export.png',
+            icon: ExportIcon,
             items: [{
                 "name": "As mp3",
             }, {
@@ -46,14 +59,14 @@ export default function Toolbar() {
         }]
     }, {
         name: 'Edit',
-        icon: '/src/assets/toolbar/edit.png',
+        icon: EditIcon,
         items: [{
             name: 'Undo',
-            icon: '/src/assets/toolbar/undo.png',
+            icon: UndoIcon,
             onClick: () => console.log('undo')
         }, {
             name: 'Redo',
-            icon: '/src/assets/toolbar/redo.png',
+            icon: RedoIcon,
             onClick: () => console.log('redo')
         }]
     }];
@@ -131,7 +144,7 @@ export default function Toolbar() {
             )}
             <li style={{ flex: 1 }} />
             <li className={["toolbar-item collaboration", socket && 'active'].join(' ')} onClick={handleCollaborateClick}>
-                <img src="/src/assets/toolbar/collaboration.png" alt="collaboration" height={16} />
+                <img src={CollaborationIcon} alt="collaboration" height={16} />
                 <span>{socket ? 'Collaborating' : 'Collaborate...'}</span>
             </li>
         </ul>
