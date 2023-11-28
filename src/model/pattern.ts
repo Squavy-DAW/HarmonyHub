@@ -3,12 +3,13 @@ import Note from "./note";
 export default interface Pattern {
     name: string,
     color: string,
-    tact?: number,
-    zoom?: number,
-    position?: number,
-    snap?: number,
+    tact: number,
+    zoom: number,
+    position: number,
+    snap: number,
     locked: boolean,
     notes: { [id: string]: Note },
+    length: number,
 }
 
 export type DraggingPattern = Pattern & {
@@ -30,4 +31,5 @@ export const defaultPattern: Pattern = {
     snap: 1,
     locked: false,
     notes: {},
+    length: 1,
 }
