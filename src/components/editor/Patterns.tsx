@@ -6,9 +6,10 @@ import ProjectContext from "@src/context/projectcontext";
 import useMouse from "@src/hooks/mouse";
 import { forwardRef, useContext, useEffect, useState } from "react";
 import { produce } from "immer"
-import Pattern from "@models/pattern";
+import Pattern, { defaultPattern } from "@models/pattern";
 import { generateId } from "@network/crypto";
 import DraggedPatternContext from "@src/context/draggedpatterncontext";
+import PatternPreview from "./PatternPreview";
 
 export default function Patterns(props: { overlay: React.RefObject<HTMLDivElement> }) {
     const { project, setProject } = useContext(ProjectContext);
@@ -42,10 +43,8 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
         if (!newPatternName) return;
         const id = generateId(new Set(Object.keys(project.data.patterns)));
         const pattern: Pattern = {
+            ...defaultPattern,
             name: newPatternName,
-            color: '#000000',
-            locked: false,
-            notes: {}
         };
 
         setProject(produce(draft => {
@@ -120,7 +119,6 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
 export const PatternDragOverlay = forwardRef(function (props: React.HTMLAttributes<HTMLDivElement>, ref: React.Ref<HTMLDivElement>) {
 
     const { draggedPattern } = useContext(DraggedPatternContext);
-    const { project } = useContext(ProjectContext);
 
     return (
         <div className="pattern-drag-overlay" ref={ref} {...props}>
@@ -135,7 +133,7 @@ export const PatternDragOverlay = forwardRef(function (props: React.HTMLAttribut
                     top: draggedPattern.top,
                     rotate: `${Math.min(Math.max(draggedPattern.rotate, -30), 30)}deg`,
                 }}>
-                {/* Pattern preview */}
+                <PatternPreview id={draggedPattern.id} />
             </li>}
         </div>
     )

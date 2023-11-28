@@ -23,9 +23,9 @@ export const defaultProject: Project = {
     description: '',
     editDate: new Date(),
     createDate: new Date(),
-    zoom: 1,
+    zoom: -1,
     position: 0,
-    snap: 16,
+    snap: 8,
     data: {
         patterns: {
             [generateId()]: defaultPattern,

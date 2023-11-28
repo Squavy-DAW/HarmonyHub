@@ -13,6 +13,7 @@ import { Allotment, LayoutPriority } from "allotment";
 import Timeline from "./Timeline";
 import PositionContainer from "./PositionContainer";
 import ZoomContext from "@src/context/zoomcontext";
+import PatternPreview from "./PatternPreview";
 
 export default function TrackEditor() {
     const { socket, cryptoKey } = useContext(NetworkContext);
@@ -42,7 +43,7 @@ export default function TrackEditor() {
             setProject(produce(draft => {
                 const oldSize = zoomBase * Math.E ** _zoom.current;
                 const value = _zoom.current - ev.deltaY / 300;
-                _zoom.current = Math.max(Math.min(value, 2), -2);
+                _zoom.current = Math.max(Math.min(value, 2), -4);
                 const newSize = zoomBase * Math.E ** _zoom.current;
                 draft.zoom = _zoom.current;
 
@@ -83,9 +84,10 @@ export default function TrackEditor() {
         const id = ev.currentTarget.getAttribute('data-id')!;
         setProject(produce(draft => {
             const track = draft.data.tracks[id];
-            const width = factor; /* * draggedPattern.length */
+            const width = factor * draggedPattern.length;
             const left = draggedPattern.left + project.position - sidebarSize;
             const start = slipFloor(left, width / project.snap) / factor;
+
             track.patterns.push({
                 ...draggedPattern,
                 start: start,
@@ -188,23 +190,26 @@ export default function TrackEditor() {
                                     <PositionContainer>
                                         {track.patterns.map((pattern, i) => {
                                             return (
-                                                <li key={`track[${id}]:pattern[${i}]`} className="pattern" style={{
-                                                    width: factor /* * draggedPattern.length */,
+                                                <li key={`track[${id}]:pattern[${i}]`} className="track-pattern" style={{
+                                                    width: pattern.length * factor,
                                                     left: pattern.start * factor,
                                                 }}>
-                                                    Pattern {i}
+                                                    <PatternPreview id={pattern.id} />
                                                 </li>
                                             )
                                         })}
 
                                         {!draggedPattern?.dropped && draggedPattern?.over == id && (() => {
-                                            const width = factor; /* * draggedPattern.length */
-                                            const left = draggedPattern.left - sidebarSize + project.position;
+                                            const width = draggedPattern.length * factor;
+                                            const left = draggedPattern.left + project.position - sidebarSize;
+                                            const start = slipFloor(left, width / project.snap) / factor;
                                             return (
-                                                <li className="pattern preview" style={{
+                                                <li className="track-pattern preview" style={{
                                                     width: width,
-                                                    left: slipFloor(left, width / project.snap),
-                                                }} />
+                                                    left: start * factor,
+                                                }}>
+                                                    <PatternPreview id={draggedPattern.id} />
+                                                </li>
                                             )
                                         })()}
                                     </PositionContainer>

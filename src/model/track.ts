@@ -2,6 +2,7 @@ import { Synth } from "@synth/synth"
 import Pattern from "./pattern"
 
 type TimedPattern = Pattern & {
+    id: string,
     start: number,
 }
 
