@@ -5,7 +5,9 @@ import ProjectContext from "@src/context/projectcontext";
 import useMouse from "@src/hooks/mouse";
 import SoundContext from "@src/context/soundcontext";
 import LinePosition from "@models/linepositionprops";
-import { Synth, createSynth } from "@synth/synth";
+import { AdvancedAudioNodeParams, Synth, createSynth } from "@synth/synth";
+import { time } from "console";
+import { current } from "immer";
 
 export default function SynthEditor(){
     const [nodes, setNodes] = useState<AudioNodeProps[]>([]);
@@ -21,7 +23,11 @@ export default function SynthEditor(){
     
 
     const { ctx, engine } = useContext(SoundContext);
-    let synth:Synth|undefined = undefined;
+    const [synth, setSyth] = useState<Synth>();
+    const [startTime, setStarttime] = useState<number>();
+    
+    //let synth:Synth|undefined = undefined;
+    //let startTime:number = 0;   //take this from somewhere else, because if you reopen the editor, it will reset and the possibilities of overlapping values are highly increased
 
     function handleNodeMouseDown(ev: React.MouseEvent){
         const target = ev.currentTarget as HTMLElement;
@@ -74,7 +80,17 @@ export default function SynthEditor(){
             }
 
             if(!svgLines.find(e => (e.a == _svgDragLine.current?.a && e.b == target.getAttribute("data-key")!)
-            || (e.a == target.getAttribute("data-key")! && e.b == _svgDragLine.current?.a)))
+            || (e.a == target.getAttribute("data-key")! && e.b == _svgDragLine.current?.a))){
+                //add synth-route
+                let node1 = synth?.audioNodeParams.find(x => x.id == target.getAttribute("data-synth-id"));
+                let node2 = undefined;  //TODO: Get the id of the current node
+                if(node1 === undefined /*|| node2 === undefined*/){
+                    console.error(`no nodes where found for: ${target.getAttribute("data-synth-id")}`);
+                }else{
+                    addRouteToSynth(node1, node1);
+                }
+
+                //add svg-line
                 setSvgLines([...svgLines, { 
                     x1: _svgDragLine.current.x1, 
                     y1: _svgDragLine.current.y1, 
@@ -83,6 +99,7 @@ export default function SynthEditor(){
                     a: _svgDragLine.current.a,
                     b: target.getAttribute("data-key")!
                 }]);
+            }
             _svgDragLine.current = undefined;
             setSvgDragLine(undefined);
             resetDataAllowed();
@@ -100,16 +117,30 @@ export default function SynthEditor(){
         setSvgDragLine(_svgDragLine.current);
     }
 
-    useEffect(() => {
-        synth = createSynth(ctx);
-        engine.synths.push(synth);
+    function addElementToSynth(props: AudioNodeProps){
+        if(synth?.audioNodeParams.filter(x => x.id == props.id).length! > 0){
+            console.error("param id already exists!"+synth?.audioNodeParams.filter(x => x.id == props.id).length);
+            return;
+        }
+        synth?.audioNodeParams.push({id: props.id!, params: props.data.node.params});
+    }
+
+    function addRouteToSynth(params1: AdvancedAudioNodeParams, params2: AdvancedAudioNodeParams){
+        //TODO: Implement
+    }
+
+    useEffect(() => {   // TODO: Everything i do here gets reset afterwards. Why?
+        //startTime = Date.now();
+        //synth = createSynth(ctx);
+        setStarttime(Date.now());
+        setSyth(createSynth(ctx));
+        engine.synths.push(synth!);
         return () => {
             engine.synths = engine.synths.filter(s => s != synth);
         }
     },[]);
 
     useEffect(() => {
-        console.log(synth?.ctx + " -a- " + engine.synths.length);
         if (!mouseDown && draggedNode) {
             draggedNode.style.rotate = '0deg';
             draggedNode.setAttribute("data-grab","none");
@@ -180,7 +211,7 @@ export default function SynthEditor(){
                         return <li key={`node[${i}]`} className='audionode'
                         onMouseDown={handleNodeMouseDown} 
                         style={{width:node.data.width+"px", height:node.data.height+"px"}}
-                        data-id={node.id}
+                        data-type={node.type}
                         data-drag="none">
                             {node.name}
                             {
@@ -190,6 +221,7 @@ export default function SynthEditor(){
                                     onMouseUp={handleConnectionMouseClick}
                                     data-id={connector.id}
                                     data-allowed={connector.id=="out"?true:false}
+                                    data-synth-id={node.id}
                                     style={{top: connector.top+"px", left: connector.left+"px", bottom: connector.bottom+"px", right: connector.right+"px"}}></div>
                                 )
                             }
@@ -201,14 +233,24 @@ export default function SynthEditor(){
             <ul>
                 <li>
                 <button onClick={() => {
-                    setNodes([...nodes, defaultAudioEndNode]);
+                    let node = defaultAudioEndNode;
+                    node.id = `${Date.now()-startTime!}_${Math.floor(Math.random() * 1000)}`;
+                    setNodes([...nodes, node]);
+                    
+                    //add element to synth
+                    addElementToSynth(node);
                     }}>
                     Add AudioEndNode
                 </button>
                 </li>
                 <li>
                 <button onClick={() => {
-                    setNodes([...nodes, defaultOscillatorNode]);
+                    let node = defaultOscillatorNode;
+                    node.id = `${Date.now()-startTime!}_${Math.floor(Math.random() * 1000)}`;
+                    setNodes([...nodes, node]);
+
+                    //add element to synth
+                    addElementToSynth(node);
                     }}>
                     Add Oscillator
                 </button>

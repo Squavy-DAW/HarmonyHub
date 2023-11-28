@@ -18,11 +18,9 @@ export interface AdvancedAudioNodeParams{}
 //the object that exists in the context
 export interface Synth{
     ctx:AudioContext    //set this to the general audio context on creation
-    //creation pool
+    //audionode pool
     audioNodeParams:{id:string, params:AdvancedAudioNodeParams}[];  //make this list empty on creation
     activeAudioNodes:{id:string}[];    //make this list empty on creation
-    //modulator pool
-        //...   TODO:Implement
     //AudioNode routing
     routes:ModRoM;
 
@@ -41,10 +39,12 @@ export function createSynth(
 
     function start(freq:number){
         //TODO: Implement
+        console.warn("HEY DEV, the Synth is playing the freq: "+freq);  //TEST
     }
 
     function stop(freq:number){
         //TODO: Implement
+        console.warn("HEY DEV, the Synth has stopped playing the freq: "+freq); //TEST
     }
 
     return {

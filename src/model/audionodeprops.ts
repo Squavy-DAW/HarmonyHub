@@ -6,8 +6,9 @@ import { createAudioEndNodeParams } from "@synth/audioEndNode";
 export type AudioNodeType = "AudioEndNode" | "Oscillator" | "Envelope";
 
 export default interface AudioNodeProps {
-    id: AudioNodeType
+    type: AudioNodeType
     name: string,
+    id: string|undefined,
     data: { 
         x: number,
         y: number,
@@ -22,8 +23,9 @@ export default interface AudioNodeProps {
 }
 
 export const defaultOscillatorNode:AudioNodeProps = {
-    id: "Oscillator",
-    name: "Oscillator",
+    type: "Oscillator",
+    name: "Default Oscillator",
+    id: undefined,
     data: {
         x: 0,
         y: 0,
@@ -36,14 +38,15 @@ export const defaultOscillatorNode:AudioNodeProps = {
         ],
         node: {
             id: "oscillator",
-            params: createOscillatorParams("",0,0,0,0,0,0)
+            params: createOscillatorParams("sine",0,0,0,0,0,0)
         }
     }
 }
 
 export const defaultAudioEndNode:AudioNodeProps = {
-    id: "AudioEndNode",
-    name: "AudioEndNode",
+    type: "AudioEndNode",
+    name: "Default AudioEndNode",
+    id: undefined,
     data: {
         x: 0,
         y: 0,

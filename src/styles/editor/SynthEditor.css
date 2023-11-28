@@ -45,7 +45,7 @@
     cursor:grabbing
 }
 
-.synth-editor .audionode[data-id= "AudioEndNode"]{
+.synth-editor .audionode[data-type= "AudioEndNode"]{
     background-color: rgb(245, 157, 248);
     border-color: black;
     border-width: 3px;
@@ -53,14 +53,14 @@
     
 }
 
-.synth-editor .audionode[data-id= "Oscillator"]{
+.synth-editor .audionode[data-type= "Oscillator"]{
     background-color: rgb(201, 248, 157);
     border-color: black;
     border-width: 3px;
     border-style: solid;
 }
 
-.synth-editor .audionode[data-id= "Envelope"]{
+.synth-editor .audionode[data-type= "Envelope"]{
     background-color: rgb(157, 222, 248);
     border-color: black;
     border-width: 3px;
