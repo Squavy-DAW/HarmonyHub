@@ -10,7 +10,6 @@ import TabsContext from '@src/context/tabscontext';
 
 export default function Home() {
 
-
     const { tabs, setTabs, setTabIndex } = useContext(TabsContext);
 
     const [recentProjects, setRecentProjects] = useState<Project[]>();
