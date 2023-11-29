@@ -4,6 +4,8 @@
     padding: 0;
     background-color: #25020267;
     z-index: 25; /* overlay is on 20 */
+
+    border-bottom: 3px solid #2b2b2b;
 }
 
 .toolbar li {
