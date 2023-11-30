@@ -1,4 +1,4 @@
-import React, { createRef, useContext, useEffect, useRef, useState } from "react";
+import React, { createRef, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { produce } from "immer"
 import { startFreq, stopFreq } from "@synth/engineOLD";
 import '@styles/editor/MidiEditor.css';
@@ -17,6 +17,7 @@ import ZoomContext from "@src/context/zoomcontext";
 import PositionContext from "@src/context/positioncontext";
 import PositionContainer from "./PositionContainer";
 import ModalContainer from "@components/modal/ModalContainer";
+import { throttle } from "throttle-debounce";
 
 export default function MidiEditor(props: { patternId: string }) {
     const { project, setProject } = useContext(ProjectContext);
@@ -220,7 +221,6 @@ export default function MidiEditor(props: { patternId: string }) {
         if (socket) {
             handle(socket, cryptoKey!, 'hh:mouse-position-pattern', (id, { x, y, patternId }) => {
                 if (patternId != props.patternId) return;
-
                 setMousePositions({
                     ...mousePositions,
                     [id]: { x, y }
@@ -380,12 +380,16 @@ export default function MidiEditor(props: { patternId: string }) {
         }));
     }, [zoom, position, snap, tact])
 
-    useEffect(() => {
-        socket && broadcast(socket, cryptoKey!, 'hh:mouse-position-pattern', {
+    const broadcastMousePosition = useCallback(throttle(100, () => {
+        broadcast(socket!, cryptoKey!, 'hh:mouse-position-pattern', {
             x: (mousePosition.x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact),
             y: mousePosition.y,
             patternId: props.patternId
-        });
+        })
+    }), [zoom, position, mousePosition])
+
+    useEffect(() => {
+        socket && broadcastMousePosition();
     }, [zoom, position, mousePosition])
 
     useEffect(() => {
