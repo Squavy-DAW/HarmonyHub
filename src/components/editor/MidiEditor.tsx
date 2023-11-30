@@ -221,10 +221,10 @@ export default function MidiEditor(props: { patternId: string }) {
         if (socket) {
             handle(socket, cryptoKey!, 'hh:mouse-position-pattern', (id, { x, y, patternId }) => {
                 if (patternId != props.patternId) return;
-                setMousePositions({
-                    ...mousePositions,
+                setMousePositions(prev => ({
+                    ...prev,
                     [id]: { x, y }
-                });
+                }));
             })
 
             // todo cleanup function
