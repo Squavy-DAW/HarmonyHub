@@ -20,8 +20,6 @@ import { generateId } from '@network/crypto';
 import TabsContext from '@src/context/tabscontext';
 import ZoomContext from '@src/context/zoomcontext';
 import PositionContext from '@src/context/positioncontext';
-import { throttle } from 'throttle-debounce';
-import SynthEditor from './synthesizer/SynthEditor';
 
 export default function Music(props: { project: Project, network: Network }) {
 
@@ -115,15 +113,6 @@ export default function Music(props: { project: Project, network: Network }) {
                                     <Allotment vertical={false} separator={true} proportionalLayout={false}>
                                         <Allotment.Pane priority={LayoutPriority.High}>
                                             <TrackEditor />
-                                            <button onClick={() => {
-                                                setModalContent(
-                                                    <SynthEditor/>
-                                                )
-                                            }}
-                                            style={{width: "100px", height: "50px"}}
-                                            >
-                                                Temporary Synth Editor
-                                            </button>
                                         </Allotment.Pane>
                                         <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
                                             <Patterns overlay={patternDragOverlay} />

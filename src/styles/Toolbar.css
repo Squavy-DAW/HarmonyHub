@@ -2,7 +2,7 @@
     display: flex;
     margin: 0;
     padding: 0;
-    background-color: #25020267;
+    background-color: #201010;
     z-index: 25; /* overlay is on 20 */
 }
 
@@ -58,5 +58,5 @@
 
 .toolbar-overlay.active {
     pointer-events: initial;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: #00000033;
 }

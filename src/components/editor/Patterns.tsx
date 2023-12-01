@@ -69,21 +69,21 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
 
     useEffect(() => {
         if (!mouseDown && draggedPattern) {
-            setDraggedPattern(produce(draft => {
-                if (!draft) return;
-                draft.dropped = true;
-            }));
-            return;
+            setDraggedPattern(undefined);
+            // setDraggedPattern(produce(draft => {
+            //     if (!draft) return;
+            //     draft.dropped = true;
+            // }));
         }
     }, [mouseDown])
 
     useEffect(() => {
         if (draggedPattern) {
             setDraggedPattern(produce(draft => {
-                if (!draft) return;
+                if (!draft || !props.overlay.current) return;
                 draft.active = true;
-                draft.left = mousePosition.x - props.overlay.current!.getBoundingClientRect().left;
-                draft.top = mousePosition.y - props.overlay.current!.getBoundingClientRect().top;
+                draft.left = mousePosition.x - props.overlay.current.getBoundingClientRect().left;
+                draft.top = mousePosition.y - props.overlay.current.getBoundingClientRect().top;
                 draft.rotate = mouseDelta.x;
             }));
         }

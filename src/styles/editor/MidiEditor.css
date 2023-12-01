@@ -40,13 +40,6 @@
     overflow: hidden;
 }
 
-.music-layout .piano-roll .midi-editor .selection {
-    border: 4px solid #762929be;
-    position: absolute;
-    z-index: 1;
-    background-color: #7629294a;
-}
-
 .music-layout .piano-roll .midi-editor .note {
     position: absolute;
     list-style: none;

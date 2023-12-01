@@ -7,13 +7,14 @@ type TimedPattern = Pattern & {
 }
 
 export default interface Track {
+    index: number,
     name: string,
-    patterns: TimedPattern[],
+    patterns: { [id: string]: TimedPattern },
     instrument: Synth,
 }
 
-export const defaultTrack: Track = {
+export const defaultTrack: Omit<Track, 'index'> = {
     name: "New Track",
-    patterns: [],
+    patterns: {},
     instrument: null!
 }
