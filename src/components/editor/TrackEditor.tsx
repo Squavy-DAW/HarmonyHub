@@ -131,6 +131,13 @@ export default function TrackEditor() {
         setSelectedPatterns(new Set(selection));
     }
 
+    function handleOpenSynthEditor(ev: React.MouseEvent) {
+        const id = ev.currentTarget.getAttribute('data-id')!;
+        setModalContent(
+            <SynthEditor /* TODO: pass 'trackId' */ />
+        )
+    }
+
     useEffect(() => {
         trackEditorRef.current?.addEventListener('wheel', handleEditorWheel);
         return () => {
@@ -178,7 +185,8 @@ export default function TrackEditor() {
                     }).map(id => {
                         const track = project.data.tracks[id];
                         return (
-                            <li key={`track[${id}]`} className="track" data-id={id}>
+                            <li key={`track[${id}]`} className="track" data-id={id} 
+                                onClick={handleOpenSynthEditor}>
                                 <div className="track-mixer">
                                     Mixer
                                 </div>
@@ -218,11 +226,11 @@ export default function TrackEditor() {
                     }}>
                         {Object.keys(project.data.tracks).sort((a, b) => {
                             return project.data.tracks[a].index - project.data.tracks[b].index
-                        }).map(trackId => {
-                            const track = project.data.tracks[trackId];
+                        }).map(id => {
+                            const track = project.data.tracks[id];
 
                             return (
-                                <ul className="track" key={`track[${trackId}]`} data-id={trackId}
+                                <ul className="track" key={`track[${id}]`} data-id={id}
                                     onMouseUp={handleTrackAddPattern}
                                     onMouseEnter={handleTrackMouseEnter}
                                     onMouseLeave={handleTrackMouseLeave}>
@@ -230,7 +238,7 @@ export default function TrackEditor() {
                                         {Object.keys(track.patterns).map(patternId => {
                                             const pattern = track.patterns[patternId];
                                             return (
-                                                <li key={`track[${trackId}]:pattern[${patternId}]`} data-id={patternId}
+                                                <li key={`track[${id}]:pattern[${patternId}]`} data-id={patternId}
                                                     className={["track-pattern", selectedPatterns.has(patternId) ? "selected" : undefined].join(" ")}
                                                     style={{
                                                         width: pattern.length * factor,
@@ -241,7 +249,7 @@ export default function TrackEditor() {
                                             )
                                         })}
 
-                                        {draggedPattern && !draggedPattern.dropped && draggedPattern.over == trackId && (() => {
+                                        {draggedPattern && !draggedPattern.dropped && draggedPattern.over == id && (() => {
                                             const width = draggedPattern.length * factor;
                                             const left = draggedPattern.left + project.position - sidebarSize;
                                             const start = slipFloor(left, width / project.snap) / factor;
@@ -276,16 +284,7 @@ export default function TrackEditor() {
             </div>
 
             <div className="misc">
-                {/* TODO: Add cool stuff (pixel art, oscilloscope, etc...) */}
-                <button onClick={() => {
-                    setModalContent(
-                        <SynthEditor />
-                    )
-                }}
-                    style={{ width: "100px", height: "50px" }}
-                >
-                    Temporary Synth Editor
-                </button>
+                
             </div>
 
             <section className="mouse-cursors">
