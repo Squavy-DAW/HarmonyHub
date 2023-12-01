@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import "@styles/editor/Selection.css";
 import PositionContext from "@src/context/positioncontext";
 import ZoomContext from "@src/context/zoomcontext";
@@ -33,6 +33,13 @@ export default function Selection({
 
     const selectionRef = useRef<HTMLDivElement>(null);
 
+    function stopSelection() {
+        _selectionOrigin.current = undefined;
+        setSelectionStart({ x: 0, y: 0 });
+        setSelectionEnd({ x: 0, y: 0 });
+        onSelectionEnd?.();
+    }
+
     function handleSelectionStart(ev: React.MouseEvent) {
         if (ev.buttons == 1 && ev.shiftKey) {
             ev.stopPropagation();
@@ -54,10 +61,7 @@ export default function Selection({
     }
 
     function handleSelectionStop(ev: React.MouseEvent) {
-        _selectionOrigin.current = undefined;
-        setSelectionStart({ x: 0, y: 0 });
-        setSelectionEnd({ x: 0, y: 0 });
-        onSelectionEnd?.();
+        stopSelection();
     }
 
     function handleSelectionSize(ev: React.MouseEvent) {
@@ -97,6 +101,29 @@ export default function Selection({
             onSelectionChange(Array.from(_selectedNotes.current));
         }
     }
+
+    function handleMouseUp(ev: MouseEvent) {
+        if (ev.button == 0) {
+            ev.stopPropagation();
+            stopSelection();
+        }
+    }
+
+    function handleKeyup(ev: KeyboardEvent) {
+        if (ev.key == "Escape" || ev.key == "Shift") {
+            ev.stopPropagation();
+            stopSelection();
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener("mouseup", handleMouseUp);
+        document.addEventListener("keyup", handleKeyup)
+        return () => {
+            document.removeEventListener("mouseup", handleMouseUp);
+            document.removeEventListener("keyup", handleKeyup);
+        }
+    }, []);
 
     return (
         <div className="selection-container" ref={selectionRef}

@@ -244,7 +244,7 @@ export default function TrackEditor() {
                                                         width: pattern.length * factor,
                                                         left: pattern.start * factor,
                                                     }}>
-                                                    <PatternPreview id={pattern.id} />
+                                                    <PatternPreview id={pattern.id} style={{opacity: 0.5}} />
                                                 </li>
                                             )
                                         })}

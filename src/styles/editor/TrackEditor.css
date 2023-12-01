@@ -115,18 +115,20 @@
 }
 
 .track-layout .track-list {
+    overflow: hidden;
     margin: 0;
     padding: 0;
 }
 
 .track-layout .track-list .track {
-    overflow: hidden;
     position: relative;
     height: 72px;
     list-style: none;
     display: grid;
     grid-template-columns: var(--sidebar-width) auto;
     font-size: 0.8rem;
+    margin: 0;
+    padding: 0;
 }
 
 .track-layout .track-list .track .track-pattern {
@@ -134,22 +136,34 @@
     position: absolute;
     top: 0;
     height: 74px;
-    border-radius: 8px;
 }
 
 .track-layout .track-list .track .track-pattern:not(.preview) {
-    border: 3px solid #2b2b2b;
-    background-color: #191717;
+    border-image-source: url('/src/assets/track-editor/pattern.png');
+    border-image-slice: 2 fill;
+    border-image-width: 8px;
+    image-rendering: pixelated;
 }
 
-.track-layout .track-list .track .track-pattern.preview {
-    border: 3px dashed white;
-    background-color: #ffffff22;
-    opacity: 0.5;
+@keyframes pattern-select {
+    from { box-shadow: 0 0 0 0 #4a42bd4a; }
+    to { box-shadow: 0 0 0 20px #4a42bd00; }
 }
 
 .track-layout .track-list .track .track-pattern.selected {
-    border: 3px solid #ffffff;
+    animation: note-select 0.3s ease-out forwards;
+    border-image-source: url('/src/assets/track-editor/pattern-selected.png');
+}
+
+@keyframes preview-animation {
+    from { opacity: 0.6; }
+    to { opacity: 0.3; }
+}
+
+.track-layout .track-list .track .track-pattern.preview {
+    border: 4px dashed white;
+    background-color: #ffffff22;
+    animation: preview-animation 1s infinite alternate;
 }
 
 .track-layout .track-list .track .track-pattern .pattern-preview {
