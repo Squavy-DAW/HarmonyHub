@@ -18,13 +18,14 @@ import PositionContext from "@src/context/positioncontext";
 import PositionContainer from "./PositionContainer";
 import ModalContainer from "@components/modal/ModalContainer";
 import { throttle } from "throttle-debounce";
+import Selection from "./Selection";
 
 export default function MidiEditor(props: { patternId: string }) {
     const { project, setProject } = useContext(ProjectContext);
     const { socket, cryptoKey } = useContext(NetworkContext);
 
-    const [snap, setSnap] = useState(project.data.patterns[props.patternId].snap ?? 4);
-    const [tact, setTact] = useState(project.data.patterns[props.patternId].tact ?? 4);
+    const [snap, setSnap] = useState(project.data.patterns[props.patternId].snap);
+    const [tact, setTact] = useState(project.data.patterns[props.patternId].tact);
 
     const mode = useRef<{ x: 'move' | 'resize_right' | 'resize_left' | undefined, y: 'move' | undefined }>()
 
@@ -34,18 +35,17 @@ export default function MidiEditor(props: { patternId: string }) {
     //Freq = note x 2^(N/12)
     const noteList = Array.from(genLookupTable()).sort(([, v1], [, v2]) => v2 - v1);
 
-    const [zoom, setZoom] = useState(project.data.patterns[props.patternId].zoom ?? 1);
+    const [zoom, setZoom] = useState(project.data.patterns[props.patternId].zoom);
     const _zoom = useRef(zoom);
 
-    const [position, setPosition] = useState(project.data.patterns[props.patternId].position ?? 1);
+    const [position, setPosition] = useState(project.data.patterns[props.patternId].position);
     const _position = useRef(position);
 
     const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
+    const [selecting, setSelecting] = useState(false);
+
     const [mouseMoveRelative, setMouseMoveRelative] = useState({ x: 0, y: 0 });
     const _mouseDownOrigin = useRef({ x: 0, y: 0 });
-    const [selectionStart, setSelectionStart] = useState({ x: 0, y: 0 });
-    const [selectionEnd, setSelectionEnd] = useState({ x: 0, y: 0 });
-    const _selectionOrigin = useRef<{ x: number, y: number }>();
 
     const [mousePositions, setMousePositions] = useState<{ [id: string]: { x: number, y: number } }>({});
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -94,7 +94,7 @@ export default function MidiEditor(props: { patternId: string }) {
 
             let oldSize = zoomBase * Math.E ** _zoom.current;
             let value = _zoom.current - ev.deltaY / 300;
-            _zoom.current = Math.max(Math.min(value, 2), -1);
+            _zoom.current = Math.max(Math.min(value, 3), 0);
             let newSize = zoomBase * Math.E ** _zoom.current;
             setZoom(_zoom.current);
 
@@ -119,22 +119,11 @@ export default function MidiEditor(props: { patternId: string }) {
     }
 
     function handleEditorMouseDown(ev: React.MouseEvent) {
-        if (ev.nativeEvent.which == 3) {
-            setSelectedNotes(new Set());
-            return;
-        };
         let rect = editorRef.current!.getBoundingClientRect();
         let x = ev.clientX - rect.left;
         let y = ev.clientY - rect.top;
         let start = slipFloor((x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact), 1 / snap);
         let pitch = Math.floor(y / 36);
-
-        if (ev.buttons == 1 && ev.shiftKey) {
-            _selectionOrigin.current = { x: x, y: y };
-            setSelectionStart({ x: x, y: y });
-            setSelectionEnd({ x: x, y: y });
-            return;
-        }
 
         const id = generateId(new Set(Object.keys(project.data.patterns[props.patternId].notes)));
         const note = {
@@ -162,48 +151,10 @@ export default function MidiEditor(props: { patternId: string }) {
 
     function handleEditorMouseUp(_ev: React.MouseEvent) {
         mode.current = undefined;
-        _selectionOrigin.current = undefined;
-        setSelectionStart({ x: 0, y: 0 });
-        setSelectionEnd({ x: 0, y: 0 });
         correctNoteErrors();
     }
 
     function handleEditorMouseMove(ev: React.MouseEvent) {
-        if (_selectionOrigin.current && ev.buttons == 1 && ev.shiftKey) {
-            let rect = editorRef.current!.getBoundingClientRect();
-            let x = ev.clientX - rect.left;
-            let y = ev.clientY - rect.top;
-            setSelectionStart({
-                x: Math.min(x, _selectionOrigin.current.x),
-                y: Math.min(y, _selectionOrigin.current.y)
-            });
-            setSelectionEnd({
-                x: Math.max(x, _selectionOrigin.current.x),
-                y: Math.max(y, _selectionOrigin.current.y)
-            });
-
-            let startX = (selectionStart.x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact);
-            let startY = selectionStart.y / 36;
-            let endX = (selectionEnd.x + _position.current) / (zoomBase * Math.E ** _zoom.current / tact);
-            let endY = selectionEnd.y / 36;
-
-            Object.keys(project.data.patterns[props.patternId].notes).forEach(id => {
-                const note = project.data.patterns[props.patternId].notes[id];
-                if ((
-                    note.start + note.length > startX && note.start <= endX ||
-                    note.start >= endX && note.start <= startX) && (
-                        note.pitch + 1 >= startY && note.pitch <= endY ||
-                        note.pitch <= startY && note.pitch >= endY)
-                ) {
-                    selectedNotes.add(id);
-                } else {
-                    selectedNotes.delete(id);
-                }
-            });
-
-            return;
-        }
-
         let rect = editorRef.current!.getBoundingClientRect();
         let x = ev.clientX - rect.left;
         let y = ev.clientY - rect.top;
@@ -215,6 +166,10 @@ export default function MidiEditor(props: { patternId: string }) {
         }
 
         setMousePosition({ x, y })
+    }
+
+    function handleSelectionChange(selection: string[]) {
+        setSelectedNotes(new Set(selection));
     }
 
     useEffect(() => {
@@ -440,7 +395,7 @@ export default function MidiEditor(props: { patternId: string }) {
 
     return (
         <ZoomContext.Provider value={{
-            zoom, factor: zoomBase * Math.E ** zoom
+            zoom, factor: zoomBase * Math.E ** zoom / tact
         }}>
             <PositionContext.Provider value={{
                 position
@@ -492,44 +447,42 @@ export default function MidiEditor(props: { patternId: string }) {
                             )}
                         </ul>
 
-                        <section
-                            className="midi-editor"
-                            ref={editorRef}
-                            style={{
-                                backgroundSize: `${zoomBase * Math.E ** zoom}px 72px`,
-                                backgroundPositionX: -position,
-                                backgroundImage: ` \
-                                    linear-gradient(0deg,#00000000 50%,#00000044 50%), \
-                                    linear-gradient(90deg,#6e6e6e 0px,#6e6e6e 4px,#00000000 4px), \
-                                    linear-gradient(90deg, ${(function () {
-                                        let result = [];
-                                        for (let i = 0; i < tact; i++) {
-                                            let percent = 100 / tact * i;
-                                            result.push(`#00000000 ${percent}%,#a0a0a0 ${percent}%,#a0a0a0 ${percent + 1}%,#00000000 ${percent + 1}%`)
-                                        }
-                                        return result.join(',');
-                                    })()})`
-                            }}
-                            onMouseDown={handleEditorMouseDown}
-                            onMouseMove={handleEditorMouseMove}
-                            onMouseUp={handleEditorMouseUp}
-                            onContextMenu={ev => ev.preventDefault()}>
-                            {selectionStart.x != selectionEnd.x && selectionStart.y != selectionEnd.y && <div className="selection" style={{
-                                width: `${Math.abs(selectionStart.x - selectionEnd.x)}px`,
-                                height: `${Math.abs(selectionStart.y - selectionEnd.y)}px`,
-                                left: `${Math.min(selectionStart.x, selectionEnd.x)}px`,
-                                top: `${Math.min(selectionStart.y, selectionEnd.y)}px`,
-                            }} />}
-                            <PositionContainer>
-                                {Object.keys(project.data.patterns[props.patternId].notes).map(id => {
-                                    const note = project.data.patterns[props.patternId].notes[id];
-                                    const factor = zoomBase * Math.E ** zoom / tact;
-                                    return (
-                                        <li key={`note-[${id}]`} data-id={id}
-                                            className={["note", selectedNotes.has(id) ? "selected" : ""].join(" ")}
-                                            onMouseDown={handleNoteMouseDown}
-                                            onMouseMove={handleNoteMouseMove}
-                                            style={{
+                        <ZoomContext.Consumer>{({ factor }) => (
+                            <section
+                                className="midi-editor"
+                                ref={editorRef}
+                                style={{
+                                    backgroundSize: `${factor}px 72px`,
+                                    backgroundPositionX: -position,
+                                    backgroundImage: ` \
+                                        linear-gradient(0deg,#00000000 50%,#00000044 50%), \
+                                        linear-gradient(90deg,#6e6e6e 0px,#6e6e6e 4px,#00000000 4px), \
+                                        linear-gradient(90deg, ${(function () {
+                                            let result = [];
+                                            for (let i = 0; i < tact; i++) {
+                                                let percent = 100 / tact * i;
+                                                result.push(`#00000000 ${percent}%,#a0a0a0 ${percent}%,#a0a0a0 ${percent + 1}%,#00000000 ${percent + 1}%`)
+                                            }
+                                            return result.join(',');
+                                        })()})`
+                                }}
+                                onMouseDown={handleEditorMouseDown}
+                                onMouseMove={handleEditorMouseMove}
+                                onMouseUp={handleEditorMouseUp}
+                                onContextMenu={ev => ev.preventDefault()}>
+
+                                <Selection
+                                    onSelectionChange={handleSelectionChange}
+                                    onSelectionStart={() => setSelecting(true)}
+                                    onSelectionEnd={() => setSelecting(false)}
+                                    selection={Object.keys(project.data.patterns[props.patternId].notes).map(id => {
+                                        const note = project.data.patterns[props.patternId].notes[id];
+                                        return { id: id, x: note.start, y: note.pitch, width: note.length, height: 36 } // note height, todo: make this dynamic
+                                    })}>
+                                    <PositionContainer style={{ pointerEvents: selecting ? "none" : undefined }}>
+                                        {Object.keys(project.data.patterns[props.patternId].notes).map(id => {
+                                            const note = project.data.patterns[props.patternId].notes[id];
+                                            const style: React.CSSProperties = {
                                                 width: `${Math.abs(note.length) < Number.EPSILON
                                                     ? factor * 0.2
                                                     : factor * Math.abs(note.length)}px`,
@@ -539,24 +492,32 @@ export default function MidiEditor(props: { patternId: string }) {
                                                         ? factor * (note.start + note.length)
                                                         : factor * note.start}px`,
                                                 top: `${note.pitch * 36}px`,
-                                            }}>
-                                            <div onMouseDown={handleResizeLeftMouseDown} />
-                                            <div style={{ fontSize: '0.8em' }}>{/*`${note.start.toPrecision(3)}, ${note.length.toPrecision(3)}`*/}</div>
-                                            <div onMouseDown={handleResizeRightMouseDown} />
-                                        </li>
-                                    )
-                                })}
-                            </PositionContainer>
-                            <section className="mouse-cursors" style={{ left: -position }}>
-                                {Object.keys(mousePositions).map(id => {
-                                    const pos = mousePositions[id];
-                                    const factor = zoomBase * Math.E ** zoom / tact;
-                                    return <div key={id} className="cursor" style={{ left: pos.x * factor, top: pos.y }}>
-                                        <span className="cursor-name">{id}</span>
-                                    </div>
-                                })}
+                                            };
+                                            return (
+                                                <li key={`note-[${id}]`} data-id={id} style={style}
+                                                    className={["note", selectedNotes.has(id) ? "selected" : undefined].join(" ")}
+                                                    onMouseDown={handleNoteMouseDown}
+                                                    onMouseMove={handleNoteMouseMove}>
+                                                    <div onMouseDown={handleResizeLeftMouseDown} />
+                                                    <div />
+                                                    <div onMouseDown={handleResizeRightMouseDown} />
+                                                </li>
+                                            )
+                                        })}
+                                    </PositionContainer>
+                                </Selection>
+
+                                <section className="mouse-cursors" style={{ left: -position }}>
+                                    {Object.keys(mousePositions).map(id => {
+                                        const pos = mousePositions[id];
+                                        const factor = zoomBase * Math.E ** zoom / tact;
+                                        return <div key={id} className="cursor" style={{ left: pos.x * factor, top: pos.y }}>
+                                            <span className="cursor-name">{id}</span>
+                                        </div>
+                                    })}
+                                </section>
                             </section>
-                        </section>
+                        )}</ZoomContext.Consumer>
                     </div>
                 </ModalContainer>
             </PositionContext.Provider>

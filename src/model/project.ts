@@ -31,10 +31,10 @@ export const defaultProject: Project = {
             [generateId()]: defaultPattern,
         },
         tracks: { 
-            [generateId()]: defaultTrack,
-            [generateId()]: defaultTrack,
-            [generateId()]: defaultTrack,
-            [generateId()]: defaultTrack,
+            [generateId()]: { ...defaultTrack, index: 0 },
+            [generateId()]: { ...defaultTrack, index: 1 },
+            [generateId()]: { ...defaultTrack, index: 2 },
+            [generateId()]: { ...defaultTrack, index: 3 },
         },
     }
 }

@@ -14,15 +14,22 @@ import Timeline from "./Timeline";
 import PositionContainer from "./PositionContainer";
 import ZoomContext from "@src/context/zoomcontext";
 import PatternPreview from "./PatternPreview";
+import Selection, { ISelectable } from "./Selection";
+import SynthEditor from "@components/synthesizer/SynthEditor";
+import ModalContext from "@src/context/modalcontext";
 
 export default function TrackEditor() {
     const { socket, cryptoKey } = useContext(NetworkContext);
     const { project, setProject } = useContext(ProjectContext);
     const { draggedPattern, setDraggedPattern } = useContext(DraggedPatternContext);
     const { factor } = useContext(ZoomContext);
+    const { setModalContent } = useContext(ModalContext);
 
     const [mousePositions, setMousePositions] = useState<{ [id: string]: { x: number, y: number } }>({});
     const [sidebarSize, setSidebarSize] = useState(150);
+
+    const [selectedPatterns, setSelectedPatterns] = useState<Set<string>>(new Set());
+    const [selecting, setSelecting] = useState(false);
 
     const trackEditorRef = createRef<HTMLDivElement>();
     const _zoom = useRef(project.zoom);
@@ -74,12 +81,16 @@ export default function TrackEditor() {
 
     function handleAddTrack(_ev: React.MouseEvent) {
         setProject(produce(draft => {
-            const id = generateId(new Set(Object.keys(draft.data.tracks)));
-            draft.data.tracks[id] = { ...defaultTrack };
+            const tracks = Object.keys(draft.data.tracks);
+            const id = generateId(new Set(tracks));
+            draft.data.tracks[id] = {
+                ...defaultTrack,
+                index: tracks.length,
+            };
         }))
     }
 
-    function handlePatternListAddPattern(ev: React.MouseEvent) {
+    function handleTrackAddPattern(ev: React.MouseEvent) {
         if (!draggedPattern) return;
         const id = ev.currentTarget.getAttribute('data-id')!;
         setProject(produce(draft => {
@@ -87,15 +98,17 @@ export default function TrackEditor() {
             const width = factor * draggedPattern.length;
             const left = draggedPattern.left + project.position - sidebarSize;
             const start = slipFloor(left, width / project.snap) / factor;
-
-            track.patterns.push({
-                ...draggedPattern,
-                start: start,
-            });
+            {
+                const id = generateId(new Set(Object.keys(track.patterns)));
+                track.patterns[id] = {
+                    ...draggedPattern,
+                    start: start,
+                }
+            }
         }))
     }
 
-    function handlePatternListMouseEnter(ev: React.MouseEvent) {
+    function handleTrackMouseEnter(ev: React.MouseEvent) {
         if (draggedPattern) {
             const id = ev.currentTarget.getAttribute('data-id')!;
             setDraggedPattern(produce(draft => {
@@ -105,13 +118,17 @@ export default function TrackEditor() {
         }
     }
 
-    function handlePatternListMouseLeave(_ev: React.MouseEvent) {
+    function handleTrackMouseLeave(_ev: React.MouseEvent) {
         if (draggedPattern) {
             setDraggedPattern(produce(draft => {
                 if (!draft) return;
                 draft.over = undefined;
             }))
         }
+    }
+
+    function handleSelectionChange(selection: string[]) {
+        setSelectedPatterns(new Set(selection));
     }
 
     useEffect(() => {
@@ -152,54 +169,79 @@ export default function TrackEditor() {
 
     return (
         <section className="track-layout" onMouseMove={handleMouseMove} ref={trackEditorRef} style={{ "--sidebar-width": `${sidebarSize}px` }}>
-            {(() => {
-                return <>
-                    <Timeline offset={sidebarSize} />
+            <Timeline offset={sidebarSize} />
 
-                    <ul className="track-list">
-                        {Object.keys(project.data.tracks).map((id, i) => {
-                            const track = project.data.tracks[id];
-
-                            return <li key={`track[${id}]`} data-id={id}>
-                                <div className={["sidebar", sidebarSize < Number.EPSILON ? "hidden" : ""].join(' ')}>
-                                    <div className="track-mixer">
-                                        {/* Mixer */}
-                                    </div>
-                                    <span className="track-name">
-                                        {track.name}
-                                    </span>
+            <div className="content">
+                <ul className={["track-sidebar", sidebarSize < Number.EPSILON ? "hidden" : ""].join(' ')}>
+                    {Object.keys(project.data.tracks).sort((a, b) => {
+                        return project.data.tracks[a].index - project.data.tracks[b].index
+                    }).map(id => {
+                        const track = project.data.tracks[id];
+                        return (
+                            <li key={`track[${id}]`} className="track" data-id={id}>
+                                <div className="track-mixer">
+                                    Mixer
                                 </div>
+                                <span className="track-name">
+                                    {track.name}
+                                </span>
+                            </li>
+                        )
+                    })}
+                </ul>
 
-                                <ul className="pattern-list" data-id={id}
-                                    onMouseUp={handlePatternListAddPattern}
-                                    onMouseEnter={handlePatternListMouseEnter}
-                                    onMouseLeave={handlePatternListMouseLeave}
-                                    style={{
-                                        backgroundSize: `${factor}px 72px`,
-                                        backgroundPositionX: -project.position,
-                                        backgroundImage: `linear-gradient(90deg, #332b2b 0px, #332b2b 2px, #00000000 4px), \
-                                                          linear-gradient(90deg, ${(function () {
-                                                let result = [];
-                                                for (let i = 0; i < 8; i++) {
-                                                    let percent = 100 / 8 * i;
-                                                    result.push(`#00000000 ${percent}%,#241e1e ${percent}%,#241e1e ${percent + 0.5}%,#00000000 ${percent + 0.5}%`)
-                                                }
-                                                return result.join(',');
-                                            })()})`
-                                    }}>
-                                    <PositionContainer>
-                                        {track.patterns.map((pattern, i) => {
+                <Selection
+                    onSelectionChange={handleSelectionChange}
+                    onSelectionStart={() => setSelecting(true)}
+                    onSelectionEnd={() => setSelecting(false)}
+                    selection={Object.keys(project.data.tracks).flatMap(id => {
+                        const track = project.data.tracks[id];
+                        return Object.keys(track.patterns).map<ISelectable>(id => {
+                            const pattern = track.patterns[id];
+                            return { id: id, x: pattern.start, y: track.index, width: pattern.length, height: 72 }
+                        })
+                    })}>
+                    <ul className="track-list" style={{
+                        backgroundSize: `${factor}px 144px`,
+                        backgroundPositionX: -project.position,
+                        backgroundImage: `\
+                            linear-gradient(0deg,#00000000 50%,#00000044 50%), \
+                            linear-gradient(90deg, #110600 0px, #110600 2px, #00000000 4px), \
+                            linear-gradient(90deg, ${(function () {
+                                let result = [];
+                                for (let i = 0; i < 8; i++) {
+                                    let percent = 100 / 8 * i;
+                                    result.push(`#00000000 ${percent}%,#241e1e ${percent}%,#241e1e ${percent + 0.5}%,#00000000 ${percent + 0.5}%`)
+                                }
+                                return result.join(',');
+                            })()})`
+                    }}>
+                        {Object.keys(project.data.tracks).sort((a, b) => {
+                            return project.data.tracks[a].index - project.data.tracks[b].index
+                        }).map(trackId => {
+                            const track = project.data.tracks[trackId];
+
+                            return (
+                                <ul className="track" key={`track[${trackId}]`} data-id={trackId}
+                                    onMouseUp={handleTrackAddPattern}
+                                    onMouseEnter={handleTrackMouseEnter}
+                                    onMouseLeave={handleTrackMouseLeave}>
+                                    <PositionContainer style={{ pointerEvents: selecting ? "none" : undefined }}>
+                                        {Object.keys(track.patterns).map(patternId => {
+                                            const pattern = track.patterns[patternId];
                                             return (
-                                                <li key={`track[${id}]:pattern[${i}]`} className="track-pattern" style={{
-                                                    width: pattern.length * factor,
-                                                    left: pattern.start * factor,
-                                                }}>
+                                                <li key={`track[${trackId}]:pattern[${patternId}]`} data-id={patternId}
+                                                    className={["track-pattern", selectedPatterns.has(patternId) ? "selected" : undefined].join(" ")}
+                                                    style={{
+                                                        width: pattern.length * factor,
+                                                        left: pattern.start * factor,
+                                                    }}>
                                                     <PatternPreview id={pattern.id} />
                                                 </li>
                                             )
                                         })}
 
-                                        {!draggedPattern?.dropped && draggedPattern?.over == id && (() => {
+                                        {draggedPattern && !draggedPattern.dropped && draggedPattern.over == trackId && (() => {
                                             const width = draggedPattern.length * factor;
                                             const left = draggedPattern.left + project.position - sidebarSize;
                                             const start = slipFloor(left, width / project.snap) / factor;
@@ -214,11 +256,11 @@ export default function TrackEditor() {
                                         })()}
                                     </PositionContainer>
                                 </ul>
-                            </li>
+                            )
                         })}
                     </ul>
-                </>
-            })()}
+                </Selection>
+            </div>
 
             <Allotment className="allotment" vertical={false} separator={true} proportionalLayout={false} onChange={(sizes => {
                 setSidebarSize(sizes[0]);
@@ -235,6 +277,15 @@ export default function TrackEditor() {
 
             <div className="misc">
                 {/* TODO: Add cool stuff (pixel art, oscilloscope, etc...) */}
+                <button onClick={() => {
+                    setModalContent(
+                        <SynthEditor />
+                    )
+                }}
+                    style={{ width: "100px", height: "50px" }}
+                >
+                    Temporary Synth Editor
+                </button>
             </div>
 
             <section className="mouse-cursors">
