@@ -5,5 +5,6 @@ export default interface ConnectionPointProps {
     bottom?: number,
     left?: number,
     right?: number,
+    type: string,
     id: ConnectionType
 }

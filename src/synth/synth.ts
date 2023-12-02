@@ -1,6 +1,7 @@
 import { AdvancedOscillator, OscillatorParams, createAdvancedOscillator, createOscillatorParams } from "@src/synth/oscillatorParams"
 import { ADSREnvelope, createADSREnvelope } from "./envelope";
 import { ModRoM, createModRoM } from "./routeSelector";
+import RoutableAudioNode from "@models/audionode";
 
 let ctx:AudioContext;   //TODO: get this into the main context! 
 
@@ -17,39 +18,35 @@ export interface AdvancedAudioNodeParams{}
 
 //the object that exists in the context
 export interface Synth{
-    ctx:AudioContext    //set this to the general audio context on creation
     //audionode pool
-    audioNodeParams:{id:string, params:AdvancedAudioNodeParams}[];  //make this list empty on creation
-    activeAudioNodes:{id:string}[];    //make this list empty on creation
+    audioNodes:{[id:string]:RoutableAudioNode};
+    activeAudioNodes:string[];
     //AudioNode routing
     routes:ModRoM;
 
     init:() => void;    //initializes the Synth
-    start:(freq:number) => void;
-    stop:(freq:number) => void;
+    start:(freq:number, ctx:AudioContext) => void;
+    stop:(freq:number, ctx:AudioContext) => void;
 }
 
-export function createSynth(
-    ctx:AudioContext
-):Synth{
+export function createSynth():Synth{
 
     function init(){
         //TODO: Implement
     }
 
-    function start(freq:number){
+    function start(freq:number, ctx:AudioContext){
         //TODO: Implement
         console.warn("HEY DEV, the Synth is playing the freq: "+freq);  //TEST
     }
 
-    function stop(freq:number){
+    function stop(freq:number, ctx:AudioContext){
         //TODO: Implement
         console.warn("HEY DEV, the Synth has stopped playing the freq: "+freq); //TEST
     }
 
     return {
-        ctx: ctx,
-        audioNodeParams: [],
+        audioNodes: {},
         activeAudioNodes: [],
         routes: createModRoM(),
         init: init,

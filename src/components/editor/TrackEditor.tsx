@@ -17,6 +17,8 @@ import PatternPreview from "./PatternPreview";
 import Selection, { ISelectable } from "./Selection";
 import SynthEditor from "@components/synthesizer/SynthEditor";
 import ModalContext from "@src/context/modalcontext";
+import SoundContext from "@src/context/soundcontext";
+import { createSynth } from "@synth/synth";
 
 export default function TrackEditor() {
     const { socket, cryptoKey } = useContext(NetworkContext);
@@ -134,7 +136,7 @@ export default function TrackEditor() {
     function handleOpenSynthEditor(ev: React.MouseEvent) {
         const id = ev.currentTarget.getAttribute('data-id')!;
         setModalContent(
-            <SynthEditor /* TODO: pass 'trackId' */ />
+            <SynthEditor synth={createSynth()}/* TODO: pass 'trackId' */ />
         )
     }
 

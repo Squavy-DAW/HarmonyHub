@@ -5,36 +5,34 @@ import { createAudioEndNodeParams } from "@synth/audioEndNode";
 
 export type AudioNodeType = "AudioEndNode" | "Oscillator" | "Envelope";
 
-export default interface AudioNodeProps {
+export default interface RoutableAudioNode {
     type: AudioNodeType
     name: string,
     id: string|undefined,
-    data: { 
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        connectionpoints: ConnectionPointProps[]
-        node: {
-            id: string,
-            params: AdvancedAudioNodeParams
-        }
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    connectionpoints: ConnectionPointProps[]
+    node: {
+        id: string,
+        params: AdvancedAudioNodeParams
     }
 }
 
-export const defaultOscillatorNode:AudioNodeProps = {
-    type: "Oscillator",
-    name: "Default Oscillator",
-    id: undefined,
-    data: {
+export function defaultOscillatorNode():RoutableAudioNode {
+    return{
+        type: "Oscillator",
+        name: "Default Oscillator",
+        id: undefined,
         x: 0,
         y: 0,
         height: 100,
         width: 100,
         connectionpoints: [
-            {top:40, left:-10, id:"mod"},
-            {top:40, right: -10, id:"out"},
-            {bottom:-10, left:40, id:"mod"},
+            {top:40, left:-10, id:"mod", type:"gain"},
+            {top:40, right: -10, id:"out", type:""},
+            {bottom:-10, left:40, id:"mod", type:"pan"},
         ],
         node: {
             id: "oscillator",
@@ -43,17 +41,17 @@ export const defaultOscillatorNode:AudioNodeProps = {
     }
 }
 
-export const defaultAudioEndNode:AudioNodeProps = {
-    type: "AudioEndNode",
-    name: "Default AudioEndNode",
-    id: undefined,
-    data: {
+export function defaultAudioEndNode():RoutableAudioNode {
+    return{
+        type: "AudioEndNode",
+        name: "Default AudioEndNode",
+        id: undefined,
         x: 0,
         y: 0,
         height: 50,
         width: 100,
         connectionpoints: [
-            {bottom:-10, left:40, id:"in"},
+            {bottom:-10, left:40, id:"in", type:""},
         ],
         node: {
             id: "audioendnode",

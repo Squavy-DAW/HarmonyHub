@@ -1,17 +1,14 @@
-import "@src/styles/editor/SynthEditor.css"
-import { createRef, useContext, useEffect, useRef, useState } from "react";
-import AudioNodeProps, { defaultAudioEndNode, defaultOscillatorNode } from "@models/audionodeprops";
-import ProjectContext from "@src/context/projectcontext";
-import useMouse from "@src/hooks/mouse";
-import SoundContext from "@src/context/soundcontext";
-import LinePosition from "@models/linepositionprops";
-import { AdvancedAudioNodeParams, Synth, createSynth } from "@synth/synth";
-import { time } from "console";
-import { current } from "immer";
+//TODO: Multiple lines can be routed into a single mod. This should not be possible exclusevly on mod-connectors!
 
-export default function SynthEditor(){
-    const [nodes, setNodes] = useState<AudioNodeProps[]>([]);
-    const { project } = useContext(ProjectContext);
+import "@src/styles/editor/SynthEditor.css"
+import { createRef, useEffect, useRef, useState } from "react";
+import RoutableAudioNode, { defaultAudioEndNode, defaultOscillatorNode } from "@models/audionode";
+import useMouse from "@src/hooks/mouse";
+import LinePosition from "@models/linepositionprops";
+import { Synth } from "@synth/synth";
+import { generateId } from "@network/crypto";
+
+export default function SynthEditor(props:{synth: Synth}){
     const [draggedNode, setDraggedNode] = useState<HTMLElement>();
     const [hoverOverLine, setHoverOverLine] = useState<HTMLElement>();
     const nodeOrigin = useRef({x: 0, y: 0});
@@ -21,14 +18,8 @@ export default function SynthEditor(){
     const [svgDragLine, setSvgDragLine] = useState<LinePosition>();
     const _svgDragLine = useRef(svgDragLine);
     
-
-    const { ctx, engine } = useContext(SoundContext);
-    const [synth, setSyth] = useState<Synth>();
-    const [startTime, setStarttime] = useState<number>();
+    const [synth, setSyth] = useState<Synth>(props.synth);
     
-    //let synth:Synth|undefined = undefined;
-    //let startTime:number = 0;   //take this from somewhere else, because if you reopen the editor, it will reset and the possibilities of overlapping values are highly increased
-
     function handleNodeMouseDown(ev: React.MouseEvent){
         const target = ev.currentTarget as HTMLElement;
         nodeOrigin.current = {x: ev.nativeEvent.offsetX, y: ev.nativeEvent.offsetY};
@@ -80,14 +71,15 @@ export default function SynthEditor(){
             }
 
             if(!svgLines.find(e => (e.a == _svgDragLine.current?.a && e.b == target.getAttribute("data-key")!)
-            || (e.a == target.getAttribute("data-key")! && e.b == _svgDragLine.current?.a))){
+            || (e.a == target.getAttribute("data-synth-id")! && e.b == _svgDragLine.current?.a))){
                 //add synth-route
-                let node1 = synth?.audioNodeParams.find(x => x.id == target.getAttribute("data-synth-id"));
-                let node2 = undefined;  //TODO: Get the id of the current node
-                if(node1 === undefined /*|| node2 === undefined*/){
+                let node2 = synth.audioNodes[target.getAttribute("data-synth-id")!].id;
+                let node1 = synth.audioNodes[_svgDragLine.current.synth!].id;
+                let type = ""+target.getAttribute("data-type");    //TODO: z.B. mod-pan or in-in
+                if(node1 === undefined || node2 === undefined){
                     console.error(`no nodes where found for: ${target.getAttribute("data-synth-id")}`);
                 }else{
-                    addRouteToSynth(node1, node1);
+                    addRouteToSynth(node1, node2, type);
                 }
 
                 //add svg-line
@@ -97,7 +89,8 @@ export default function SynthEditor(){
                     x2: x - offsetX + target.clientWidth/2,
                     y2: y - offsetY + target.clientHeight/2,
                     a: _svgDragLine.current.a,
-                    b: target.getAttribute("data-key")!
+                    b: target.getAttribute("data-key")!,
+                    synth: target.getAttribute("data-synth-id")!
                 }]);
             }
             _svgDragLine.current = undefined;
@@ -112,32 +105,26 @@ export default function SynthEditor(){
             x2: ev.clientX - offsetX, 
             y2: ev.clientY - offsetY,
             a: target.getAttribute("data-key")!,
-            b: undefined
+            b: undefined,
+            synth: target.getAttribute("data-synth-id")!
         };
         setSvgDragLine(_svgDragLine.current);
     }
 
-    function addElementToSynth(props: AudioNodeProps){
-        if(synth?.audioNodeParams.filter(x => x.id == props.id).length! > 0){
-            console.error("param id already exists!"+synth?.audioNodeParams.filter(x => x.id == props.id).length);
+    function addElementToSynth(props: RoutableAudioNode){
+        if(synth.audioNodes[props.id!]){
+            console.error("param id already exists!"+props.id);
             return;
         }
-        synth?.audioNodeParams.push({id: props.id!, params: props.data.node.params});
+        synth.audioNodes[props.id!] = props;
     }
 
-    function addRouteToSynth(params1: AdvancedAudioNodeParams, params2: AdvancedAudioNodeParams){
-        //TODO: Implement
+    function addRouteToSynth(id1: string, id2: string, type:string){
+        synth.routes.insert(id1, id2, type);
     }
 
-    useEffect(() => {   // TODO: Everything i do here gets reset afterwards. Why?
-        //startTime = Date.now();
-        //synth = createSynth(ctx);
-        setStarttime(Date.now());
-        setSyth(createSynth(ctx));
-        engine.synths.push(synth!);
-        return () => {
-            engine.synths = engine.synths.filter(s => s != synth);
-        }
+    useEffect(() => {
+        //Do stuff on first load
     },[]);
 
     useEffect(() => {
@@ -194,7 +181,8 @@ export default function SynthEditor(){
             x2: mousePosition.x - offsetX, 
             y2: mousePosition.y - offsetY,
             a: _svgDragLine.current.a,
-            b: _svgDragLine.current.b
+            b: _svgDragLine.current.b,
+            synth: _svgDragLine.current.synth
         });
     }, [mousePosition])
 
@@ -206,22 +194,24 @@ export default function SynthEditor(){
         }
     }>
         <ul ref={nodesDragOverlay}>
-                {nodes?.map((node, i) =>
-                    {
-                        return <li key={`node[${i}]`} className='audionode'
+                {Object.keys(synth.audioNodes).map(id => {
+                    const audioNode = synth.audioNodes[id];
+                        return <li key={`node[${id}]`} className='audionode'
                         onMouseDown={handleNodeMouseDown} 
-                        style={{width:node.data.width+"px", height:node.data.height+"px"}}
-                        data-type={node.type}
+                        style={{width:audioNode.width+"px", height:audioNode.height+"px"}}
+                        data-type={audioNode.type}
                         data-drag="none">
-                            {node.name}
+                            {audioNode.name}
                             {
-                                node.data.connectionpoints.map((connector,j) => 
-                                    <div className="audio-connection-node" key={`node-connector[${i}${j}]`} data-key={`node-connector[${i}${j}]`}
+                                audioNode.connectionpoints.map((connector,j) => 
+                                    <div className="audio-connection-node" key={`node-connector[${id}${j}]`}
                                     onMouseDown={handleConnectionMouseClick}
                                     onMouseUp={handleConnectionMouseClick}
                                     data-id={connector.id}
                                     data-allowed={connector.id=="out"?true:false}
-                                    data-synth-id={node.id}
+                                    data-synth-id={audioNode.id}
+                                    data-type={connector.type}
+                                    data-key={`node-connector[${id}${j}]`}    //TODO: Use this to fix a serious bug
                                     style={{top: connector.top+"px", left: connector.left+"px", bottom: connector.bottom+"px", right: connector.right+"px"}}></div>
                                 )
                             }
@@ -233,25 +223,25 @@ export default function SynthEditor(){
             <ul>
                 <li>
                 <button onClick={() => {
-                    let node = defaultAudioEndNode;
-                    node.id = `${Date.now()-startTime!}_${Math.floor(Math.random() * 1000)}`;
-                    setNodes([...nodes, node]);
+                    let node = defaultAudioEndNode();
+                    const id = generateId(new Set(Object.keys(synth.audioNodes)));
+                    node.id = id;
+                    node.name = node.id;    //temp
                     
-                    //add element to synth
                     addElementToSynth(node);
-                    }}>
+                }}>
                     Add AudioEndNode
                 </button>
                 </li>
                 <li>
                 <button onClick={() => {
-                    let node = defaultOscillatorNode;
-                    node.id = `${Date.now()-startTime!}_${Math.floor(Math.random() * 1000)}`;
-                    setNodes([...nodes, node]);
+                    let node = defaultOscillatorNode();
+                    const id = generateId(new Set(Object.keys(synth.audioNodes)));
+                    node.id = id;
+                    node.name = id; //temp
 
-                    //add element to synth
                     addElementToSynth(node);
-                    }}>
+                }}>
                     Add Oscillator
                 </button>
                 </li>
@@ -265,7 +255,7 @@ export default function SynthEditor(){
                 onMouseEnter={(e)=>{
                     setHoverOverLine(e.target as HTMLElement);
                 }}
-                onMouseLeave={(e)=>{
+                onMouseLeave={()=>{
                     setHoverOverLine(undefined);
                 }}/>
             ))}

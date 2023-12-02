@@ -1,4 +1,4 @@
-import { Synth } from "@synth/synth"
+import { Synth, createSynth } from "@synth/synth"
 import Pattern from "./pattern"
 
 type TimedPattern = Pattern & {
@@ -16,5 +16,5 @@ export default interface Track {
 export const defaultTrack: Omit<Track, 'index'> = {
     name: "New Track",
     patterns: {},
-    instrument: null!
+    instrument: createSynth()
 }
