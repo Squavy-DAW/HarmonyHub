@@ -11,7 +11,7 @@ export interface ISelectable {
     height: number;
 }
 
-export default function Selection({
+export default function SelectionContainer({
     selection,
     onSelectionChange,
     onSelectionStart,

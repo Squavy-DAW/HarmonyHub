@@ -1,6 +1,6 @@
 import Music from "@components/Music";
 import { importKey } from "@network/crypto";
-import { broadcast, createSocket, joinSession, request } from "@network/sessions";
+import { createCryptoSocket, createSocket, joinSession } from "@network/sockets";
 import TabsContext from "@src/context/tabscontext";
 import { useContext, useState } from "react";
 
@@ -18,15 +18,16 @@ export default function ConnectModal(props: ConnectModalProps) {
 
     async function handleJoinSession() {
         let key = await importKey(jwkKey);
-        let socket = createSocket();
-        if (!socket) return;
+        let typedSocket = createSocket();
+        if (!typedSocket) return;
+        let socket = createCryptoSocket(typedSocket, key);
     
         let success = await joinSession(socket, room);
         if (!success) return;
 
-        broadcast(socket, key, 'hh:user-joined', { name: userName });
+        socket.broadcast('hh:user-joined', { name: userName });
 
-        let project = await request(socket, key, 'hh:request-project', null);
+        let project = await socket.request('hh:request-project', null);
         console.log("Received project: ", project);
         
         if (!project) return;
@@ -37,7 +38,6 @@ export default function ConnectModal(props: ConnectModalProps) {
             name: project.name,
             content: <Music project={project} network={{
                 name: userName,
-                cryptoKey: key,
                 room: room,
                 socket: socket
             }} />

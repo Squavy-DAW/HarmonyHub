@@ -188,26 +188,3 @@
 .music-layout .piano-roll ul.keys .pressed-black::after {
     background-image: url("/src/assets/piano/black-key-pressed.png");
 }
-
-.music-layout .piano-roll .midi-editor .mouse-cursors {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    user-select: none;
-    overflow: hidden;
-}
-  
-.music-layout .piano-roll .midi-editor .mouse-cursors .cursor {
-    position: absolute;
-    width: 1rem;
-    height: 1rem;
-    background-image: url('/src/assets/cursor.png');
-    background-size: 1rem 1rem;
-    image-rendering: pixelated;
-    filter: hue-rotate(attr(data-hue)deg) drop-shadow(0 0 0.2rem white);
-    list-style: none;
-}
-
-.music-layout .piano-roll .midi-editor .mouse-cursors .cursor .cursor-name {
-    margin-left: 1rem;
-}

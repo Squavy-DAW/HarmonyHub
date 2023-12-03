@@ -1,13 +1,11 @@
-import { TypedSocket as Socket } from "@network/packets";
+import { CryptoSocket } from "@network/sockets";
 import React from "react";
 
 interface NetworkContextProps {
-    cryptoKey?: CryptoKey;
-    setCryptoKey: (cryptoKey?: CryptoKey) => void;
     room?: string;
-    setRoom: (room?: string) => void;
-    socket?: Socket;
-    setSocket: (socket?: Socket) => void;
+    setRoom: React.Dispatch<React.SetStateAction<string | undefined>>;
+    socket?: CryptoSocket;
+    setSocket: React.Dispatch<React.SetStateAction<CryptoSocket | undefined>>;
 }
 
 const NetworkContext = React.createContext<NetworkContextProps>(undefined!);

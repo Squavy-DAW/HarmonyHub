@@ -1,5 +1,5 @@
 .selection-container {
-    position: relative;
+    position: absolute;
     inset: 0;
 }
 

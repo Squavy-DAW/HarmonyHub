@@ -1,5 +1,4 @@
 import MidiEditor from "@components/editor/MidiEditor";
-import { broadcast, handle } from "@network/sessions";
 import ModalContext from "@src/context/modalcontext";
 import NetworkContext from "@src/context/networkcontext";
 import ProjectContext from "@src/context/projectcontext";
@@ -13,7 +12,7 @@ import PatternPreview from "./PatternPreview";
 
 export default function Patterns(props: { overlay: React.RefObject<HTMLDivElement> }) {
     const { project, setProject } = useContext(ProjectContext);
-    const { socket, cryptoKey } = useContext(NetworkContext);
+    const { socket } = useContext(NetworkContext);
     const { setModalContent } = useContext(ModalContext);
     const { draggedPattern, setDraggedPattern } = useContext(DraggedPatternContext);
 
@@ -51,20 +50,16 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
             draft.data.patterns[id] = pattern;
         }));
 
-        if (socket) {
-            // notify other clients that a new pattern has been created
-            broadcast(socket, cryptoKey!, 'hh:pattern-created', { id: id, pattern: pattern });
-        }
+        // notify other clients that a new pattern has been created
+        socket?.broadcast('hh:pattern-created', { id: id, pattern: pattern });
     }
 
     useEffect(() => {
-        if (socket) {
-            handle(socket, cryptoKey!, 'hh:pattern-created', (_id, { id, pattern }) => {
-                setProject(produce(draft => {
-                    draft.data.patterns[id] = pattern;
-                }));
-            });
-        }
+        socket?.addEventListener('hh:pattern-created', (_id, { id, pattern }) => {
+            setProject(produce(draft => {
+                draft.data.patterns[id] = pattern;
+            }));
+        });
     }, [socket])
 
     useEffect(() => {
