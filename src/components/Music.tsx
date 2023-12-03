@@ -2,7 +2,6 @@ import '@styles/Music.css';
 import Project, { zoomBase } from "@models/project";
 import Modal from 'react-modal';
 import { createRef, useContext, useEffect, useRef, useState } from "react";
-import { handle } from "@network/sessions";
 import Network from "@models/network";
 import NetworkContext from "@src/context/networkcontext";
 import Toolbar from "./editor/Toolbar";
@@ -31,19 +30,15 @@ export default function Music(props: { project: Project, network: Network }) {
 
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
 
-    const [cryptoKey, setCryptoKey] = useState(props.network.cryptoKey);
     const [room, setRoom] = useState(props.network.room);
     const [socket, setSocket] = useState(props.network.socket);
     const [draggedPattern, setDraggedPattern] = useState<DraggingPattern>();
 
     const patternDragOverlay = createRef<HTMLDivElement>();
-    const musicNotes = createRef<HTMLDivElement>();
     const id = useRef(generateId());
 
     function handleStopCollaboration() {
         socket?.disconnect();
-        setCryptoKey(undefined);
-        setRoom(undefined);
         setSocket(undefined);
     }
 
@@ -64,26 +59,24 @@ export default function Music(props: { project: Project, network: Network }) {
     }, [project]);
 
     useEffect(() => {
-        if (socket) {
-            socket.on('hh:user-disconnected', ({ id }) => {
-                console.log(`User with id=${id} disconnected`);
-            });
+        socket?.on('hh:user-disconnected', ({ id }) => {
+            console.log(`User with id=${id} disconnected`);
+        });
+        
+        socket?.addEventListener('hh:user-joined', (id, { name }) => {
+            console.log(`${name} with id=${id} joined the session`);
+        });
 
-            handle(socket, cryptoKey!, 'hh:user-joined', (id, { name }) => {
-                console.log(`${name} with id=${id} joined the session`);
-            });
+        socket?.addEventListener('hh:request-project', () => {
+            console.log("Requested project");
+            return _project.current;
+        });
 
-            handle(socket, cryptoKey!, 'hh:request-project', () => {
-                console.log("Requested project");
-                return _project.current;
-            });
-
-            handle(socket, cryptoKey!, 'hh:note-created', (_id, { patternId, id, note }) => {
-                setProject(produce(draft => {
-                    draft.data.patterns[patternId].notes[id] = note;
-                }));
-            })
-        }
+        socket?.addEventListener('hh:note-created', (_id, { patternId, id, note }) => {
+            setProject(produce(draft => {
+                draft.data.patterns[patternId].notes[id] = note;
+            }));
+        })
     }, [socket]);
 
     return (
@@ -91,9 +84,7 @@ export default function Music(props: { project: Project, network: Network }) {
             project, setProject
         }}>
             <NetworkContext.Provider value={{
-                cryptoKey, setCryptoKey,
-                room, setRoom,
-                socket, setSocket
+                socket, setSocket, room, setRoom
             }}>
                 <ModalContext.Provider value={{
                     modalContent, setModalContent

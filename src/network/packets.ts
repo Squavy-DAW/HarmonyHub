@@ -24,4 +24,4 @@ export interface ClientToClientEvents {
     'hh:mouse-position': (args: { context: string, x: number, y: number }) => void;
 }
 
-export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
+export type TypedSocket = Prettify<Socket<ServerToClientEvents, ClientToServerEvents>>;

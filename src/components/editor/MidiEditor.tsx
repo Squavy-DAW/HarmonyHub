@@ -1,4 +1,4 @@
-import React, { createRef, useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { createRef, useContext, useEffect, useRef, useState } from "react";
 import { produce } from "immer"
 import { startFreq, stopFreq } from "@synth/engineOLD";
 import '@styles/editor/MidiEditor.css';
@@ -8,7 +8,6 @@ import Key from "@components/synthesizer/Key";
 import ProjectContext from "@src/context/projectcontext";
 import Note from "@models/note";
 import { generateId } from "@network/crypto";
-import { broadcast } from "@network/sessions";
 import NetworkContext from "@src/context/networkcontext";
 import { zoomBase } from "@models/project";
 import { slipFloor } from "@src/scripts/math";
@@ -23,7 +22,7 @@ import ContextContext from "@src/context/contextcontext";
 
 export default function MidiEditor(props: { patternId: string }) {
     const { project, setProject } = useContext(ProjectContext);
-    const { socket, cryptoKey } = useContext(NetworkContext);
+    const { socket } = useContext(NetworkContext);
 
     const [snap, setSnap] = useState(project.data.patterns[props.patternId].snap);
     const [tact, setTact] = useState(project.data.patterns[props.patternId].tact);
@@ -135,7 +134,7 @@ export default function MidiEditor(props: { patternId: string }) {
         }))
 
         if (socket) {
-            broadcast(socket, cryptoKey!, 'hh:note-created', {
+            socket.broadcast('hh:note-created', {
                 patternId: props.patternId,
                 id: id,
                 note: note

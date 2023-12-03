@@ -1,9 +1,8 @@
-import { broadcast, handle } from "@network/sessions";
 import ContextContext from "@src/context/contextcontext";
 import NetworkContext from "@src/context/networkcontext";
 import PositionContext from "@src/context/positioncontext";
 import ZoomContext from "@src/context/zoomcontext";
-import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { produce } from "immer";
 import { throttle } from "throttle-debounce";
 import "@styles/editor/MouseCursors.css";
@@ -18,7 +17,7 @@ type MousePosition = {
 export default function ({ ...rest }: React.HTMLAttributes<HTMLDivElement>) {
     const { position } = useContext(PositionContext);
     const { zoom, factor } = useContext(ZoomContext);
-    const { socket, cryptoKey } = useContext(NetworkContext);
+    const { socket } = useContext(NetworkContext);
     const { context } = useContext(ContextContext);
 
     const [mousePositions, setMousePositions] = useState<MousePosition>({});
@@ -33,15 +32,13 @@ export default function ({ ...rest }: React.HTMLAttributes<HTMLDivElement>) {
 
     const throttledSendMousePosition = useCallback(throttle(100, 
         function (mousePosition: { x: number, y: number }, position: number, factor: number) {
-            socket && console.debug(`sending ${(mousePosition.x + position)}, ${mousePosition.y}`);
-            
-            socket && broadcast(socket!, cryptoKey!, 'hh:mouse-position', {
+            socket?.broadcast('hh:mouse-position', {
                 context: context,
                 x: (mousePosition.x + position) / factor,
                 y: mousePosition.y,
             });
         }
-    ), [socket, cryptoKey, context]);
+    ), [socket, context]);
 
     useEffect(() => {
         throttledSendMousePosition(mousePosition, position, factor);
@@ -51,7 +48,7 @@ export default function ({ ...rest }: React.HTMLAttributes<HTMLDivElement>) {
 
     useEffect(() => {
         if (socket) {
-            handle(socket, cryptoKey!, 'hh:mouse-position', (id, { context: c, x, y }) => {
+            socket.addEventListener('hh:mouse-position', (id, { context: c, x, y }) => {
                 console.log(`received ${x}, ${y}`);
                 
                 if (c != context) return;

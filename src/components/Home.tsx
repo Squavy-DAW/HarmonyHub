@@ -70,7 +70,6 @@ export default function Home() {
             name: project.name,
             content: <Music project={defaultProject} network={{
                 name: "",
-                cryptoKey: undefined,
                 room: undefined,
                 socket: undefined,
             }} />
@@ -84,7 +83,6 @@ export default function Home() {
             name: 'New Project',
             content: <Music project={defaultProject} network={{
                 name: "",
-                cryptoKey: undefined,
                 room: undefined,
                 socket: undefined,
             }} />

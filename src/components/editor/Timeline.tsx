@@ -1,4 +1,3 @@
-import { zoomBase } from "@models/project";
 import PositionContext from "@src/context/positioncontext";
 import ZoomContext from "@src/context/zoomcontext";
 import { slipCeil, slipFloor } from "@src/scripts/math";

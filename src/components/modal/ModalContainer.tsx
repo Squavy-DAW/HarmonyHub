@@ -1,4 +1,4 @@
-import { createRef, useEffect, useRef } from "react"
+import { createRef, useEffect } from "react"
 
 export default function ModalContainer(props: React.HTMLAttributes<HTMLDivElement> & {
     mode: 'fill' | 'center'

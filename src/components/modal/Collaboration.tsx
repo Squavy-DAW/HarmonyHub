@@ -1,7 +1,6 @@
 import { extract, generateKey } from '@network/crypto';
-import { createSession, createSocket } from '@network/sessions';
+import { createCryptoSocket, createSession, createSocket, handle, remove } from '@network/sockets';
 import { useContext, useEffect, useState } from 'react';
-import { TypedSocket as Socket } from '@network/packets';
 import '@styles/modal/Collaboration.css'
 import NetworkContext from '@src/context/networkcontext';
 import ModalContainer from './ModalContainer';
@@ -9,41 +8,29 @@ import ModalContainer from './ModalContainer';
 export default function CollaborationModal() {
     const [inviteLink, setInviteLink] = useState<string>();
 
-    const { cryptoKey, setCryptoKey, room, setRoom, socket, setSocket } = useContext(NetworkContext);
+    const { socket, setSocket, room, setRoom } = useContext(NetworkContext);
 
     useEffect(() => {
-        if (cryptoKey) {
-            handleExtractKey(cryptoKey).then((key) => {
+        if (socket?.key) {
+            handleExtractKey(socket.key).then((key) => {
                 let inviteLink = `${import.meta.env.VITE_HARMONYHUB}/?session=${room}#key=${key}`;
                 setInviteLink(inviteLink);
             });
         }
-    }, [cryptoKey, room, socket]);
+    }, [socket, room]);
 
-    async function handleStartCollaboration() {
-        await handleCryptoKeyGeneration();
-        let socket = await handleSocketCreation();
-        if (!socket) return;
-        let room = await handleCreateSession(socket);
-        if (!room) return;
-    }
-
-    async function handleCryptoKeyGeneration(): Promise<CryptoKey> {
+    async function handleStartCollaboration() { // todo add error handling
         let key = await generateKey();
-        setCryptoKey(key);
-        return key;
-    }
+        if (!key) return;
 
-    async function handleSocketCreation(): Promise<Socket | undefined> {
-        let socket = createSocket();
-        setSocket(socket);
-        return socket;
-    }
+        let socket = await createSocket();
+        if (!socket) return;
 
-    async function handleCreateSession(socket: Socket): Promise<string | undefined> {
-        let room = await createSession(socket)
+        let room = await createSession(socket);
+        if (!room) return;
+
         setRoom(room);
-        return room;
+        setSocket(createCryptoSocket(socket, key));
     }
 
     async function handleExtractKey(key: CryptoKey): Promise<string> {
@@ -52,9 +39,6 @@ export default function CollaborationModal() {
 
     function handleStopCollaboration() {
         socket?.disconnect();
-        setCryptoKey(undefined);
-        setRoom(undefined);
-        setInviteLink(undefined);
         setSocket(undefined);
     }
 

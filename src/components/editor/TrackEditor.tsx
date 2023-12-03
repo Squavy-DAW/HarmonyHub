@@ -1,4 +1,3 @@
-import { broadcast, handle } from "@network/sessions";
 import NetworkContext from "@src/context/networkcontext";
 import ProjectContext from "@src/context/projectcontext";
 import { createRef, useContext, useEffect, useRef, useState } from "react";
@@ -22,7 +21,7 @@ import MouseContainer from "./MouseContainer";
 import ContextContext from "@src/context/contextcontext";
 
 export default function TrackEditor() {
-    const { socket, cryptoKey } = useContext(NetworkContext);
+    const { socket } = useContext(NetworkContext);
     const { project, setProject } = useContext(ProjectContext);
     const { draggedPattern, setDraggedPattern } = useContext(DraggedPatternContext);
     const { factor } = useContext(ZoomContext);
