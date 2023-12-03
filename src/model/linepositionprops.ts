@@ -3,7 +3,7 @@ export default interface LinePosition {
     y1: number,
     x2: number,
     y2: number,
-    a?: string,
-    b?: string,
-    synth?: string
+    a: string|undefined,
+    b: string|undefined,
+    synth: string|undefined
 }

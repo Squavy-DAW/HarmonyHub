@@ -1,17 +1,14 @@
 //TODO: Multiple lines can be routed into a single mod. This should not be possible exclusevly on mod-connectors!
 
 import "@src/styles/editor/SynthEditor.css"
-import { createRef, useContext, useEffect, useRef, useState } from "react";
+import { createRef, useEffect, useRef, useState } from "react";
 import RoutableAudioNode, { defaultAudioEndNode, defaultOscillatorNode } from "@models/audionode";
 import useMouse from "@src/hooks/mouse";
-import LinePosition from "@models/lineposition";
+import LinePosition from "@models/linepositionprops";
 import { Synth } from "@synth/synth";
 import { generateId } from "@network/crypto";
-import ProjectContext from "@src/context/projectcontext";
-import { produce } from "immer"
 
-export default function SynthEditor(props:{trackId: string}){
-    const { project, setProject } = useContext(ProjectContext);
+export default function SynthEditor(props:{synth: Synth}){
     const [draggedNode, setDraggedNode] = useState<HTMLElement>();
     const [hoverOverLine, setHoverOverLine] = useState<HTMLElement>();
     const nodeOrigin = useRef({x: 0, y: 0});
@@ -21,7 +18,7 @@ export default function SynthEditor(props:{trackId: string}){
     const [svgDragLine, setSvgDragLine] = useState<LinePosition>();
     const _svgDragLine = useRef(svgDragLine);
     
-    const [synth] = useState<Synth>(project.data.tracks[props.trackId].instrument);
+    const [synth, setSyth] = useState<Synth>(props.synth);
     
     function handleNodeMouseDown(ev: React.MouseEvent){
         const target = ev.currentTarget as HTMLElement;
@@ -128,13 +125,7 @@ export default function SynthEditor(props:{trackId: string}){
 
     useEffect(() => {
         //Do stuff on first load
-    }, []);
-
-    useEffect(() => {
-        setProject(produce(draft => {
-            draft.data.tracks[props.trackId].instrument = synth;
-        }))
-    }, [synth])
+    },[]);
 
     useEffect(() => {
         if (!mouseDown && draggedNode) {

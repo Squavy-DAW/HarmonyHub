@@ -135,9 +135,8 @@ export default function TrackEditor() {
 
     function handleOpenSynthEditor(ev: React.MouseEvent) {
         const id = ev.currentTarget.getAttribute('data-id')!;
-        
         setModalContent(
-            <SynthEditor trackId={id} />
+            <SynthEditor synth={createSynth()}/* TODO: pass 'trackId' */ />
         )
     }
 
