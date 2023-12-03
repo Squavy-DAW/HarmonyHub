@@ -22,8 +22,46 @@
     grid-template-columns: var(--sidebar-width) auto;
 }
 
-.track-layout .selection-container {
+.track-layout .content .track-sidebar {
+    margin: 0;
+    padding: 0;
+    background-color: #201010;
+}
+
+.track-layout .content .track-sidebar.hidden {
+    display: none;
+}
+
+.track-layout .content .track-sidebar .track {
+    margin: 0;
+    padding: 0;
+    height: 72px;
+    cursor: pointer;
+}
+
+.track-layout .content .track-sidebar .track:hover {
+    background-color: #2e1515;
+}
+
+.track-layout .content .track-sidebar .track .track-mixer {
+    grid-row: 2 / 3;
+    grid-column: 1 / 2;
+    display: flex;
+    align-items: center;
+}
+
+.track-layout .content .track-sidebar .track .track-name {
+    grid-row: 1 / 2;
+    grid-column: 1 / 2;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.track-layout .content .container {
     grid-column: 2 / 3;
+    position: relative;
 }
 
 .track-layout .allotment {
@@ -75,43 +113,6 @@
     padding: 0;
     overflow: auto;
     position: relative;
-}
-
-.track-layout .track-sidebar {
-    margin: 0;
-    padding: 0;
-    background-color: #201010;
-}
-
-.track-layout .track-sidebar.hidden {
-    display: none;
-}
-
-.track-layout .track-sidebar .track {
-    margin: 0;
-    padding: 0;
-    height: 72px;
-    cursor: pointer;
-}
-
-.track-layout .track-sidebar .track:hover {
-    background-color: #2e1515;
-}
-
-.track-layout .track-sidebar .track .track-mixer {
-    grid-row: 2 / 3;
-    grid-column: 1 / 2;
-    display: flex;
-    align-items: center;
-}
-
-.track-layout .track-sidebar .track .track-name {
-    grid-row: 1 / 2;
-    grid-column: 1 / 2;
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .track-layout .track-list {

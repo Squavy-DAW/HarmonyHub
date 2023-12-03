@@ -1,0 +1,23 @@
+.mouse-cursors-container {
+    position: absolute;
+    inset: 0;
+}
+
+.mouse-cursors {
+
+}
+  
+.mouse-cursors .cursor {
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    background-image: url('/src/assets/cursor.png');
+    background-size: 1rem 1rem;
+    image-rendering: pixelated;
+    filter: hue-rotate(attr(data-hue)deg) drop-shadow(0 0 0.2rem white);
+    list-style: none;
+}
+
+.mouse-cursors .cursor .cursor-name {
+    margin-left: 1rem;
+}

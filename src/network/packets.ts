@@ -21,8 +21,7 @@ export interface ClientToClientEvents {
     'hh:user-joined': (args: { name: string }) => void;
     'hh:note-created': (args: { patternId: string, id: string, note: Note }) => void;
     'hh:pattern-created': (args: { id: string, pattern: Pattern }) => void;
-    'hh:mouse-position': (args: { x: number, y: number}) => void;
-    'hh:mouse-position-pattern': (args: {x: number, y: number, patternId: string}) => void;
+    'hh:mouse-position': (args: { context: string, x: number, y: number }) => void;
 }
 
 export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
