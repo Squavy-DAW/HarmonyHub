@@ -19,7 +19,8 @@ export interface ClientToServerEvents {
 export interface ClientToClientEvents {
     'hh:request-project': (args: null) => Project;
     'hh:user-joined': (args: { name: string }) => void;
-    'hh:note-created': (args: { patternId: string, id: string, note: Note }) => void;
+    'hh:note-update': (args: { patternId: string, id: string, note: Note}) => void; 
+    'hh:note-deleted': (args: { patternId: string, id: string}) => void;
     'hh:pattern-created': (args: { id: string, pattern: Pattern }) => void;
     'hh:mouse-position': (args: { context: string, x: number, y: number }) => void;
 }

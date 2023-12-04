@@ -72,12 +72,18 @@ export default function Music(props: { project: Project, network: Network }) {
             return _project.current;
         });
 
-        socket?.addEventListener('hh:note-created', (_id, { patternId, id, note }) => {
+        socket?.addEventListener('hh:note-update', (_id, { patternId, id, note }) => {
             setProject(produce(draft => {
                 draft.data.patterns[patternId].notes[id] = note;
             }));
         })
-    }, [socket]);
+
+        socket?.addEventListener('hh:note-deleted', (_id, { patternId, id}) => {
+            setProject(produce(draft => {
+                delete draft.data.patterns[patternId].notes[id];
+            }))
+        })
+  }, [socket]);
 
     return (
         <ProjectContext.Provider value={{

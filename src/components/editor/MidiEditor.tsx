@@ -1,4 +1,4 @@
-import React, { createRef, useContext, useEffect, useRef, useState } from "react";
+import React, { createRef, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { produce } from "immer"
 import { startFreq, stopFreq } from "@synth/engineOLD";
 import '@styles/editor/MidiEditor.css';
@@ -19,6 +19,7 @@ import ModalContainer from "@components/modal/ModalContainer";
 import SelectionContainer from "./SelectionContainer";
 import MouseContainer from "./MouseContainer";
 import ContextContext from "@src/context/contextcontext";
+import { throttle } from "throttle-debounce";
 
 export default function MidiEditor(props: { patternId: string }) {
     const { project, setProject } = useContext(ProjectContext);
@@ -134,7 +135,7 @@ export default function MidiEditor(props: { patternId: string }) {
         }))
 
         if (socket) {
-            socket.broadcast('hh:note-created', {
+            socket.broadcast('hh:note-update', {
                 patternId: props.patternId,
                 id: id,
                 note: note
@@ -174,6 +175,8 @@ export default function MidiEditor(props: { patternId: string }) {
             selectedNotes.forEach(selectedNote => {
                 const note = draft.data.patterns[props.patternId].notes[selectedNote];
                 if (!note) return;
+                
+                var oldValues = {length: note.length, start: note.start, pitch: note.pitch};
 
                 if (mode.current?.x == 'resize_left') {
                     note.start += mouseMoveRelative.x;
@@ -202,12 +205,16 @@ export default function MidiEditor(props: { patternId: string }) {
                 if (mode.current?.y == 'move') {
                     note.pitch += mouseMoveRelative.y;
                 }
+                
+                if(socket && (note.start != oldValues.start || note.length != oldValues.length || note.pitch != oldValues.pitch)){
+                    socket!.broadcast('hh:note-update', {patternId: props.patternId, id: selectedNote, note}) 
+                }
             });
         }));
     }, [mouseMoveRelative])
 
     function handleNoteMouseDown(ev: React.MouseEvent) {
-        if (ev.nativeEvent.which == 3) {
+        if (ev.button == 2) {
             handleNoteMouseMove(ev);
             return;
         };
@@ -242,15 +249,21 @@ export default function MidiEditor(props: { patternId: string }) {
     }
 
     function handleNoteMouseMove(ev: React.MouseEvent) {
-        if (ev.nativeEvent.which != 3) return;
+        if (ev.button != 2) return;
         ev.stopPropagation();
 
         setProject(produce(draft => {
             if (ev.currentTarget === null) return; // idk why this is needed, but it is
             const id = ev.currentTarget.getAttribute("data-id")!;
+            
+            if(socket){
+              socket.broadcast('hh:note-deleted', {patternId: props.patternId, id});
+            }
+
             delete draft.data.patterns[props.patternId].notes[id];
             selectedNotes.delete(id);
         }));
+
     }
 
     function handleResizeRightMouseDown(_ev: React.MouseEvent) {
