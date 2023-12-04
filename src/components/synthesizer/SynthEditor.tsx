@@ -7,6 +7,7 @@ import useMouse from "@src/hooks/mouse";
 import LinePosition from "@models/linepositionprops";
 import { Synth } from "@synth/synth";
 import { generateId } from "@network/crypto";
+import { ModType } from "@synth/modRoM";
 
 export default function SynthEditor(props:{synth: Synth}){
     const [draggedNode, setDraggedNode] = useState<HTMLElement>();
@@ -79,7 +80,7 @@ export default function SynthEditor(props:{synth: Synth}){
                 if(node1 === undefined || node2 === undefined){
                     console.error(`no nodes where found for: ${target.getAttribute("data-synth-id")}`);
                 }else{
-                    addRouteToSynth(node1, node2, type);
+                    addRouteToSynth(node1, node2, type as ModType|undefined);
                 }
 
                 //add svg-line
@@ -119,7 +120,7 @@ export default function SynthEditor(props:{synth: Synth}){
         synth.audioNodes[props.id!] = props;
     }
 
-    function addRouteToSynth(id1: string, id2: string, type:string){
+    function addRouteToSynth(id1: string, id2: string, type?:ModType){
         synth.routes.insert(id1, id2, type);
     }
 

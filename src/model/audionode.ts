@@ -30,9 +30,9 @@ export function defaultOscillatorNode():RoutableAudioNode {
         height: 100,
         width: 100,
         connectionpoints: [
-            {top:40, left:-10, id:"mod", type:"gain"},
+            {top:40, left:-10, id:"mod", type:"Gain"},
             {top:40, right: -10, id:"out", type:""},
-            {bottom:-10, left:40, id:"mod", type:"pan"},
+            {bottom:-10, left:40, id:"mod", type:"Pan"},
         ],
         node: {
             id: "oscillator",

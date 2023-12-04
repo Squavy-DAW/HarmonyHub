@@ -1,6 +1,6 @@
 import { AdvancedOscillator, OscillatorParams, createAdvancedOscillator, createOscillatorParams } from "@src/synth/oscillatorParams"
 import { ADSREnvelope, createADSREnvelope } from "./envelope";
-import { ModRoM, createModRoM } from "./routeSelector";
+import { ModRoM, createModRoM } from "./modRoM";
 import RoutableAudioNode from "@models/audionode";
 
 let ctx:AudioContext;   //TODO: get this into the main context! 
@@ -29,22 +29,21 @@ export interface Synth{
     stop:(freq:number, ctx:AudioContext) => void;
 }
 
+function init(){
+    //TODO: Implement
+}
+
+function start(freq:number, ctx:AudioContext){
+    //TODO: Implement
+    console.warn("HEY DEV, the Synth is playing the freq: "+freq);  //TEST
+}
+
+function stop(freq:number, ctx:AudioContext){
+    //TODO: Implement
+    console.warn("HEY DEV, the Synth has stopped playing the freq: "+freq); //TEST
+}
+
 export function createSynth():Synth{
-
-    function init(){
-        //TODO: Implement
-    }
-
-    function start(freq:number, ctx:AudioContext){
-        //TODO: Implement
-        console.warn("HEY DEV, the Synth is playing the freq: "+freq);  //TEST
-    }
-
-    function stop(freq:number, ctx:AudioContext){
-        //TODO: Implement
-        console.warn("HEY DEV, the Synth has stopped playing the freq: "+freq); //TEST
-    }
-
     return {
         audioNodes: {},
         activeAudioNodes: [],
