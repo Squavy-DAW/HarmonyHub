@@ -1,4 +1,5 @@
 .pattern-preview {
+    pointer-events: none;
     padding: 4px;
     fill: #e39a9a;
 }

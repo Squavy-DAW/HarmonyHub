@@ -85,6 +85,7 @@ export default function MidiEditor(props: { patternId: string }) {
         setMouseMoveRelative({ x: 0, y: 0 });
     }
 
+    // todo: refactor this
     function handleEditorWheel(ev: WheelEvent) {
         if (ev.ctrlKey) {
             ev.preventDefault();
@@ -232,7 +233,6 @@ export default function MidiEditor(props: { patternId: string }) {
             return;
         }
 
-        mode.current = { x: 'move', y: 'move' }
         _mouseDownOrigin.current = { x: start, y: pitch };
         if (selectedNotes.has(id)) {
             setSelectedNotes(new Set([...selectedNotes, id]));
@@ -254,17 +254,15 @@ export default function MidiEditor(props: { patternId: string }) {
     }
 
     function handleResizeRightMouseDown(_ev: React.MouseEvent) {
-        // bubble up the event to the note, but set the mode to resize_right
-        setTimeout(() => {
-            mode.current = { x: 'resize_right', y: undefined }
-        })
+        mode.current = { x: 'resize_right', y: undefined }
     }
 
     function handleResizeLeftMouseDown(_ev: React.MouseEvent) {
-        // bubble up the event to the note, but set the mode to resize_left
-        setTimeout(() => {
-            mode.current = { x: 'resize_left', y: undefined }
-        })
+        mode.current = { x: 'resize_left', y: undefined }
+    }
+
+    function handleResizeMiddleMouseDown(_ev: React.MouseEvent) {
+        mode.current = { x: 'move', y: 'move' }
     }
 
     function genNoteName(idx: number) {
@@ -472,7 +470,7 @@ export default function MidiEditor(props: { patternId: string }) {
                                                             onMouseDown={handleNoteMouseDown}
                                                             onMouseMove={handleNoteMouseMove}>
                                                             <div onMouseDown={handleResizeLeftMouseDown} />
-                                                            <div />
+                                                            <div onMouseDown={handleResizeMiddleMouseDown} />
                                                             <div onMouseDown={handleResizeRightMouseDown} />
                                                         </li>
                                                     )

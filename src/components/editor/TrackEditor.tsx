@@ -1,4 +1,3 @@
-import NetworkContext from "@src/context/networkcontext";
 import ProjectContext from "@src/context/projectcontext";
 import { createRef, useContext, useEffect, useRef, useState } from "react";
 import "@styles/editor/TrackEditor.css";
@@ -21,7 +20,6 @@ import MouseContainer from "./MouseContainer";
 import ContextContext from "@src/context/contextcontext";
 
 export default function TrackEditor() {
-    const { socket } = useContext(NetworkContext);
     const { project, setProject } = useContext(ProjectContext);
     const { draggedPattern, setDraggedPattern } = useContext(DraggedPatternContext);
     const { factor } = useContext(ZoomContext);
@@ -36,6 +34,7 @@ export default function TrackEditor() {
     const _zoom = useRef(project.zoom);
     const _position = useRef(project.position);
 
+    // todo: refactor this
     function handleEditorWheel(ev: WheelEvent) {
         if (ev.ctrlKey) {
             ev.preventDefault();
@@ -119,6 +118,18 @@ export default function TrackEditor() {
         }
     }
 
+    function handleResizeLeftMouseDown(_ev: React.MouseEvent) {
+
+    }
+
+    function handleResizeRightMouseDown(_ev: React.MouseEvent) {
+
+    }
+
+    function handleResizeMiddleMouseDown(_ev: React.MouseEvent) {
+
+    }
+
     function handleSelectionChange(selection: string[]) {
         setSelectedPatterns(new Set(selection));
     }
@@ -136,35 +147,6 @@ export default function TrackEditor() {
             trackEditorRef.current?.removeEventListener('wheel', handleEditorWheel);
         }
     }, [])
-
-    useEffect(() => {
-        if (socket) {
-            // socket.on('hh:user-disconnected', ({ id }) => {
-            //     setMousePositions((prevMousePositions) => {
-            //         const updatedMousePositions = { ...prevMousePositions };
-            //         delete updatedMousePositions[id];
-            //         return updatedMousePositions;
-            //     });
-            // });
-
-            // handle(socket, cryptoKey!, 'hh:user-joined', (id) => {
-            //     setMousePositions({
-            //         ...mousePositions,
-            //         [id]: { x: 0, y: 0 }
-            //     });
-            // });
-
-            // handle(socket, cryptoKey!, 'hh:mouse-position', async (id, { x, y }) => {
-            //     setMousePositions({
-            //         ...mousePositions,
-            //         [id]: { x, y }
-            //     });
-            // });
-        }
-        else {
-            // setMousePositions({});
-        }
-    }, [socket]);
 
     return (
         <ContextContext.Provider value={{
@@ -241,6 +223,9 @@ export default function TrackEditor() {
                                                                     width: pattern.length * factor,
                                                                     left: pattern.start * factor,
                                                                 }}>
+                                                                <div onMouseDown={handleResizeLeftMouseDown} />
+                                                                <div onMouseDown={handleResizeMiddleMouseDown} />
+                                                                <div onMouseDown={handleResizeRightMouseDown} />
                                                                 <PatternPreview id={pattern.id} style={{ opacity: 0.5 }} />
                                                             </li>
                                                         )
