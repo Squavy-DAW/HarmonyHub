@@ -1,9 +1,9 @@
 import { Synth, createSynth } from "@synth/synth"
-import Pattern from "./pattern"
 
-type TimedPattern = Pattern & {
-    id: string,
+export interface TimedPattern {
+    patternId: string,
     start: number,
+    length: number,
 }
 
 export default interface Track {

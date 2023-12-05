@@ -27,7 +27,7 @@ export default function MidiEditor(props: { patternId: string }) {
     const [snap, setSnap] = useState(project.data.patterns[props.patternId].snap);
     const [tact, setTact] = useState(project.data.patterns[props.patternId].tact);
 
-    const mode = useRef<{ x: 'move' | 'resize_right' | 'resize_left' | undefined, y: 'move' | undefined }>()
+    const mode = useRef<{ x?: 'move' | 'resize_right' | 'resize_left', y?: 'move' }>();
 
     const contentRef = createRef<HTMLDivElement>();
     const editorRef = createRef<HTMLDivElement>();
@@ -134,13 +134,11 @@ export default function MidiEditor(props: { patternId: string }) {
             draft.data.patterns[props.patternId].notes[id] = note
         }))
 
-        if (socket) {
-            socket.broadcast('hh:note-created', {
-                patternId: props.patternId,
-                id: id,
-                note: note
-            });
-        }
+        socket?.broadcast('hh:note-created', {
+            patternId: props.patternId,
+            id: id,
+            note: note
+        });
 
         _mouseDownOrigin.current = { x: start, y: pitch };
         setSelectedNotes(new Set([id]));
@@ -254,11 +252,11 @@ export default function MidiEditor(props: { patternId: string }) {
     }
 
     function handleResizeRightMouseDown(_ev: React.MouseEvent) {
-        mode.current = { x: 'resize_right', y: undefined }
+        mode.current = { x: 'resize_right' }
     }
 
     function handleResizeLeftMouseDown(_ev: React.MouseEvent) {
-        mode.current = { x: 'resize_left', y: undefined }
+        mode.current = { x: 'resize_left' }
     }
 
     function handleResizeMiddleMouseDown(_ev: React.MouseEvent) {

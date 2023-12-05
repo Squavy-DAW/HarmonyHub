@@ -1,4 +1,5 @@
 import Note from "./note";
+import Track from "./track";
 
 export default interface Pattern {
     name: string,
@@ -9,7 +10,10 @@ export default interface Pattern {
     snap: number,
     locked: boolean,
     notes: { [id: string]: Note },
-    length: number,
+}
+
+export function calculatePatternLength(pattern: Pattern): number {
+    return Object.keys(pattern.notes).length > 0 ? Math.max(...Object.keys(pattern.notes).map(id => pattern.notes[id].start+pattern.notes[id].length), 0) : 4;
 }
 
 export type DraggingPattern = Pattern & {
@@ -19,7 +23,7 @@ export type DraggingPattern = Pattern & {
     rotate: number;
     dropped?: boolean;
     active?: boolean;
-    over?: string;
+    over?: Track;
 };
 
 export const defaultPattern: Pattern = {
@@ -31,5 +35,4 @@ export const defaultPattern: Pattern = {
     snap: 4,
     locked: false,
     notes: {},
-    length: 4,
 }
