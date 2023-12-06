@@ -19,6 +19,7 @@ import { generateId } from '@network/crypto';
 import TabsContext from '@src/context/tabscontext';
 import ZoomContext from '@src/context/zoomcontext';
 import PositionContext from '@src/context/positioncontext';
+import PlaybackContext from '@src/context/playbackcontext';
 
 export default function Music(props: { project: Project, network: Network }) {
 
@@ -33,6 +34,8 @@ export default function Music(props: { project: Project, network: Network }) {
     const [room, setRoom] = useState(props.network.room);
     const [socket, setSocket] = useState(props.network.socket);
     const [draggedPattern, setDraggedPattern] = useState<DraggingPattern>();
+    const [playback, setPlayback] = useState(0.0);
+    const [isPlaying, setIsPlaying] = useState(true);
 
     const patternDragOverlay = createRef<HTMLDivElement>();
     const id = useRef(generateId());
@@ -43,7 +46,22 @@ export default function Music(props: { project: Project, network: Network }) {
     }
 
     useEffect(() => {
+        var last = performance.now()
+        const loopHandle = window.requestAnimationFrame(function loop(now) {
+            var delta = (now - last) / 1000.0
+            
+            setPlayback(playback => playback + delta);
+
+            last = now
+
+            window.requestAnimationFrame(loop)
+        });
+
         init();
+
+        return () => {
+            window.cancelAnimationFrame(loopHandle);
+        }
     }, []);
 
     useEffect(() => {
@@ -62,7 +80,7 @@ export default function Music(props: { project: Project, network: Network }) {
         socket?.on('hh:user-disconnected', ({ id }) => {
             console.log(`User with id=${id} disconnected`);
         });
-        
+
         socket?.addEventListener('hh:user-joined', (id, { name }) => {
             console.log(`${name} with id=${id} joined the session`);
         });
@@ -98,27 +116,31 @@ export default function Music(props: { project: Project, network: Network }) {
                             <PositionContext.Provider value={{
                                 position: project.position
                             }}>
-                                <section className="music-layout" id={id.current}>
-                                    <Toolbar />
+                                <PlaybackContext.Provider value={{
+                                    time: playback, setTime: setPlayback, isPlaying
+                                }}>
+                                    <section className="music-layout" id={id.current}>
+                                        <Toolbar />
 
-                                    <Allotment vertical={false} separator={true} proportionalLayout={false}>
-                                        <Allotment.Pane priority={LayoutPriority.High}>
-                                            <TrackEditor />
-                                        </Allotment.Pane>
-                                        <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
-                                            <Patterns overlay={patternDragOverlay} />
-                                        </Allotment.Pane>
-                                    </Allotment>
+                                        <Allotment vertical={false} separator={true} proportionalLayout={false}>
+                                            <Allotment.Pane priority={LayoutPriority.High}>
+                                                <TrackEditor />
+                                            </Allotment.Pane>
+                                            <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
+                                                <Patterns overlay={patternDragOverlay} />
+                                            </Allotment.Pane>
+                                        </Allotment>
 
-                                    <PatternDragOverlay ref={patternDragOverlay} />
+                                        <PatternDragOverlay ref={patternDragOverlay} />
 
-                                    {<Modal
-                                        isOpen={!!modalContent}
-                                        onRequestClose={() => setModalContent(null)}
-                                        parentSelector={() => document.getElementById(id.current)!}>
-                                        {modalContent}
-                                    </Modal>}
-                                </section>
+                                        {<Modal
+                                            isOpen={!!modalContent}
+                                            onRequestClose={() => setModalContent(null)}
+                                            parentSelector={() => document.getElementById(id.current)!}>
+                                            {modalContent}
+                                        </Modal>}
+                                    </section>
+                                </PlaybackContext.Provider>
                             </PositionContext.Provider>
                         </ZoomContext.Provider>
                     </DraggedPatternContext.Provider>

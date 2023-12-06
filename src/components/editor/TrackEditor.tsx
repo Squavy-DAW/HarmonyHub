@@ -19,6 +19,8 @@ import ModalContext from "@src/context/modalcontext";
 import { createSynth } from "@synth/synth";
 import MouseContainer from "./MouseContainer";
 import ContextContext from "@src/context/contextcontext";
+import { calculatePatternLength } from "@models/pattern";
+import PlaybackHead from "./PlaybackHead";
 
 export default function TrackEditor() {
     const { socket } = useContext(NetworkContext);
@@ -42,7 +44,7 @@ export default function TrackEditor() {
             setProject(produce(draft => {
                 const oldSize = zoomBase * Math.E ** _zoom.current;
                 const value = _zoom.current - ev.deltaY / 300;
-                _zoom.current = Math.max(Math.min(value, 2), -4);
+                _zoom.current = Math.max(Math.min(value, 2), -2.5);
                 const newSize = zoomBase * Math.E ** _zoom.current;
                 draft.zoom = _zoom.current;
 
@@ -172,6 +174,7 @@ export default function TrackEditor() {
         }}>
             <section className="track-layout" ref={trackEditorRef} style={{ "--sidebar-width": `${sidebarSize}px` }}>
                 <Timeline offset={sidebarSize} />
+                <PlaybackHead />
 
                 <div className="content">
                     <ul className={["track-sidebar", sidebarSize < Number.EPSILON ? "hidden" : ""].join(' ')}>
