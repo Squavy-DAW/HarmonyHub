@@ -48,7 +48,7 @@ export default function Music(props: { project: Project, network: Network }) {
     useEffect(() => {
         var last = performance.now()
         const loopHandle = window.requestAnimationFrame(function loop(now) {
-            var delta = (now - last) / 1000.0
+            var delta = (now - last) / 1000.0;
             
             setPlayback(playback => playback + delta);
 

@@ -20,6 +20,7 @@ import MouseContainer from "./MouseContainer";
 import ContextContext from "@src/context/contextcontext";
 import { calculatePatternLength } from "@models/pattern";
 import PlaybackHead from "./PlaybackHead";
+import MidiEditor from "./MidiEditor";
 
 export default function TrackEditor() {
     const { project, setProject } = useContext(ProjectContext);
@@ -177,6 +178,17 @@ export default function TrackEditor() {
         }
     }
 
+    function handlePatternOpenEditor(ev: React.MouseEvent) {
+        ev.stopPropagation();
+        const id = ev.currentTarget.getAttribute("data-id")!;
+        const trackId = ev.currentTarget.getAttribute("data-track-id")!;
+        const pattern = project.data.tracks[trackId].patterns[id];
+
+        setModalContent(
+            <MidiEditor patternId={pattern.patternId} trackId={trackId} />
+        )
+    }
+
     function handleEditorMouseUp(_ev: React.MouseEvent) {
         mode.current = undefined;
         correctPatternErrors();
@@ -211,7 +223,8 @@ export default function TrackEditor() {
         mode.current = { x: 'move', y: 'move' };
     }
 
-    function handleResizePatternToFit(_ev: React.MouseEvent) {
+    function handleResizePatternToFit(ev: React.MouseEvent) {
+        ev.stopPropagation();
         setProject(produce(draft => {
             Object.keys(draft.data.tracks).forEach(trackId => {
                 const track = draft.data.tracks[trackId];
@@ -278,18 +291,18 @@ export default function TrackEditor() {
 
                     if (mode.current?.y == 'move') {
                         const oldIndex = track.index;
-                        if (track.index + mouseMoveRelative.track < 0 || 
+                        if (track.index + mouseMoveRelative.track < 0 ||
                             track.index + mouseMoveRelative.track >= Object.keys(draft.data.tracks).length ||
                             track.index + mouseMoveRelative.track == oldIndex) return;
                         // delete track.patterns[id];
-                        
+
                         // Variant 1: delete pattern from old track and add it to new track
                         //  Problem: Because we iterate over all tracks, it will move down by one track every time -> the pattern will ALWAYS be moved to the end of the track list
-// /* UNCOMMENT THIS -> */ draft.data.tracks[Object.keys(draft.data.tracks)[track.index + mouseMoveRelative.track]].patterns[id] = pattern;
+                        // /* UNCOMMENT THIS -> */ draft.data.tracks[Object.keys(draft.data.tracks)[track.index + mouseMoveRelative.track]].patterns[id] = pattern;
 
                         // Variant 2: delete pattern from old track and set it as a dragged pattern
                         //  Problem: Can't move multiple patterns at once
-//       /* OR THIS -> */ setDraggedPattern({
+                        //       /* OR THIS -> */ setDraggedPattern({
                         //     ...project.data.patterns[pattern.patternId],
                         //     id: pattern.patternId,
                         //     left: pattern.start * factor,
@@ -375,6 +388,7 @@ export default function TrackEditor() {
                                                         return (
                                                             <li key={`track[${trackId}]:pattern[${patternId}]`} data-id={patternId} data-track-id={trackId}
                                                                 onMouseDown={handlePatternMouseDown}
+                                                                onDoubleClick={handlePatternOpenEditor}
                                                                 className={["track-pattern", selectedPatterns.has(patternId) ? "selected" : undefined].join(" ")}
                                                                 style={{
                                                                     opacity: Math.abs(pattern.length) < Number.EPSILON ? 0.5 : 1,
