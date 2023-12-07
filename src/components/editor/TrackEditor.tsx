@@ -1,4 +1,3 @@
-import NetworkContext from "@src/context/networkcontext";
 import ProjectContext from "@src/context/projectcontext";
 import { createRef, useContext, useEffect, useRef, useState } from "react";
 import "@styles/editor/TrackEditor.css";
@@ -23,7 +22,6 @@ import { calculatePatternLength } from "@models/pattern";
 import PlaybackHead from "./PlaybackHead";
 
 export default function TrackEditor() {
-    const { socket } = useContext(NetworkContext);
     const { project, setProject } = useContext(ProjectContext);
     const { draggedPattern, setDraggedPattern } = useContext(DraggedPatternContext);
     const { factor } = useContext(ZoomContext);
@@ -33,11 +31,39 @@ export default function TrackEditor() {
 
     const [selectedPatterns, setSelectedPatterns] = useState<Set<string>>(new Set());
     const [selecting, setSelecting] = useState(false);
+    const mode = useRef<{ x?: 'move' | 'resize_right' | 'resize_left', y?: 'move' }>();
+
+    const [mouseMoveRelative, setMouseMoveRelative] = useState({ x: 0, track: 0 });
+    const _mouseDownOrigin = useRef({ x: 0, track: 0 });
 
     const trackEditorRef = createRef<HTMLDivElement>();
+    const contentRef = createRef<HTMLDivElement>();
     const _zoom = useRef(project.zoom);
     const _position = useRef(project.position);
 
+    function correctPatternErrors() {
+        setProject(produce(draft => {
+            Object.keys(draft.data.tracks).forEach(trackId => {
+                const track = draft.data.tracks[trackId];
+                Object.keys(track.patterns).forEach(patternId => {
+                    const pattern = track.patterns[patternId];
+                    if (!pattern) return;
+
+                    if (pattern.length < 0) {
+                        pattern.start += pattern.length;
+                        pattern.length *= -1;
+                    }
+
+                    if (pattern.start < 0) {
+                        pattern.length += pattern.start;
+                        pattern.start = 0;
+                    }
+                });
+            });
+        }))
+    }
+
+    // todo: refactor this
     function handleEditorWheel(ev: WheelEvent) {
         if (ev.ctrlKey) {
             ev.preventDefault();
@@ -85,18 +111,18 @@ export default function TrackEditor() {
     }
 
     function handleTrackAddPattern(ev: React.MouseEvent) {
-        if (!draggedPattern) return;
+        if (!draggedPattern || draggedPattern.dropped) return;
         const id = ev.currentTarget.getAttribute('data-id')!;
         setProject(produce(draft => {
             const track = draft.data.tracks[id];
-            const width = factor * draggedPattern.length;
             const left = draggedPattern.left + project.position - sidebarSize;
-            const start = slipFloor(left, width / project.snap) / factor;
+            const start = slipFloor(left / factor, 1 / project.snap);
             {
                 const id = generateId(new Set(Object.keys(track.patterns)));
                 track.patterns[id] = {
-                    ...draggedPattern,
+                    patternId: draggedPattern.id,
                     start: start,
+                    length: calculatePatternLength(draft.data.patterns[draggedPattern.id]),
                 }
             }
         }))
@@ -107,7 +133,7 @@ export default function TrackEditor() {
             const id = ev.currentTarget.getAttribute('data-id')!;
             setDraggedPattern(produce(draft => {
                 if (!draft) return;
-                draft.over = id;
+                draft.over = project.data.tracks[id];
             }))
         }
     }
@@ -119,6 +145,83 @@ export default function TrackEditor() {
                 draft.over = undefined;
             }))
         }
+    }
+
+    function handlePatternMouseDown(ev: React.MouseEvent) {
+        ev.stopPropagation();
+        let rect = contentRef.current!.getBoundingClientRect();
+        let x = ev.clientX - rect.left;
+        let start = slipFloor((x + _position.current) / factor, 1 / project.snap);
+
+        const id = ev.currentTarget.getAttribute("data-id")!
+        const trackId = ev.currentTarget.getAttribute("data-track-id")!
+        const track = project.data.tracks[trackId].index;
+
+        if (ev.shiftKey) {
+            if (selectedPatterns.has(id)) {
+                selectedPatterns.delete(id);
+                setSelectedPatterns(new Set(selectedPatterns));
+            }
+            else {
+                selectedPatterns.add(id);
+                setSelectedPatterns(new Set(selectedPatterns));
+            }
+            return;
+        }
+
+        _mouseDownOrigin.current = { x: start, track: track };
+        if (selectedPatterns.has(id)) {
+            setSelectedPatterns(new Set([...selectedPatterns, id]));
+        } else {
+            setSelectedPatterns(new Set([id]));
+        }
+    }
+
+    function handleEditorMouseUp(_ev: React.MouseEvent) {
+        mode.current = undefined;
+        correctPatternErrors();
+        setDraggedPattern(produce(draft => {
+            if (!draft) return;
+            draft.dropped = true;
+        }));
+    }
+
+    function handleEditorMouseMove(ev: React.MouseEvent) {
+        let rect = contentRef.current!.getBoundingClientRect();
+        let x = ev.clientX - rect.left;
+        let y = ev.clientY - rect.top;
+
+        let start = slipFloor((x + _position.current) / factor, 1 / project.snap);
+        let track = Math.floor(y / 72);
+        if (start != _mouseDownOrigin.current.x || track != _mouseDownOrigin.current.track) {
+            setMouseMoveRelative({ x: start - _mouseDownOrigin.current.x, track: track - _mouseDownOrigin.current.track });
+            _mouseDownOrigin.current = { x: start, track: track };
+        }
+    }
+
+    function handleResizeLeftMouseDown(_ev: React.MouseEvent) {
+        mode.current = { x: 'resize_left' };
+    }
+
+    function handleResizeRightMouseDown(_ev: React.MouseEvent) {
+        mode.current = { x: 'resize_right' };
+    }
+
+    function handleResizeMiddleMouseDown(_ev: React.MouseEvent) {
+        mode.current = { x: 'move', y: 'move' };
+    }
+
+    function handleResizePatternToFit(_ev: React.MouseEvent) {
+        setProject(produce(draft => {
+            Object.keys(draft.data.tracks).forEach(trackId => {
+                const track = draft.data.tracks[trackId];
+                selectedPatterns.forEach(patternId => {
+                    const pattern = track.patterns[patternId];
+                    if (!pattern) return;
+                    pattern.length = calculatePatternLength(draft.data.patterns[pattern.patternId]);
+                })
+            });
+        }));
     }
 
     function handleSelectionChange(selection: string[]) {
@@ -140,33 +243,65 @@ export default function TrackEditor() {
     }, [])
 
     useEffect(() => {
-        if (socket) {
-            // socket.on('hh:user-disconnected', ({ id }) => {
-            //     setMousePositions((prevMousePositions) => {
-            //         const updatedMousePositions = { ...prevMousePositions };
-            //         delete updatedMousePositions[id];
-            //         return updatedMousePositions;
-            //     });
-            // });
+        if (!mode.current) return;
 
-            // handle(socket, cryptoKey!, 'hh:user-joined', (id) => {
-            //     setMousePositions({
-            //         ...mousePositions,
-            //         [id]: { x: 0, y: 0 }
-            //     });
-            // });
+        setProject(produce(draft => {
+            Object.keys(draft.data.tracks).forEach(trackId => {
+                const track = draft.data.tracks[trackId];
+                selectedPatterns.forEach(id => {
+                    const pattern = track.patterns[id];
+                    if (!pattern) return;
 
-            // handle(socket, cryptoKey!, 'hh:mouse-position', async (id, { x, y }) => {
-            //     setMousePositions({
-            //         ...mousePositions,
-            //         [id]: { x, y }
-            //     });
-            // });
-        }
-        else {
-            // setMousePositions({});
-        }
-    }, [socket]);
+                    if (mode.current?.x == 'resize_left') {
+                        pattern.start += mouseMoveRelative.x;
+                        if (pattern.start < 0) {
+                            pattern.length += pattern.start;
+                            pattern.start = 0;
+                        }
+                        pattern.length -= mouseMoveRelative.x;
+                    }
+
+                    if (mode.current?.x == 'resize_right') {
+                        pattern.length += mouseMoveRelative.x;
+                        if (pattern.start + pattern.length < 0) {
+                            pattern.length = -pattern.start;
+                        }
+                    }
+
+                    if (mode.current?.x == 'move') {
+                        pattern.start += mouseMoveRelative.x;
+                        if (pattern.start < 0) {
+                            pattern.length += pattern.start;
+                            pattern.start = 0;
+                        }
+                    }
+
+                    if (mode.current?.y == 'move') {
+                        const oldIndex = track.index;
+                        if (track.index + mouseMoveRelative.track < 0 || 
+                            track.index + mouseMoveRelative.track >= Object.keys(draft.data.tracks).length ||
+                            track.index + mouseMoveRelative.track == oldIndex) return;
+                        // delete track.patterns[id];
+                        
+                        // Variant 1: delete pattern from old track and add it to new track
+                        //  Problem: Because we iterate over all tracks, it will move down by one track every time -> the pattern will ALWAYS be moved to the end of the track list
+// /* UNCOMMENT THIS -> */ draft.data.tracks[Object.keys(draft.data.tracks)[track.index + mouseMoveRelative.track]].patterns[id] = pattern;
+
+                        // Variant 2: delete pattern from old track and set it as a dragged pattern
+                        //  Problem: Can't move multiple patterns at once
+//       /* OR THIS -> */ setDraggedPattern({
+                        //     ...project.data.patterns[pattern.patternId],
+                        //     id: pattern.patternId,
+                        //     left: pattern.start * factor,
+                        //     top: (track.index + mouseMoveRelative.track) * 72,
+                        //     over: project.data.tracks[Object.keys(draft.data.tracks)[track.index + mouseMoveRelative.track]],
+                        //     rotate: 0,
+                        // })
+                    }
+                });
+            })
+        }));
+    }, [mouseMoveRelative])
 
     return (
         <ContextContext.Provider value={{
@@ -196,7 +331,7 @@ export default function TrackEditor() {
                         })}
                     </ul>
 
-                    <div className="container">
+                    <div className="container" ref={contentRef} onMouseMove={handleEditorMouseMove} onMouseUp={handleEditorMouseUp}>
                         <MouseContainer>
                             <SelectionContainer
                                 onSelectionChange={handleSelectionChange}
@@ -226,11 +361,11 @@ export default function TrackEditor() {
                                 }}>
                                     {Object.keys(project.data.tracks).sort((a, b) => {
                                         return project.data.tracks[a].index - project.data.tracks[b].index
-                                    }).map(id => {
-                                        const track = project.data.tracks[id];
+                                    }).map(trackId => {
+                                        const track = project.data.tracks[trackId];
 
                                         return (
-                                            <ul className="track" key={`track[${id}]`} data-id={id}
+                                            <ul className="track" key={`track[${trackId}]`} data-id={trackId}
                                                 onMouseUp={handleTrackAddPattern}
                                                 onMouseEnter={handleTrackMouseEnter}
                                                 onMouseLeave={handleTrackMouseLeave}>
@@ -238,24 +373,36 @@ export default function TrackEditor() {
                                                     {Object.keys(track.patterns).map(patternId => {
                                                         const pattern = track.patterns[patternId];
                                                         return (
-                                                            <li key={`track[${id}]:pattern[${patternId}]`} data-id={patternId}
+                                                            <li key={`track[${trackId}]:pattern[${patternId}]`} data-id={patternId} data-track-id={trackId}
+                                                                onMouseDown={handlePatternMouseDown}
                                                                 className={["track-pattern", selectedPatterns.has(patternId) ? "selected" : undefined].join(" ")}
                                                                 style={{
-                                                                    width: pattern.length * factor,
-                                                                    left: pattern.start * factor,
+                                                                    opacity: Math.abs(pattern.length) < Number.EPSILON ? 0.5 : 1,
+                                                                    width: `${Math.abs(pattern.length) < Number.EPSILON
+                                                                        ? factor * 0.5
+                                                                        : factor * Math.abs(pattern.length)}px`,
+                                                                    left: `${Math.abs(pattern.length) < Number.EPSILON
+                                                                        ? factor * pattern.start - factor * 0.5 / 2
+                                                                        : pattern.length < 0
+                                                                            ? factor * (pattern.start + pattern.length)
+                                                                            : factor * pattern.start}px`,
                                                                 }}>
-                                                                <PatternPreview id={pattern.id} style={{ opacity: 0.5 }} />
+                                                                <div onMouseDown={handleResizeLeftMouseDown} />
+                                                                <div onMouseDown={handleResizeMiddleMouseDown} />
+                                                                <div onMouseDown={handleResizeRightMouseDown}
+                                                                    onDoubleClick={handleResizePatternToFit} />
+                                                                <PatternPreview id={pattern.patternId} style={{ opacity: 0.5 }} />
+                                                                <PatternPreview className="overflow" id={pattern.patternId} style={{ opacity: 0.1 }} />
                                                             </li>
                                                         )
                                                     })}
 
-                                                    {draggedPattern && !draggedPattern.dropped && draggedPattern.over == id && (() => {
-                                                        const width = draggedPattern.length * factor;
+                                                    {draggedPattern && !draggedPattern.dropped && draggedPattern.over == track && (() => {
                                                         const left = draggedPattern.left + project.position - sidebarSize;
-                                                        const start = slipFloor(left, width / project.snap) / factor;
+                                                        const start = slipFloor(left / factor, 1 / project.snap);
                                                         return (
                                                             <li className="track-pattern preview" style={{
-                                                                width: width,
+                                                                width: calculatePatternLength(project.data.patterns[draggedPattern.id]) * factor,
                                                                 left: start * factor,
                                                             }}>
                                                                 <PatternPreview id={draggedPattern.id} />

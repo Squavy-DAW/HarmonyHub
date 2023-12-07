@@ -36,7 +36,7 @@
 }
 
 .track-layout .content .track-sidebar.hidden {
-    display: none;
+    visibility: hidden;
 }
 
 .track-layout .content .track-sidebar .track {
@@ -147,7 +147,8 @@
     list-style: none;
     position: absolute;
     top: 0;
-    height: 74px;
+    height: 72px;
+    overflow: hidden;
 }
 
 .track-layout .track-list .track .track-pattern:not(.preview) {
@@ -155,6 +156,7 @@
     border-image-slice: 2 fill;
     border-image-width: 8px;
     image-rendering: pixelated;
+    display: flex;
 }
 
 @keyframes pattern-select {
@@ -179,8 +181,29 @@
 }
 
 .track-layout .track-list .track .track-pattern .pattern-preview {
-    width: 100%;
-    height: 100%;
+    position: absolute;
+}
+
+.track-layout .track-list .track .track-pattern .pattern-preview.overflow {
+    position: fixed;
+    z-index: -1;
+}
+
+.track-layout .track-list .track .track-pattern div:nth-child(1) {
+    cursor: w-resize;
+    max-width: 30px;
+    flex: 1;
+}
+
+.track-layout .track-list .track .track-pattern div:nth-child(2) {
+    cursor: grab;
+    flex: 2.5;
+}
+
+.track-layout .track-list .track .track-pattern div:nth-child(3) {
+    cursor: e-resize;
+    max-width: 30px;
+    flex: 1;
 }
 
 .track-layout .mouse-cursors {
