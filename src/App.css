@@ -23,3 +23,9 @@
   cursor: not-allowed;
   user-select: none;
 }
+
+.home-icon{
+  width: 1.2rem;
+  height: auto;
+  image-rendering: pixelated;
+}

@@ -6,8 +6,8 @@ import '@styles/react-toastify.css';
 import "allotment/dist/style.css";
 import '@styles/allotment.css';
 import { Tab as TabItem, TabList, TabPanel, Tabs } from 'react-tabs'
-import CloseIcon from 'remixicon-react/CloseLineIcon';
-import HomeIcon from 'remixicon-react/Home2FillIcon';
+import CloseIcon from '@src/assets/close.png';
+import HomeIcon from '@src/assets/home.png'
 import Home from '@components/Home';
 import { ToastContainer } from 'react-toastify';
 import { useEffect, useRef, useState } from 'react';
@@ -71,13 +71,13 @@ function App() {
                     <Tabs style={{ "display": "contents" }} onSelect={setTabIndex} selectedIndex={tabIndex} forceRenderTabPanel={true}>
                         <TabList>
                             <TabItem key={"home"}>
-                                <HomeIcon size="1.2rem" />
+                                <img className='home-icon' src={HomeIcon} />
                             </TabItem>
                             {tabs.map((tab, i) =>
                                 <TabItem key={`tab[${i}]`}>
                                     <>
                                         <span>{tab.name}</span>
-                                        <CloseIcon size="1.2rem" className='close-btn' role="button" onClick={(event) => {
+                                        <img src={CloseIcon} className='home-icon close-btn' role="button" onClick={(event) => {
                                             event.stopPropagation();
                                             tabs.splice(i, 1);
                                             setTabs([...tabs]);
