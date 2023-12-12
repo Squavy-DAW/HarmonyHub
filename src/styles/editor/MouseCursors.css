@@ -4,7 +4,7 @@
 }
 
 .mouse-cursors {
-
+    position: absolute;
 }
   
 .mouse-cursors .cursor {
