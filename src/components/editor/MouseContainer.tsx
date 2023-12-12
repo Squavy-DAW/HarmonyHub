@@ -51,8 +51,6 @@ export default function ({ ...rest }: React.HTMLAttributes<HTMLDivElement>) {
     useEffect(() => {
         if (socket) {
             socket.addEventListener('hh:mouse-position', (id, { context: c, x, y }) => {
-                console.log(`received ${x}, ${y}`);
-                
                 if (c != context) return;
                 setMousePositions(produce(draft => {
                     draft[id] = { x, y };

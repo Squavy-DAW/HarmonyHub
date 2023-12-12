@@ -3,6 +3,8 @@ import { importKey } from "@network/crypto";
 import { createCryptoSocket, createSocket, joinSession } from "@network/sockets";
 import TabsContext from "@src/context/tabscontext";
 import { useContext, useState } from "react";
+import ModalContainer from "./ModalContainer";
+import { defaultProject } from "@models/project";
 
 export interface ConnectModalProps {
     room: string,
@@ -10,11 +12,9 @@ export interface ConnectModalProps {
     onClose: () => void
 }
 
-export default function ConnectModal(props: ConnectModalProps) {
+export default function ConnectModal({ room, jwkKey, onClose }: ConnectModalProps) {
     const [userName, setUserName] = useState<string>("");
     const { setTabIndex, tabs, setTabs } = useContext(TabsContext);
-    
-    const { room, jwkKey } = props;
 
     async function handleJoinSession() {
         let key = await importKey(jwkKey);
@@ -27,16 +27,11 @@ export default function ConnectModal(props: ConnectModalProps) {
 
         socket.broadcast('hh:user-joined', { name: userName });
 
-        let project = await socket.request('hh:request-project', null);
-        console.log("Received project: ", project);
-        
-        if (!project) return;
-
-        props.onClose();
+        onClose();
 
         setTabs([...tabs, {
-            name: project.name,
-            content: <Music project={project} network={{
+            name: "Gathering...",
+            content: <Music project={{...defaultProject}} network={{
                 name: userName,
                 room: room,
                 socket: socket
@@ -47,9 +42,9 @@ export default function ConnectModal(props: ConnectModalProps) {
     }
 
     return (
-        <div className={['connect-modal', 'overlay-center'].join(' ')}>
+        <ModalContainer className={['connect-modal'].join(' ')} mode="center">
             <input type="text" placeholder="Username" value={userName} onChange={(event) => setUserName(event.target.value)} />
             <button onClick={handleJoinSession}>Continue</button>
-        </div>
+        </ModalContainer>
     )
 }

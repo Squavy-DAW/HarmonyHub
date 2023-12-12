@@ -1,6 +1,6 @@
 import { extract, generateKey } from '@network/crypto';
 import { createCryptoSocket, createSession, createSocket } from '@network/sockets';
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import '@styles/modal/Collaboration.css'
 import NetworkContext from '@src/context/networkcontext';
 import ModalContainer from './ModalContainer';
@@ -15,6 +15,7 @@ export default function CollaborationModal() {
         if (socket?.key) {
             handleExtractKey(socket.key).then((key) => {
                 let inviteLink = `${import.meta.env.VITE_HARMONYHUB}/?session=${room}#key=${key}`;
+                window.history.pushState({}, '', inviteLink);
                 setInviteLink(inviteLink);
             });
         }
@@ -53,12 +54,16 @@ export default function CollaborationModal() {
         }, 1000);
     }
 
-    const handleSetUsername = debounce(1000, function (event: React.ChangeEvent<HTMLInputElement>) {
-        setUsername(event.target.value);
+    const sendUsernameUpdate = useCallback(debounce(1000, function (name: string) {
         socket?.broadcast('hh:username-update', {
-            name: event.target.value
+            name: name
         })
-    });
+    }), [socket])
+
+    function handleSetUsername(event: React.ChangeEvent<HTMLInputElement>) {
+        setUsername(event.target.value);
+        sendUsernameUpdate(event.target.value);
+    }
 
     return (
         <ModalContainer className={['collaboration-modal', socket ? 'active' : null].join(' ')} mode='center'>
@@ -78,7 +83,7 @@ export default function CollaborationModal() {
                 </>}
             </div>
             <div className='username-input'>
-                <input type='text' placeholder='Username' onChange={handleSetUsername} />
+                <input type='text' placeholder='Username' value={username} onChange={handleSetUsername} />
             </div>
         </ModalContainer>
     );

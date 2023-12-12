@@ -6,8 +6,8 @@ interface NetworkContextProps {
     setRoom: React.Dispatch<React.SetStateAction<string | undefined>>;
     socket?: CryptoSocket;
     setSocket: React.Dispatch<React.SetStateAction<CryptoSocket | undefined>>;
-    username?: string;
-    setUsername: React.Dispatch<React.SetStateAction<string | undefined>>;
+    username: string;
+    setUsername: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const NetworkContext = React.createContext<NetworkContextProps>(undefined!);

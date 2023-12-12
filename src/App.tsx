@@ -102,6 +102,10 @@ function App() {
 
                     <Modal
                         isOpen={!!modalContent}
+                        onRequestClose={() => {
+                            setModalContent(null);
+                            window.location.replace(window.location.origin);
+                        }}
                         parentSelector={() => document.body}>
                         {modalContent}
                     </Modal>

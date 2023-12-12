@@ -34,7 +34,7 @@ export default function Music(props: { project: Project, network: Network }) {
 
     const [room, setRoom] = useState(props.network.room);
     const [socket, setSocket] = useState(props.network.socket);
-    const [username, setUsername] = useState<string>();
+    const [username, setUsername] = useState<string>('');
     
     const [usernames, setUsernames] = useState<{ [id: string]: string }>({});
     
@@ -63,15 +63,20 @@ export default function Music(props: { project: Project, network: Network }) {
     }, [project]);
 
     useEffect(() => {
+        socket?.request('hh:request-project', null).then((project: Project) => {
+            setProject(project);
+        });
+
         socket?.on('hh:user-disconnected', ({ id }) => {
             console.log(`User with id=${id} disconnected`);
+            setUsernames(produce(draft => {
+                delete draft[id];
+            }))
         });
 
         socket?.addEventListener('hh:user-joined', (id, { name }) => {
             console.log(`${name} with id=${id} joined the session`);
-            socket.broadcast('hh:username-update', {
-                name: username!
-            });
+            socket.broadcast('hh:username-update', { name: username });
             setUsernames(produce(draft => {
                 draft[id] = name;
             }))
@@ -95,6 +100,8 @@ export default function Music(props: { project: Project, network: Network }) {
         })
 
         socket?.addEventListener('hh:username-update', (id, { name }) => {
+            console.log(`${name} with id=${id} updated their username to ${name}`);
+            
             setUsernames(produce(draft => {
                 draft[id] = name;
             }))
