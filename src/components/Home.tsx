@@ -95,7 +95,7 @@ export default function Home() {
             <AsciiLogo />
 
             <main id="home-title">
-                <h1>Welcome to HarmonyHub!</h1>
+                <h1>Welcome to SquidWave!</h1>
             </main>
 
             <main id="home-controls">
