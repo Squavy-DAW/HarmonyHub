@@ -23,6 +23,7 @@ export interface ClientToClientEvents {
     'hh:note-deleted': (args: { patternId: string, id: string}) => void;
     'hh:pattern-created': (args: { id: string, pattern: Pattern }) => void;
     'hh:mouse-position': (args: { context: string, x: number, y: number }) => void;
+    'hh:username-update': (args: { name: string }) => void;
 }
 
 export type TypedSocket = Prettify<Socket<ServerToClientEvents, ClientToServerEvents>>;
