@@ -1,7 +1,7 @@
 import 'react-toastify/dist/ReactToastify.css';
 import '@styles/Home.css';
-import OpenIcon from 'remixicon-react/ArrowRightFillIcon';
-import NewIcon from 'remixicon-react/AddFillIcon';
+import OpenIcon from '@src/assets/forward.png';
+import NewIcon from '@src/assets/plus.png';
 import { createRef, useContext, useEffect, useState } from 'react';
 import Project, { defaultProject } from '@models/project';
 import Music from './Music';
@@ -107,14 +107,14 @@ export default function Home() {
                            onDragEnter={handleDragEnter}
                            onDragLeave={handleDragLeave}
                            onChange={handleChange} />
-                    <OpenIcon size="1.2rem" />
+                    <img src={OpenIcon} className='open-icon' role="button" />
                     <span>Open project</span>
                 </div>
 
                 <div id='new-project'
                      className='hoverable'
                      onClick={newProject}>
-                    <NewIcon size="1.2rem" />
+                    <img src={NewIcon} className='new-icon' role="button" />
                     <span>Create new</span>
                 </div>
 
