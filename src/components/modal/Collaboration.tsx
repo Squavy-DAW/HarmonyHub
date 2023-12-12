@@ -1,14 +1,15 @@
 import { extract, generateKey } from '@network/crypto';
-import { createCryptoSocket, createSession, createSocket, handle, remove } from '@network/sockets';
+import { createCryptoSocket, createSession, createSocket } from '@network/sockets';
 import { useContext, useEffect, useState } from 'react';
 import '@styles/modal/Collaboration.css'
 import NetworkContext from '@src/context/networkcontext';
 import ModalContainer from './ModalContainer';
+import { debounce } from 'throttle-debounce';
 
 export default function CollaborationModal() {
     const [inviteLink, setInviteLink] = useState<string>();
 
-    const { socket, setSocket, room, setRoom } = useContext(NetworkContext);
+    const { socket, setSocket, room, setRoom, username, setUsername } = useContext(NetworkContext);
 
     useEffect(() => {
         if (socket?.key) {
@@ -52,6 +53,13 @@ export default function CollaborationModal() {
         }, 1000);
     }
 
+    const handleSetUsername = debounce(1000, function (event: React.ChangeEvent<HTMLInputElement>) {
+        setUsername(event.target.value);
+        socket?.broadcast('hh:username-update', {
+            name: event.target.value
+        })
+    });
+
     return (
         <ModalContainer className={['collaboration-modal', socket ? 'active' : null].join(' ')} mode='center'>
             <div className='collaboration-lock' />
@@ -68,6 +76,9 @@ export default function CollaborationModal() {
                     <p>To start collaborating, click the button below to generate an invitation:</p>
                     <button className='start-collaboration' onClick={handleStartCollaboration}>Start collaboration</button>
                 </>}
+            </div>
+            <div className='username-input'>
+                <input type='text' placeholder='Username' onChange={handleSetUsername} />
             </div>
         </ModalContainer>
     );

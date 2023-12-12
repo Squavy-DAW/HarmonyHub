@@ -19,6 +19,7 @@ import { generateId } from '@network/crypto';
 import TabsContext from '@src/context/tabscontext';
 import ZoomContext from '@src/context/zoomcontext';
 import PositionContext from '@src/context/positioncontext';
+import UserContext from '@src/context/usercontext';
 
 export default function Music(props: { project: Project, network: Network }) {
 
@@ -29,11 +30,14 @@ export default function Music(props: { project: Project, network: Network }) {
     const _project = useRef<Project>(props.project);
 
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
+    const [draggedPattern, setDraggedPattern] = useState<DraggingPattern>();
 
     const [room, setRoom] = useState(props.network.room);
     const [socket, setSocket] = useState(props.network.socket);
-    const [draggedPattern, setDraggedPattern] = useState<DraggingPattern>();
-
+    const [username, setUsername] = useState<string>();
+    
+    const [usernames, setUsernames] = useState<{ [id: string]: string }>({});
+    
     const patternDragOverlay = createRef<HTMLDivElement>();
     const id = useRef(generateId());
 
@@ -62,9 +66,15 @@ export default function Music(props: { project: Project, network: Network }) {
         socket?.on('hh:user-disconnected', ({ id }) => {
             console.log(`User with id=${id} disconnected`);
         });
-        
+
         socket?.addEventListener('hh:user-joined', (id, { name }) => {
             console.log(`${name} with id=${id} joined the session`);
+            socket.broadcast('hh:username-update', {
+                name: username!
+            });
+            setUsernames(produce(draft => {
+                draft[id] = name;
+            }))
         });
 
         socket?.addEventListener('hh:request-project', () => {
@@ -78,58 +88,68 @@ export default function Music(props: { project: Project, network: Network }) {
             }));
         })
 
-        socket?.addEventListener('hh:note-deleted', (_id, { patternId, id}) => {
+        socket?.addEventListener('hh:note-deleted', (_id, { patternId, id }) => {
             setProject(produce(draft => {
                 delete draft.data.patterns[patternId].notes[id];
             }))
         })
-  }, [socket]);
+
+        socket?.addEventListener('hh:username-update', (id, { name }) => {
+            setUsernames(produce(draft => {
+                draft[id] = name;
+            }))
+        })
+    }, [socket]);
 
     return (
-        <ProjectContext.Provider value={{
-            project, setProject
+        <UserContext.Provider value={{
+            usernames, setUsernames
         }}>
-            <NetworkContext.Provider value={{
-                socket, setSocket, room, setRoom
+            <ProjectContext.Provider value={{
+                project, setProject
             }}>
-                <ModalContext.Provider value={{
-                    modalContent, setModalContent
+                <NetworkContext.Provider value={{
+                    socket, setSocket, room, setRoom, username, setUsername
                 }}>
-                    <DraggedPatternContext.Provider value={{
-                        draggedPattern, setDraggedPattern
+                    <ModalContext.Provider value={{
+                        modalContent, setModalContent
                     }}>
-                        <ZoomContext.Provider value={{
-                            zoom: project.zoom, factor: zoomBase * Math.E ** project.zoom
+                        <DraggedPatternContext.Provider value={{
+                            draggedPattern, setDraggedPattern
                         }}>
-                            <PositionContext.Provider value={{
-                                position: project.position
+                            <ZoomContext.Provider value={{
+                                zoom: project.zoom, factor: zoomBase * Math.E ** project.zoom
                             }}>
-                                <section className="music-layout" id={id.current}>
-                                    <Toolbar />
+                                <PositionContext.Provider value={{
+                                    position: project.position
+                                }}>
+                                    <section className="music-layout" id={id.current}>
+                                        <Toolbar />
 
-                                    <Allotment vertical={false} separator={true} proportionalLayout={false}>
-                                        <Allotment.Pane priority={LayoutPriority.High}>
-                                            <TrackEditor />
-                                        </Allotment.Pane>
-                                        <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
-                                            <Patterns overlay={patternDragOverlay} />
-                                        </Allotment.Pane>
-                                    </Allotment>
+                                        <Allotment vertical={false} separator={true} proportionalLayout={false}>
+                                            <Allotment.Pane priority={LayoutPriority.High}>
+                                                <TrackEditor />
+                                            </Allotment.Pane>
+                                            <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
+                                                <Patterns overlay={patternDragOverlay} />
+                                            </Allotment.Pane>
+                                        </Allotment>
 
-                                    <PatternDragOverlay ref={patternDragOverlay} />
+                                        <PatternDragOverlay ref={patternDragOverlay} />
 
-                                    {<Modal
-                                        isOpen={!!modalContent}
-                                        onRequestClose={() => setModalContent(null)}
-                                        parentSelector={() => document.getElementById(id.current)!}>
-                                        {modalContent}
-                                    </Modal>}
-                                </section>
-                            </PositionContext.Provider>
-                        </ZoomContext.Provider>
-                    </DraggedPatternContext.Provider>
-                </ModalContext.Provider>
-            </NetworkContext.Provider>
-        </ProjectContext.Provider>
+                                        {<Modal
+                                            isOpen={!!modalContent}
+                                            onRequestClose={() => setModalContent(null)}
+                                            parentSelector={() => document.getElementById(id.current)!}>
+                                            {modalContent}
+                                        </Modal>}
+                                    </section>
+                                </PositionContext.Provider>
+                            </ZoomContext.Provider>
+                        </DraggedPatternContext.Provider>
+                    </ModalContext.Provider>
+                </NetworkContext.Provider>
+            </ProjectContext.Provider>
+        </UserContext.Provider>
     );
 }

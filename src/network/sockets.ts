@@ -56,7 +56,7 @@ type EventReturnType<T extends keyof ClientToClientEvents> = ReturnType<ClientTo
 type EventCallback<T extends keyof ClientToClientEvents> = (id: string, data: EventParameters<T>) => EventReturnType<T> | Promise<EventReturnType<T>>;
 
 
-export async function broadcast<T extends keyof ClientToClientEvents>(socket: TypedSocket, key: CryptoKey, type: T, data: EventParameters<T>) {
+async function broadcast<T extends keyof ClientToClientEvents>(socket: TypedSocket, key: CryptoKey, type: T, data: EventParameters<T>) {
     socket.emit('hh:broadcast', {
         data: await encrypt(key, {
             type: type,
@@ -65,7 +65,7 @@ export async function broadcast<T extends keyof ClientToClientEvents>(socket: Ty
     });
 }
 
-export async function request<T extends keyof ClientToClientEvents>(socket: TypedSocket, key: CryptoKey, type: T, data: EventParameters<T>): Promise<EventReturnType<T>> {
+async function request<T extends keyof ClientToClientEvents>(socket: TypedSocket, key: CryptoKey, type: T, data: EventParameters<T>): Promise<EventReturnType<T>> {
     return new Promise(async resolve => {
         socket.emit('hh:request', {
             data: await encrypt(key, {
@@ -78,7 +78,7 @@ export async function request<T extends keyof ClientToClientEvents>(socket: Type
     })
 }
 
-export function survey<T extends keyof ClientToClientEvents>(socket: TypedSocket, key: CryptoKey, type: T, data: EventParameters<T>): Promise<boolean> {
+function survey<T extends keyof ClientToClientEvents>(socket: TypedSocket, key: CryptoKey, type: T, data: EventParameters<T>): Promise<boolean> {
     return new Promise(async resolve => {
         socket.emit('hh:survey', {
             data: await encrypt(key, {
@@ -93,7 +93,7 @@ export function survey<T extends keyof ClientToClientEvents>(socket: TypedSocket
     })
 }
 
-export async function handle<T extends keyof ClientToClientEvents>(socket: TypedSocket, key: CryptoKey, type: T, callback: EventCallback<T>) {
+async function handle<T extends keyof ClientToClientEvents>(socket: TypedSocket, key: CryptoKey, type: T, callback: EventCallback<T>) {
     socket.on('hh:data', async ({ id, data }, ack) => {
         let decrypted = await decrypt<{ type: T, data: EventParameters<T> }>(key, data);
         if (decrypted.type === type) {
@@ -108,7 +108,7 @@ export async function handle<T extends keyof ClientToClientEvents>(socket: Typed
 }
 
 // todo
-export async function remove<T extends keyof ClientToClientEvents>(socket: TypedSocket, key: CryptoKey, type: T, callback: EventCallback<T>) {
+async function remove<T extends keyof ClientToClientEvents>(socket: TypedSocket, key: CryptoKey, type: T, callback: EventCallback<T>) {
     socket.off('hh:data', async ({ id, data }, ack) => {
         let decrypted = await decrypt<{ type: T, data: EventParameters<T> }>(key, data);
         if (decrypted.type === type) {

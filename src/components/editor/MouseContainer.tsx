@@ -6,6 +6,7 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 import { produce } from "immer";
 import { throttle } from "throttle-debounce";
 import "@styles/editor/MouseCursors.css";
+import UserContext from "@src/context/usercontext";
 
 type MousePosition = {
     [userId: string]: {
@@ -19,6 +20,7 @@ export default function ({ ...rest }: React.HTMLAttributes<HTMLDivElement>) {
     const { zoom, factor } = useContext(ZoomContext);
     const { socket } = useContext(NetworkContext);
     const { context } = useContext(ContextContext);
+    const { usernames } = useContext(UserContext);
 
     const [mousePositions, setMousePositions] = useState<MousePosition>({});
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -70,7 +72,7 @@ export default function ({ ...rest }: React.HTMLAttributes<HTMLDivElement>) {
                 {Object.keys(mousePositions).map(id => {
                     const pos = mousePositions[id];
                     return <div key={id} className="cursor" style={{ left: pos.x * factor, top: pos.y }}>
-                        <span className="cursor-name">{id}</span>
+                        <span className="cursor-name">{usernames[id]}</span>
                     </div>
                 })}
             </div>
