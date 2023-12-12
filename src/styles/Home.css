@@ -84,5 +84,12 @@
 }
 
 #home-layout #home-controls *.hoverable:hover {
-    box-shadow: #38520a88 5px 5px 20px 0px;
+    box-shadow: #520a0a88 5px 5px 20px 0px;
+
+    transform: scale(1.05);
+    transition: all 0.125s cubic-bezier( 0.11, 0.41, 0, 0.99 );
+}
+
+#home-layout #home-controls *.hoverable {
+    transition: 0.125s;
 }
