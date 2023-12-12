@@ -12,8 +12,7 @@
 * {
     color: rgb(225, 225, 225);
     font-family: 'VT323-Regular';
-    text-shadow: 0px 0px 2px #ff6666,
-                 0px 0px 15px red;
+    
     backface-visibility: hidden;
 }
 
