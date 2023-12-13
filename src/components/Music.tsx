@@ -21,7 +21,7 @@ import ZoomContext from '@src/context/zoomcontext';
 import PositionContext from '@src/context/positioncontext';
 import UserContext from '@src/context/usercontext';
 
-export default function Music(props: { project: Project, network: Network }) {
+export default function Music(props: { project: Project, network: Network, username?: string }) {
 
     const { tabs } = useContext(TabsContext);
     const { tab } = useContext(TabContext);
@@ -34,7 +34,7 @@ export default function Music(props: { project: Project, network: Network }) {
 
     const [room, setRoom] = useState(props.network.room);
     const [socket, setSocket] = useState(props.network.socket);
-    const [username, setUsername] = useState<string>('');
+    const [username, setUsername] = useState<string>(props.username ?? '');
     
     const [usernames, setUsernames] = useState<{ [id: string]: string }>({});
     

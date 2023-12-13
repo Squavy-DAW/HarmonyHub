@@ -31,7 +31,7 @@ export default function ConnectModal({ room, jwkKey, onClose }: ConnectModalProp
 
         setTabs([...tabs, {
             name: "Gathering...",
-            content: <Music project={{...defaultProject}} network={{
+            content: <Music project={{...defaultProject}} username={userName} network={{
                 name: userName,
                 room: room,
                 socket: socket
