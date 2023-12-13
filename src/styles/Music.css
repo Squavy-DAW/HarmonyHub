@@ -19,6 +19,7 @@
 
 .cursor .cursor-name {
     margin-left: 1rem;
+    white-space: nowrap;
 }
 
 .music-layout .music-patterns {
