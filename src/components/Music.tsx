@@ -35,6 +35,7 @@ export default function Music(props: { project: Project, network: Network, usern
     const [room, setRoom] = useState(props.network.room);
     const [socket, setSocket] = useState(props.network.socket);
     const [username, setUsername] = useState<string>(props.username ?? '');
+    const _username = useRef<string>(props.username ?? '');
     
     const [usernames, setUsernames] = useState<{ [id: string]: string }>({});
     
@@ -63,27 +64,33 @@ export default function Music(props: { project: Project, network: Network, usern
     }, [project]);
 
     useEffect(() => {
+        _username.current = username;
+    }, [username]);
+
+    useEffect(() => {
         socket?.request('hh:request-project', null).then((project: Project) => {
             setProject(project);
         });
 
         socket?.on('hh:user-disconnected', ({ id }) => {
-            console.log(`User with id=${id} disconnected`);
+            console.debug(`User with id=${id} disconnected`);
             setUsernames(produce(draft => {
                 delete draft[id];
             }))
         });
 
         socket?.addEventListener('hh:user-joined', (id, { name }) => {
-            console.log(`${name} with id=${id} joined the session`);
-            socket.broadcast('hh:username-update', { name: username });
+            console.debug(`${name} with id=${id} joined the session`);
+            socket.broadcast('hh:username-update', { 
+                name: _username.current
+            });
             setUsernames(produce(draft => {
                 draft[id] = name;
             }))
         });
 
         socket?.addEventListener('hh:request-project', () => {
-            console.log("Requested project");
+            console.debug("Requested project");
             return _project.current;
         });
 
@@ -100,7 +107,7 @@ export default function Music(props: { project: Project, network: Network, usern
         })
 
         socket?.addEventListener('hh:username-update', (id, { name }) => {
-            console.log(`${name} with id=${id} updated their username to ${name}`);
+            console.debug(`${name} with id=${id} updated their username to ${name}`);
             
             setUsernames(produce(draft => {
                 draft[id] = name;
