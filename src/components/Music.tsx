@@ -72,6 +72,14 @@ export default function Music(props: { project: Project, network: Network, usern
             setProject(project);
         });
 
+        console.log("Requesting usernames");
+        socket?.broadcast('hh:request-username', null, (id: string, username: string) => {
+            console.log(`> Received username ${username} with id=${id}`);
+            setUsernames(produce(draft => {
+                draft[id] = username;
+            }))
+        });
+
         socket?.on('hh:user-disconnected', ({ id }) => {
             console.debug(`User with id=${id} disconnected`);
             setUsernames(produce(draft => {
@@ -81,9 +89,6 @@ export default function Music(props: { project: Project, network: Network, usern
 
         socket?.addEventListener('hh:user-joined', (id, { name }) => {
             console.debug(`${name} with id=${id} joined the session`);
-            socket.broadcast('hh:username-update', { 
-                name: _username.current
-            });
             setUsernames(produce(draft => {
                 draft[id] = name;
             }))
@@ -93,6 +98,11 @@ export default function Music(props: { project: Project, network: Network, usern
             console.debug("Requested project");
             return _project.current;
         });
+
+        socket?.addEventListener('hh:request-username', () => {
+            console.debug("Requested username: " + _username.current);
+            return _username.current;
+        })
 
         socket?.addEventListener('hh:note-update', (_id, { patternId, id, note }) => {
             setProject(produce(draft => {
