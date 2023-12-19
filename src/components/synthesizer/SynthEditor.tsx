@@ -1,15 +1,19 @@
 //TODO: Multiple lines can be routed into a single mod. This should not be possible exclusevly on mod-connectors!
 
 import "@src/styles/editor/SynthEditor.css"
-import { createRef, useEffect, useRef, useState } from "react";
+import { createRef, useContext, useEffect, useRef, useState } from "react";
 import RoutableAudioNode, { defaultAudioEndNode, defaultOscillatorNode } from "@models/audionode";
 import useMouse from "@src/hooks/mouse";
 import LinePosition from "@models/linepositionprops";
 import { Synth } from "@synth/synth";
 import { generateId } from "@network/crypto";
 import { ModType } from "@synth/modRoM";
+import SoundContext from "@src/context/soundcontext";
+import { produce } from "immer";
 
 export default function SynthEditor(props:{synth: Synth}){
+    const { ctx } = useContext(SoundContext);
+
     const [draggedNode, setDraggedNode] = useState<HTMLElement>();
     const [hoverOverLine, setHoverOverLine] = useState<HTMLElement>();
     const nodeOrigin = useRef({x: 0, y: 0});
@@ -244,6 +248,19 @@ export default function SynthEditor(props:{synth: Synth}){
                     addElementToSynth(node);
                 }}>
                     Add Oscillator
+                </button>
+
+                <button onClick={() => {
+                    synth.start(523.251,ctx);
+                    //synth.start(659.255,ctx);
+                    //synth.start(783.991,ctx);
+                }}>
+                    TEST Start SYNTH A4
+                </button>
+                <button onClick={() => {
+                    synth.stop(440);
+                }}>
+                    TEST Stop SYNTH A4
                 </button>
                 </li>
             </ul>

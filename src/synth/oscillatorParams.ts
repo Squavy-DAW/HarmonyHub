@@ -1,5 +1,7 @@
 import { AdvancedAudioNode, AdvancedAudioNodeParams } from "./synth";
 
+export type Waveform = "Sine" | "Pulse" | "Saw" | "Triangle" | "Noise";
+
 //the configurable params of an oscillator
 export interface OscillatorParams extends AdvancedAudioNodeParams{
     waveform:string,            // basic types or custom
@@ -12,7 +14,7 @@ export interface OscillatorParams extends AdvancedAudioNodeParams{
 }
 
 export function createOscillatorParams(
-    waveform:string, 
+    waveform:Waveform, 
     gain:number, 
     pan:number, 
     detune:number, 
@@ -40,13 +42,17 @@ export function createAdvancedOscillator(
     params: OscillatorParams,
     ctx: AudioContext
 ): AdvancedOscillator{  //TODO: Take another look at this one
-    let osc = new OscillatorNode(ctx);
-    let oscGain = new GainNode(ctx);
-    oscGain.gain.setValueAtTime(1, ctx.currentTime);
+    let osc = ctx.createOscillator();
+    let oscGain = ctx.createGain();
+    oscGain.gain.setValueAtTime(0.5, ctx.currentTime);
 
-    let oscPan = new PannerNode(ctx);   //TODO: Implement
+    let oscPan = ctx.createStereoPanner();   //TODO: Implement
+
     //TODO: Configure the oscillator accordingly
 
+    //The following two lines of code are temporary and should be adjusted/removed accordingly
+    osc.type= "sine";
+    osc.connect(oscGain);
 
     return {
         params: params,

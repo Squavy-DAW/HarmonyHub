@@ -2,8 +2,7 @@ import { AdvancedOscillator, OscillatorParams, createAdvancedOscillator, createO
 import { ADSREnvelope, createADSREnvelope } from "./envelope";
 import { ModRoM, createModRoM } from "./modRoM";
 import RoutableAudioNode from "@models/audionode";
-
-let ctx:AudioContext;   //TODO: get this into the main context! 
+import { AudioEndNodeParams, createAudioEndNode } from "./audioEndNode"; 
 
 //base interface for advanced nodes
 export interface AdvancedAudioNode{
@@ -17,110 +16,86 @@ export interface AdvancedAudioNode{
 export interface AdvancedAudioNodeParams{}
 
 //the object that exists in the context
-export interface Synth{
+export interface Synth{ //TODO: Use immer and usestate, whenever values from the synth are changed from outside.
     //audionode pool
     audioNodes:{[id:string]:RoutableAudioNode};
-    activeAudioNodes:string[];
+    activeAudioNodes:{[freq:number]:{[id:string]:AdvancedAudioNode}};
+
     //AudioNode routing
     routes:ModRoM;
 
     init:() => void;    //initializes the Synth
     start:(freq:number, ctx:AudioContext) => void;
-    stop:(freq:number, ctx:AudioContext) => void;
+    stop:(freq:number) => void;
 }
+
+let audioNodes:{[id:string]:RoutableAudioNode} = {};
+let activeAudioNodes:{[freq:number]:{[id:string]:AdvancedAudioNode}} = {};
+let routes = createModRoM();
 
 function init(){
     //TODO: Implement
 }
 
 function start(freq:number, ctx:AudioContext){
+
     //TODO: Implement
+    console.error(audioNodes);
+    for(let key in audioNodes){
+        let value = audioNodes[key];
+        
+        if(value.node.id == "oscillator"){
+            let osc = createAdvancedOscillator(value.node.params as OscillatorParams, ctx);
+            osc.osc().frequency.setValueAtTime(freq,ctx.currentTime);
+            osc.osc().start();
+
+            activeAudioNodes[freq] = {[key]:osc};
+            console.error("OSC");
+        }
+        else if(value.node.id == "audioendnode"){
+            let end = createAudioEndNode(value.node.params as AudioEndNodeParams, ctx);
+            activeAudioNodes[freq] = {[key]:end};
+            console.error("END");
+        }
+    }
+
+    //do the routing
+    let active = activeAudioNodes[freq];
+    for(let id in routes.routes){
+        //activeAudioNodes[freq][node].connect(e);
+        let node = active[id];
+        //routeTree(freq,id,node);
+    }
+
     console.warn("HEY DEV, the Synth is playing the freq: "+freq);  //TEST
 }
 
-function stop(freq:number, ctx:AudioContext){
-    //TODO: Implement
+function routeTree(freq:number, id:string, node:AdvancedAudioNode){
+    //route and connect recoursively
+    let n = activeAudioNodes[freq][id];
+}
+
+function stop(freq:number){
+    //TODO: Test
+    for(let key in audioNodes){
+        let value = audioNodes[key];
+        let active = activeAudioNodes[freq][key] as AdvancedOscillator;
+        
+        if(value.node.id == "oscillator" && active !== undefined){
+            active.osc().stop();
+        }
+    }
+    activeAudioNodes = {};
     console.warn("HEY DEV, the Synth has stopped playing the freq: "+freq); //TEST
 }
 
 export function createSynth():Synth{
     return {
-        audioNodes: {},
-        activeAudioNodes: [],
-        routes: createModRoM(),
+        audioNodes: audioNodes,
+        activeAudioNodes: activeAudioNodes,
+        routes: routes,
         init: init,
         start: start,
         stop: stop
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-//TODO: Remove comment once the Synth interface is implemented
-
-//creation pool
-export let oscillatorParams:{id:string, params:OscillatorParams}[];
-export let activeOscillators:{id:string, params:OscillatorParams}[];
-export let activeEnvelopes:ADSREnvelope[] = [];
-
-//modulator pool
-
-
-//AudioNode routing
-
-
-export function init(){
-    //Initialize oscillators
-    let osc1 = {id:"osc1", params:setOscillatorParams("sine",1,0,0,0,0,0)};
-    let osc2 = {id:"osc2", params:setOscillatorParams("sine",1,0,0,0,0,0)};
-    let osc3 = {id:"osc3", params:setOscillatorParams("sine",1,0,0,0,0,0)};
-    oscillatorParams.push(osc1);    
-    oscillatorParams.push(osc2);
-    oscillatorParams.push(osc3);
-    let generalEnvelope = createADSREnvelope(ctx,0.1,1,0.3,0.5,3,0.2,0.1);
-    activeEnvelopes.push(generalEnvelope);
-}
-
-//adds a new audioNode to the synth.
-export function addAdvancedAudioNode(node:AdvancedAudioNode, id:string){
-    
-}
-
-
-//TODO: Make work...
-//start/stop
-export function start(freq:number, oscId:string){
-    let oscPreset = oscillatorParams.find(s => s.id==oscId);
-    if(oscPreset===undefined)
-        return;
-
-    let osc = setAdvancedOscillator(oscPreset.params, ctx);
-    osc.osc().frequency.setValueAtTime(freq, ctx.currentTime);  //set the frequency
-    
-    //osc.connect(envelope);
-    //envelope.out.connect(ctx.destination);
-    //osc.osc().start();
-    //envelope.trigger();
-}
-
-export function stop(freq:number, oscParams:OscillatorParams){
-    //let osc = setAdvancedOscillator(oscParams, ctx);
-    //envelope.stop();
-}
-*/
