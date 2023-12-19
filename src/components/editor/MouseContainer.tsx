@@ -49,16 +49,19 @@ export default function ({ ...rest }: React.HTMLAttributes<HTMLDivElement>) {
     // const handleReceiveMousePosition = 
 
     useEffect(() => {
-        if (socket) {
-            socket.addEventListener('hh:mouse-position', (id, { context: c, x, y }) => {
-                if (c != context) return;
-                setMousePositions(produce(draft => {
-                    draft[id] = { x, y };
-                }));
-            })
+        socket?.addEventListener('hh:mouse-position', (id, { context: c, x, y }) => {
+            if (c != context) return;
+            setMousePositions(produce(draft => {
+                draft[id] = { x, y };
+            }));
+        })
 
-            // todo cleanup function
-        }
+        socket?.on('hh:user-disconnected', ({ id }) => {
+            console.debug(`User with id=${id} disconnected`);
+            setMousePositions(produce(draft => {
+                delete draft[id];
+            }));
+        });
     }, [socket]);
 
     // todo on component unmount send remove cursor message
