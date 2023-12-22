@@ -33,7 +33,7 @@ function insert(element1:string, element2:string, type?:ModType){
     //TODO: Fully Implement
     if(routes[element1]){   //first element was already routed
         if(type){
-            routes[element1].children[element2] = {type:type} as RouteModElement;
+            routes[element1].children[element2+"|"+type] = {type:type} as RouteModElement;
         }
         else{
             routes[element1].children[element2] = {children: {}} as RouteNodeElement;
@@ -42,7 +42,7 @@ function insert(element1:string, element2:string, type?:ModType){
     else{   //first element wasn't routed yet
         if(type){
             routes[element1] = {children: {
-                [element2]:{type:type} as RouteModElement
+                [element2+"|"+type]:{type:type} as RouteModElement
             }};
         }
         else{
@@ -54,6 +54,10 @@ function insert(element1:string, element2:string, type?:ModType){
 
     console.info("tried to insert "+element1+" into "+element2 + (type?(" on type: "+type):""));
     console.warn(routes);
+}
+
+function remove(element1:string, element2:string, type?:ModType){
+    //TODO: Implement
 }
 
 export function createModRoM():ModRoM{
