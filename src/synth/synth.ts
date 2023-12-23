@@ -38,9 +38,8 @@ function init(){
 }
 
 function start(freq:number, ctx:AudioContext){
+    activeAudioNodes[freq] = {};
 
-    //TODO: Implement
-    console.error(audioNodes);
     for(let key in audioNodes){
         let value = audioNodes[key];
         
@@ -49,43 +48,44 @@ function start(freq:number, ctx:AudioContext){
             osc.osc().frequency.setValueAtTime(freq,ctx.currentTime);
             osc.osc().start();
 
-            activeAudioNodes[freq] = {[key]:osc};
-            console.error("OSC");
+            activeAudioNodes[freq][key] = osc;
         }
         else if(value.node.id == "audioendnode"){
             let end = createAudioEndNode(value.node.params as AudioEndNodeParams, ctx);
-            activeAudioNodes[freq] = {[key]:end};
-            console.error("END");
+            activeAudioNodes[freq][key] = end;
         }
     }
-
     //do the routing
-    let active = activeAudioNodes[freq];
-    for(let id in routes.routes){
-        //activeAudioNodes[freq][node].connect(e);
-        let node = active[id];
-        //routeTree(freq,id,node);
-    }
+    routeTree(freq);
 
     console.warn("HEY DEV, the Synth is playing the freq: "+freq);  //TEST
 }
 
-function routeTree(freq:number, id:string, node:AdvancedAudioNode){
-    //route and connect recoursively
-    let n = activeAudioNodes[freq][id];
+function routeTree(freq:number){
+    let active = activeAudioNodes[freq];
+
+    console.warn(active);
+
+    let nodes = routes.routes;
+    for(let parent in nodes){
+        let parentNode = nodes[parent];
+        for(let child in parentNode.children){
+            if(active[parent] && active[child]){
+                active[parent].connect(active[child]);
+                console.warn("routed: "+parent+" into "+child);
+            }
+            else{
+                console.error("failed routing: "+parent+" into "+child);
+            }
+        }
+    }
 }
 
 function stop(freq:number){
-    //TODO: Test
-    for(let key in audioNodes){
-        let value = audioNodes[key];
-        let active = activeAudioNodes[freq][key] as AdvancedOscillator;
-        
-        if(value.node.id == "oscillator" && active !== undefined){
-            active.osc().stop();
-        }
-    }
-    activeAudioNodes = {};
+    //TODO: Redo
+    
+    //TODO: If there is an envelope, one can't just stop the oscillator, but needs to run through the envelopes release and stop the oscillator AFTER
+
     console.warn("HEY DEV, the Synth has stopped playing the freq: "+freq); //TEST
 }
 

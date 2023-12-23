@@ -52,8 +52,7 @@ function insert(element1:string, element2:string, type?:ModType){
         }
     }
 
-    console.info("tried to insert "+element1+" into "+element2 + (type?(" on type: "+type):""));
-    console.warn(routes);
+    console.warn("tried to insert "+element1+" into "+element2 + (type?(" on type: "+type):""));
 }
 
 function remove(element1:string, element2:string, type?:ModType){
