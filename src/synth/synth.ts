@@ -2,9 +2,7 @@ import { AdvancedOscillator, OscillatorParams, createAdvancedOscillator, createO
 import { ADSREnvelope, createADSREnvelope } from "./envelope";
 import { ModRoM, createModRoM } from "./modRoM";
 import RoutableAudioNode from "@models/audionode";
-import { AudioEndNodeParams, createAudioEndNode } from "./audioEndNode"; 
-import { useState } from "react";
-import { produce } from "immer";
+import { AudioEndNodeParams, createAudioEndNode } from "./audioEndNode";
 
 //base interface for advanced nodes
 export interface AdvancedAudioNode{
