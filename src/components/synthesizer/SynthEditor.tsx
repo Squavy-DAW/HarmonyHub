@@ -7,7 +7,7 @@ import useMouse from "@src/hooks/mouse";
 import LinePosition from "@models/linepositionprops";
 import { Synth } from "@synth/synth";
 import { generateId } from "@network/crypto";
-import { ModType } from "@synth/modRoM";
+import { ModRoM, ModType, RouteModElement, RouteNodeElement } from "@synth/modRoM";
 import SoundContext from "@src/context/soundcontext";
 import { produce } from "immer";
 
@@ -121,11 +121,57 @@ export default function SynthEditor(props:{synth: Synth}){
             console.error("param id already exists!"+props.id);
             return;
         }
-        synth.audioNodes[props.id!] = props;
+        setSyth(produce(draft => {
+            draft.audioNodes[props.id!] = props;
+        }));
     }
 
     function addRouteToSynth(id1: string, id2: string, type?:ModType){
-        synth.routes.insert(id1, id2, type);
+        insertRoute(id1,id2, synth.routes ,type);
+        /*setSyth(produce(draft => {
+            draft.routes.insert(id1, id2, type);    //ERROR: Maybe make the insert method static? idk...
+                                                    //       Routes can be set, but no methods of it can be executed...
+                                                    //       Even routes.routes can be set...
+        }));*/
+    }
+
+    function insertRoute(element1:string, element2:string, modRom:ModRoM, type?:ModType){   //TODO: Try to add this back into modRom!
+        let routes = modRom.routes;
+        
+        if(routes[element1]){   //first element was already routed
+            if(type){
+                setSyth(produce(draft => {
+                    draft.routes.routes[element1].children[element2+"|"+type] = {type:type} as RouteModElement;
+                }));
+            }
+            else{ 
+                setSyth(produce(draft => {
+                    draft.routes.routes[element1].children[element2] = {children: {}} as RouteNodeElement;
+                }));
+            }
+        }
+        else{   //first element wasn't routed yet
+            if(type){
+                setSyth(produce(draft => {
+                    draft.routes.routes[element1] = {children: {
+                        [element2+"|"+type]:{type:type} as RouteModElement
+                    }};
+                }));
+            }
+            else{
+                setSyth(produce(draft => {
+                    draft.routes.routes[element1] = {children: {
+                        [element2]:{children:{}} as RouteNodeElement
+                    }};
+                }));
+            }
+        }
+    
+        console.warn("tried to insert "+element1+" into "+element2 + (type?(" on type: "+type):""));
+    }
+
+    function removeRoute(element1:string, element2:string, type?:ModType){
+        //TODO: Implement
     }
 
     useEffect(() => {

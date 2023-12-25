@@ -3,6 +3,8 @@ import { ADSREnvelope, createADSREnvelope } from "./envelope";
 import { ModRoM, createModRoM } from "./modRoM";
 import RoutableAudioNode from "@models/audionode";
 import { AudioEndNodeParams, createAudioEndNode } from "./audioEndNode"; 
+import { useState } from "react";
+import { produce } from "immer";
 
 //base interface for advanced nodes
 export interface AdvancedAudioNode{
@@ -31,7 +33,7 @@ export interface Synth{ //TODO: Use immer and usestate, whenever values from the
 
 let audioNodes:{[id:string]:RoutableAudioNode} = {};
 let activeAudioNodes:{[freq:number]:{[id:string]:AdvancedAudioNode}} = {};
-let routes = createModRoM();
+let routes:ModRoM = createModRoM();
 
 function init(){
     //TODO: Implement
@@ -52,6 +54,7 @@ function start(freq:number, ctx:AudioContext){
         }
         else if(value.node.id == "audioendnode"){
             let end = createAudioEndNode(value.node.params as AudioEndNodeParams, ctx);
+
             activeAudioNodes[freq][key] = end;
         }
     }
