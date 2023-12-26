@@ -1,4 +1,4 @@
-import { AdvancedAudioNode, AdvancedAudioNodeParams } from "./synth";
+import { AdvancedAudioNode, AdvancedAudioNodeParams } from "../model/synth";
 
 export type Waveform = "Sine" | "Pulse" | "Saw" | "Triangle" | "Noise";
 

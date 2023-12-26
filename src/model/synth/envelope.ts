@@ -1,4 +1,4 @@
-import { AdvancedAudioNode, AdvancedAudioNodeParams } from "./synth";
+import { AdvancedAudioNode, AdvancedAudioNodeParams } from "../synth";
 
 export interface ADSREnvelope extends AdvancedAudioNode, AdvancedAudioNodeParams{
     attackTime:number,

@@ -1,6 +1,6 @@
 export type ConnectionType = "in" | "out" | "mod"
 
-export default interface ConnectionPointProps {
+export default interface ConnectionPoint {
     top?: number,
     bottom?: number,
     left?: number,

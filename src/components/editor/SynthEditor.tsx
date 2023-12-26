@@ -2,17 +2,20 @@
 
 import "@src/styles/editor/SynthEditor.css"
 import { createRef, useContext, useEffect, useRef, useState } from "react";
-import RoutableAudioNode, { defaultAudioEndNode, defaultOscillatorNode } from "@models/audionode";
+import RoutableAudioNode, { defaultAudioEndNode, defaultOscillatorNode } from "@models/synth/audionode";
 import useMouse from "@src/hooks/mouse";
-import LinePosition from "@models/linepositionprops";
-import { Synth } from "@synth/synth";
+import LinePosition from "@models/synth/lineposition";
 import { generateId } from "@network/crypto";
-import { ModRoM, ModType, RouteModElement, RouteNodeElement } from "@synth/modRoM";
+import { ModRoM, ModType, RouteModElement, RouteNodeElement } from "@models/synth/modRoM";
 import SoundContext from "@src/context/soundcontext";
 import { produce } from "immer";
+import { AudioEngine } from "@synth/audioengine";
+import ProjectContext from "@src/context/projectcontext";
 
-export default function SynthEditor(props:{synth: Synth}){
+export default function SynthEditor(props:{trackId: string}){
     const { ctx } = useContext(SoundContext);
+    const { project, setProject } = useContext(ProjectContext);
+    const synth = project.data.tracks[props.trackId].instrument;
 
     const [draggedNode, setDraggedNode] = useState<HTMLElement>();
     const [hoverOverLine, setHoverOverLine] = useState<HTMLElement>();
@@ -22,8 +25,6 @@ export default function SynthEditor(props:{synth: Synth}){
     const [svgLines, setSvgLines] = useState<LinePosition[]>([]);
     const [svgDragLine, setSvgDragLine] = useState<LinePosition>();
     const _svgDragLine = useRef(svgDragLine);
-    
-    const [synth, setSyth] = useState<Synth>(props.synth);
     
     function handleNodeMouseDown(ev: React.MouseEvent){
         const target = ev.currentTarget as HTMLElement;
@@ -116,13 +117,13 @@ export default function SynthEditor(props:{synth: Synth}){
         setSvgDragLine(_svgDragLine.current);
     }
 
-    function addElementToSynth(props: RoutableAudioNode){
-        if(synth.audioNodes[props.id!]){
-            console.error("param id already exists!"+props.id);
+    function addElementToSynth(ran: RoutableAudioNode){
+        if(synth.audioNodes[ran.id!]){
+            console.error("param id already exists!"+ran.id);
             return;
         }
-        setSyth(produce(draft => {
-            draft.audioNodes[props.id!] = props;
+        setProject(produce(draft => {
+            draft.data.tracks[props.trackId].instrument.audioNodes[ran.id!] = ran;
         }));
     }
 
@@ -140,27 +141,27 @@ export default function SynthEditor(props:{synth: Synth}){
         
         if(routes[element1]){   //first element was already routed
             if(type){
-                setSyth(produce(draft => {
-                    draft.routes.routes[element1].children[element2+"|"+type] = {type:type} as RouteModElement;
+                setProject(produce(draft => {
+                    draft.data.tracks[props.trackId].instrument.routes.routes[element1].children[element2+"|"+type] = {type:type} as RouteModElement;
                 }));
             }
             else{ 
-                setSyth(produce(draft => {
-                    draft.routes.routes[element1].children[element2] = {children: {}} as RouteNodeElement;
+                setProject(produce(draft => {
+                    draft.data.tracks[props.trackId].instrument.routes.routes[element1].children[element2] = {children: {}} as RouteNodeElement;
                 }));
             }
         }
         else{   //first element wasn't routed yet
             if(type){
-                setSyth(produce(draft => {
-                    draft.routes.routes[element1] = {children: {
+                setProject(produce(draft => {
+                    draft.data.tracks[props.trackId].instrument.routes.routes[element1] = {children: {
                         [element2+"|"+type]:{type:type} as RouteModElement
                     }};
                 }));
             }
             else{
-                setSyth(produce(draft => {
-                    draft.routes.routes[element1] = {children: {
+                setProject(produce(draft => {
+                    draft.data.tracks[props.trackId].instrument.routes.routes[element1] = {children: {
                         [element2]:{children:{}} as RouteNodeElement
                     }};
                 }));
@@ -297,14 +298,18 @@ export default function SynthEditor(props:{synth: Synth}){
                 </button>
 
                 <button onClick={() => {
-                    synth.start(523.251,ctx);
+                    // AudioEngine.start(synth,523.251,ctx);
+                    setProject(produce(draft => {
+                        const synth = draft.data.tracks[props.trackId].instrument;
+                        AudioEngine.start(synth,440,ctx);
+                    }))
                     //synth.start(659.255,ctx);
                     //synth.start(783.991,ctx);
                 }}>
                     TEST Start SYNTH A4
                 </button>
                 <button onClick={() => {
-                    synth.stop(440);
+                    AudioEngine.stop(synth,440);
                 }}>
                     TEST Stop SYNTH A4
                 </button>

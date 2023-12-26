@@ -15,8 +15,6 @@ export interface ModRoM{
     routes:{[id:string]:RouteNodeElement};
 }
 
-let routes:{[id:string]:RouteNodeElement} = {};
-
 /*function insert(element1:string, element2:string, type?:ModType){
     if(routes[element1]){   //first element was already routed
         if(type){
@@ -46,8 +44,6 @@ function remove(element1:string, element2:string, type?:ModType){
     //TODO: Implement
 }*/
 
-export function createModRoM():ModRoM{
-    return {
-        routes: routes
-    }
+export const defaultModRoM: ModRoM = {
+    routes: {}
 }

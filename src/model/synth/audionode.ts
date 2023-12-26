@@ -1,7 +1,7 @@
-import { AdvancedAudioNodeParams } from "@synth/synth";
-import ConnectionPointProps from "./connectionpointprops"
+import { AdvancedAudioNodeParams } from "@models/synth";
+import ConnectionPoint from "./connectionpoint"
 import { createOscillatorParams } from "@synth/oscillatorParams";
-import { createAudioEndNodeParams } from "@synth/audioEndNode";
+import { createAudioEndNodeParams } from "@models/synth/audioendnode";
 
 export type AudioNodeType = "AudioEndNode" | "Oscillator" | "Envelope";
 
@@ -13,7 +13,7 @@ export default interface RoutableAudioNode {
     y: number,
     width: number,
     height: number,
-    connectionpoints: ConnectionPointProps[]
+    connectionpoints: ConnectionPoint[]
     node: {
         id: string,
         params: AdvancedAudioNodeParams

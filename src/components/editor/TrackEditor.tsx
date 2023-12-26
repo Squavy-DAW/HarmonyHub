@@ -16,7 +16,6 @@ import PatternPreview from "./PatternPreview";
 import SelectionContainer, { ISelectable } from "./utility/SelectionContainer";
 import SynthEditor from "@components/editor/SynthEditor";
 import ModalContext from "@src/context/modalcontext";
-import { createSynth } from "@synth/synth";
 import MouseContainer from "./utility/MouseContainer";
 import ContextContext from "@src/context/contextcontext";
 
@@ -126,7 +125,7 @@ export default function TrackEditor() {
     function handleOpenSynthEditor(ev: React.MouseEvent) {
         const id = ev.currentTarget.getAttribute('data-id')!;
         setModalContent(
-            <SynthEditor synth={createSynth()}/* TODO: pass 'trackId' */ />
+            <SynthEditor trackId={id} />
         )
     }
 

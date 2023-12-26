@@ -28,7 +28,7 @@ export const defaultProject: Project = {
     snap: 8,
     data: {
         patterns: {
-            [generateId()]: defaultPattern,
+            [generateId()]: { ...defaultPattern },
         },
         tracks: { 
             [generateId()]: { ...defaultTrack, index: 0 },
