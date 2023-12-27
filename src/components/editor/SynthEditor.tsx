@@ -2,7 +2,7 @@
 
 import "@src/styles/editor/SynthEditor.css"
 import { createRef, useContext, useEffect, useRef, useState } from "react";
-import RoutableAudioNode, { defaultAudioEndNode, defaultOscillatorNode } from "@models/synth/audionode";
+import RoutableAudioNode, { defaultAudioEndNode, defaultCompressorNode, defaultOscillatorNode } from "@models/synth/audionode";
 import useMouse from "@src/hooks/mouse";
 import LinePosition from "@models/synth/lineposition";
 import { generateId } from "@network/crypto";
@@ -287,6 +287,18 @@ export default function SynthEditor(props:{trackId: string}){
                 </li>
                 <li>
                 <button onClick={() => {
+                    let node = defaultCompressorNode();
+                    const id = generateId(new Set(Object.keys(synth.audioNodes)));
+                    node.id = id;
+                    node.name = node.id;    //temp
+                    
+                    addElementToSynth(node);
+                }}>
+                    Add CompressorNode
+                </button>
+                </li>
+                <li>
+                <button onClick={() => {
                     let node = defaultOscillatorNode();
                     const id = generateId(new Set(Object.keys(synth.audioNodes)));
                     node.id = id;
@@ -296,23 +308,24 @@ export default function SynthEditor(props:{trackId: string}){
                 }}>
                     Add Oscillator
                 </button>
-
-                <button onClick={() => {
-                    // AudioEngine.start(synth,523.251,ctx);
-                    setProject(produce(draft => {
-                        const synth = draft.data.tracks[props.trackId].instrument;
-                        AudioEngine.start(synth,440,ctx);
-                    }))
-                    //synth.start(659.255,ctx);
-                    //synth.start(783.991,ctx);
-                }}>
-                    TEST Start SYNTH A4
-                </button>
-                <button onClick={() => {
-                    AudioEngine.stop(synth,440);
-                }}>
-                    TEST Stop SYNTH A4
-                </button>
+                </li>
+                <li>
+                    <button onClick={() => {
+                        // AudioEngine.start(synth,523.251,ctx);
+                        setProject(produce(draft => {
+                            const synth = draft.data.tracks[props.trackId].instrument;
+                            AudioEngine.start(synth,440,ctx);
+                        }))
+                        //synth.start(659.255,ctx);
+                        //synth.start(783.991,ctx);
+                    }}>
+                        TEST Start SYNTH A4
+                    </button>
+                    <button onClick={() => {
+                        AudioEngine.stop(synth,440);
+                    }}>
+                        TEST Stop SYNTH A4
+                    </button>
                 </li>
             </ul>
         </div>

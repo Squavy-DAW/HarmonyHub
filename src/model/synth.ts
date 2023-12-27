@@ -4,7 +4,7 @@ import { ToneAudioNode } from "tone"
 
 //base interface for advanced nodes
 export interface AdvancedAudioNode{
-    out:AudioNode,
+    out:ToneAudioNode,
     connect:(node:AdvancedAudioNode) => void,
     disconnect:() => void,
 }

@@ -1,4 +1,5 @@
 import { AdvancedAudioNode, AdvancedAudioNodeParams } from "../synth";
+import { Gain } from "tone";
 
 export interface AudioEndNodeParams extends AdvancedAudioNodeParams{
     gain:number
@@ -18,7 +19,7 @@ export function createAudioEndNode(
     params: AudioEndNodeParams,
     ctx: AudioContext
     ):AudioEndNode {
-    let outGain = ctx.createGain();
+    let outGain = new Gain();
     outGain.gain.setValueAtTime(1, ctx.currentTime);
     outGain.connect(ctx.destination);
     

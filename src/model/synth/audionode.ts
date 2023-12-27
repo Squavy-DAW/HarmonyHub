@@ -2,9 +2,9 @@ import { AdvancedAudioNodeParams } from "@models/synth";
 import ConnectionPoint from "./connectionpoint"
 import { createOscillatorParams } from "@models/synth/oscillatorParams";
 import { createAudioEndNodeParams } from "@models/synth/audioendnode";
-import { Signal } from "tone";
+import { createCompressorNodeParams } from "./compressornode";
 
-export type AudioNodeType = "AudioEndNode" | "Oscillator" | "Envelope";
+export type AudioNodeType = "AudioEndNode" | "Oscillator" | "Envelope" | "Compressor";
 
 export default interface RoutableAudioNode {
     type: AudioNodeType
@@ -57,6 +57,26 @@ export function defaultAudioEndNode():RoutableAudioNode {
         node: {
             id: "audioendnode",
             params: createAudioEndNodeParams(1)
+        }
+    }
+}
+
+export function defaultCompressorNode():RoutableAudioNode {
+    return{
+        type: "Compressor",
+        name: "Default CompressorNode",
+        id: undefined,
+        x: 0,
+        y: 0,
+        height: 50,
+        width: 100,
+        connectionpoints: [
+            {bottom:-10, left:40, id:"in", type:""},
+            {top:-10, left:40, id:"out", type:""},
+        ],
+        node: {
+            id: "compressor",
+            params: createCompressorNodeParams(-30,3)
         }
     }
 }

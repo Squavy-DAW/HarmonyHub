@@ -1,4 +1,4 @@
-import { Oscillator } from "tone";
+import { CompressorNodeParams, createCompressorNode } from "@models/synth/compressornode";
 import { Synth } from "../model/synth";
 import { createAudioEndNode, AudioEndNodeParams } from "../model/synth/audioendnode";
 import { AdvancedOscillator, createAdvancedOscillator, OscillatorParams } from "../model/synth/oscillatorParams";
@@ -27,6 +27,11 @@ export namespace AudioEngine {
                 let end = createAudioEndNode(value.node.params as AudioEndNodeParams, ctx);
 
                 synth.activeAudioNodes[freq][key] = end;
+            }
+            else if(value.node.id == "compressor"){
+                let comp = createCompressorNode(value.node.params as CompressorNodeParams);
+
+                synth.activeAudioNodes[freq][key] = comp;
             }
         }
         //do the routing

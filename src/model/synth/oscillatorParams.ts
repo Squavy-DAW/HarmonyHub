@@ -1,5 +1,5 @@
 import { AdvancedAudioNode, AdvancedAudioNodeParams } from "../synth";
-import { Gain, Oscillator, Panner, Signal } from "tone"
+import { Gain, Oscillator, Panner } from "tone"
 
 //the configurable params of an oscillator
 export interface OscillatorParams extends AdvancedAudioNodeParams{
@@ -36,8 +36,7 @@ export function createOscillatorParams(
 export interface AdvancedOscillator extends AdvancedAudioNode{
     params: OscillatorParams,
     osc:() => Oscillator,
-    pan:() => Panner,
-    gain:() => GainNode
+    pan:() => Panner
 }
 export function createAdvancedOscillator(
     params: OscillatorParams,
@@ -48,7 +47,7 @@ export function createAdvancedOscillator(
     osc.detune.setValueAtTime(params.detune, ctx.currentTime);
     osc.phase = params.phaseOffset;
     
-    let gain = ctx.createGain();
+    let gain = new Gain();
     gain.gain.setValueAtTime(0.5, ctx.currentTime);
     
     let pan = new Panner();
@@ -65,9 +64,6 @@ export function createAdvancedOscillator(
         },
         pan: ()=>{
             return pan;
-        },
-        gain: ()=>{
-            return gain;
         },
         connect: (node:AdvancedAudioNode)=>{
             gain.connect(node.out);

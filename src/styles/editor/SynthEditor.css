@@ -61,6 +61,13 @@
     border-style: solid;
 }
 
+.synth-editor .audionode[data-type= "Compressor"]{
+    background-color: rgb(252, 225, 87);
+    border-color: black;
+    border-width: 3px;
+    border-style: solid;
+}
+
 .synth-editor .audionode[data-type= "Envelope"]{
     background-color: rgb(157, 222, 248);
     border-color: black;
