@@ -12,8 +12,8 @@ export interface ADSREnvelope extends AdvancedAudioNode, AdvancedAudioNodeParams
     stop:() => void
 }
 
-
-export function createADSREnvelope(
+//TODO: Port to Tone.Js
+/*export function createADSREnvelope(
     ctx:AudioContext,
     attackTime:number,
     attackValue:number,
@@ -59,4 +59,4 @@ export function createADSREnvelope(
             outGain.disconnect();
         }
     };
-}
+}*/

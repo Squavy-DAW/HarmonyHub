@@ -1,7 +1,8 @@
 import { AdvancedAudioNodeParams } from "@models/synth";
 import ConnectionPoint from "./connectionpoint"
-import { createOscillatorParams } from "@synth/oscillatorParams";
+import { createOscillatorParams } from "@models/synth/oscillatorParams";
 import { createAudioEndNodeParams } from "@models/synth/audioendnode";
+import { Signal } from "tone";
 
 export type AudioNodeType = "AudioEndNode" | "Oscillator" | "Envelope";
 
@@ -36,7 +37,7 @@ export function defaultOscillatorNode():RoutableAudioNode {
         ],
         node: {
             id: "oscillator",
-            params: createOscillatorParams("Sine",0,0,0,0,0,0)
+            params: createOscillatorParams("sine",0,0,0,0,0,0)
         }
     }
 }

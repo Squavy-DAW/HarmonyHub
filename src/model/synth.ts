@@ -1,6 +1,6 @@
 import { ModRoM, defaultModRoM } from "./synth/modRoM";
 import RoutableAudioNode from "@models/synth/audionode";
-
+import { ToneAudioNode } from "tone"
 
 //base interface for advanced nodes
 export interface AdvancedAudioNode{
