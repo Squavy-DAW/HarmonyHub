@@ -3,6 +3,7 @@ import ConnectionPoint from "./connectionpoint"
 import { createOscillatorParams } from "@models/synth/oscillatorParams";
 import { createAudioEndNodeParams } from "@models/synth/audioendnode";
 import { createCompressorNodeParams } from "./compressornode";
+import ModifiableProperty from "./modifiableproperty";
 
 export type AudioNodeType = "AudioEndNode" | "Oscillator" | "Envelope" | "Compressor";
 
@@ -14,7 +15,8 @@ export default interface RoutableAudioNode {
     y: number,
     width: number,
     height: number,
-    connectionpoints: ConnectionPoint[]
+    connectionpoints: ConnectionPoint[],
+    modifiableproperties: ModifiableProperty[],
     node: {
         id: string,
         params: AdvancedAudioNodeParams
@@ -28,12 +30,16 @@ export function defaultOscillatorNode():RoutableAudioNode {
         id: undefined,
         x: 0,
         y: 0,
-        height: 100,
-        width: 100,
+        height: 300,
+        width: 300,
         connectionpoints: [
-            {top:40, left:-10, id:"mod", type:"Gain"},
-            {top:40, right: -10, id:"out", type:""},
-            {bottom:-10, left:40, id:"mod", type:"Pan"},
+            {top:50, left:20, id:"mod", type:"Gain"},
+            {top:140, right: 30, id:"out", type:""},
+            {top:100, left:20, id:"mod", type:"Pan"},
+        ],
+        modifiableproperties: [
+            {top:45, left:40,type:"Gain",default:0.5,max:1,min:0,step:0.1},
+            {top:95, left:40,type:"Pan",default:0,max:1,min:-1,step:0.1},
         ],
         node: {
             id: "oscillator",
@@ -54,6 +60,9 @@ export function defaultAudioEndNode():RoutableAudioNode {
         connectionpoints: [
             {bottom:-10, left:40, id:"in", type:""},
         ],
+        modifiableproperties: [
+            {bottom:-10,left:60,type:"Gain",default:0.5,max:1,min:0,step:0.1},
+        ],
         node: {
             id: "audioendnode",
             params: createAudioEndNodeParams(1)
@@ -64,7 +73,7 @@ export function defaultAudioEndNode():RoutableAudioNode {
 export function defaultCompressorNode():RoutableAudioNode {
     return{
         type: "Compressor",
-        name: "Default CompressorNode",
+        name: "Default Compressor",
         id: undefined,
         x: 0,
         y: 0,
@@ -73,6 +82,10 @@ export function defaultCompressorNode():RoutableAudioNode {
         connectionpoints: [
             {bottom:-10, left:40, id:"in", type:""},
             {top:-10, left:40, id:"out", type:""},
+        ],
+        modifiableproperties: [
+            {bottom:-10,left:0,type:"Threshold",default:-30,max:90,min:-100,step:10},
+            {bottom:-10,left:80,type:"Ratio",default:3,max:10,min:1,step:1},
         ],
         node: {
             id: "compressor",

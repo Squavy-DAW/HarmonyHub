@@ -11,6 +11,7 @@ import SoundContext from "@src/context/soundcontext";
 import { produce } from "immer";
 import { AudioEngine } from "@synth/audioengine";
 import ProjectContext from "@src/context/projectcontext";
+import Knob from "@src/components/editor/synthesizer/Knob";
 
 export default function SynthEditor(props:{trackId: string}){
     const { ctx } = useContext(SoundContext);
@@ -253,7 +254,6 @@ export default function SynthEditor(props:{trackId: string}){
                         style={{width:audioNode.width+"px", height:audioNode.height+"px"}}
                         data-type={audioNode.type}
                         data-drag="none">
-                            {audioNode.name}
                             {
                                 audioNode.connectionpoints.map((connector,j) => 
                                     <div className="audio-connection-node" key={`node-connector[${id}${j}]`}
@@ -264,7 +264,26 @@ export default function SynthEditor(props:{trackId: string}){
                                     data-synth-id={audioNode.id}
                                     data-type={connector.type}
                                     data-key={`node-connector[${id}${j}]`}    //TODO: Use this to fix a serious bug
-                                    style={{top: connector.top+"px", left: connector.left+"px", bottom: connector.bottom+"px", right: connector.right+"px"}}></div>
+                                    style={{top: connector.top+"px", left: connector.left+"px", bottom: connector.bottom+"px", right: connector.right+"px"}}>
+                                    </div>
+                                )
+                            }
+                            {
+                                audioNode.modifiableproperties.map((prop,j) => 
+                                    <div className="knobWrapper" key={`node-knob-wrappear[${id}${j}]`}
+                                    style={{position: "absolute", top: prop.top+"px", left: prop.left+"px", bottom: prop.bottom+"px", right: prop.right+"px"}}>
+                                        <Knob className="knob" key={`node-knob[${id}${j}]`} 
+                                        value={prop.default} 
+                                        onChange={(val)=>{
+                                            setProject(produce(draft => {
+                                                //change a value
+                                            }));
+                                        }} 
+                                        max={prop.max} 
+                                        min={prop.min} 
+                                        step={prop.step}>
+                                        </Knob>
+                                    </div>
                                 )
                             }
                         </li>
@@ -278,7 +297,6 @@ export default function SynthEditor(props:{trackId: string}){
                     let node = defaultAudioEndNode();
                     const id = generateId(new Set(Object.keys(synth.audioNodes)));
                     node.id = id;
-                    node.name = node.id;    //temp
                     
                     addElementToSynth(node);
                 }}>
@@ -290,7 +308,6 @@ export default function SynthEditor(props:{trackId: string}){
                     let node = defaultCompressorNode();
                     const id = generateId(new Set(Object.keys(synth.audioNodes)));
                     node.id = id;
-                    node.name = node.id;    //temp
                     
                     addElementToSynth(node);
                 }}>
@@ -302,7 +319,6 @@ export default function SynthEditor(props:{trackId: string}){
                     let node = defaultOscillatorNode();
                     const id = generateId(new Set(Object.keys(synth.audioNodes)));
                     node.id = id;
-                    node.name = id; //temp
 
                     addElementToSynth(node);
                 }}>
