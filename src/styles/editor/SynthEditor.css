@@ -56,7 +56,7 @@
 
 .synth-editor .audionode[data-type= "Oscillator"]{
     background-image: url('/src/assets/synth-editor/oscillator_back.png');
-    background-size: cover;
+    background-size: contain;
     background-repeat: no-repeat;
     image-rendering: pixelated;
     filter: drop-shadow(16px 18px 14px rgba(0, 0, 10, 0.566));
