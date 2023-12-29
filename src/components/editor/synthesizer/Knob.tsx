@@ -42,13 +42,12 @@ export default function Knob({value, onChange, min, max, step, ...rest} : KnobPr
   return (
     <div {...rest} onMouseDown={
       (e) => {
+        e.stopPropagation();
         setMousePositionOrigin({x: e.clientX, y: e.clientY});  
         setIsMouseDown(true);
-        e.stopPropagation();  //war vorher auch noch ned da =)
       }
-    } className='knob' style={{transform: `rotate(${_value * 180-45}deg)`}}>
+    } className='knob' style={{transform: `rotate(${_value * 360}deg)`}}>
       <p>{_value}</p>
     </div>
   );
 }
-//knob rotate war vorher auf 360 btw. =)

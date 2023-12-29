@@ -75,4 +75,10 @@ export namespace AudioEngine {
 
         console.warn("HEY DEV, the Synth has stopped playing the freq: "+freq); //TEST
     }
+
+    export function changeValue(type: string, value: number, nodeId: string){
+        //TODO: Implement
+
+        console.log("HEY DEV, you are trying to change the value of: "+nodeId+" on "+type+" to "+value);
+    }
 }
