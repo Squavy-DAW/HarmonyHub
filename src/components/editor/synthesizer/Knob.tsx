@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import "../../styles/synthesizer/Knob.css"
+import "@src/styles/synthesizer/Knob.css"
 import useMouse from '@src/hooks/mouse';
 
 
@@ -27,7 +27,7 @@ export default function Knob({value, onChange, min, max, step, ...rest} : KnobPr
     
   useEffect(() => {
     if(!mouseDown){
-      setIsMouseDown(false);  
+      setIsMouseDown(false);
     }
   }, [mouseDown])  
   
@@ -36,17 +36,19 @@ export default function Knob({value, onChange, min, max, step, ...rest} : KnobPr
     let tval = _value - (mousePosition.y - mousePositionOrigin.y) / 360;
     
     _setValue(clamp(tval, min ? min : 0, max ? max : 1)) 
-    setMousePositionOrigin({x: mousePosition.x, y: mousePosition.y});  
+    setMousePositionOrigin({x: mousePosition.x, y: mousePosition.y});
   }, [mousePosition])
 
   return (
     <div {...rest} onMouseDown={
       (e) => {
         setMousePositionOrigin({x: e.clientX, y: e.clientY});  
-        setIsMouseDown(true); 
+        setIsMouseDown(true);
+        e.stopPropagation();  //war vorher auch noch ned da =)
       }
-    } className='knob' style={{transform: `rotate(${_value * 360}deg)`}}>
+    } className='knob' style={{transform: `rotate(${_value * 180-45}deg)`}}>
       <p>{_value}</p>
     </div>
   );
 }
+//knob rotate war vorher auf 360 btw. =)

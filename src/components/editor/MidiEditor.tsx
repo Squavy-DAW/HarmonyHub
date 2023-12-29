@@ -1,10 +1,10 @@
-import React, { createRef, useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { createRef, useContext, useEffect, useRef, useState } from "react";
 import { produce } from "immer"
 import { startFreq, stopFreq } from "@synth/engineOLD";
 import '@styles/editor/MidiEditor.css';
 import { onKeyPressed, onKeyUp, pressedFrequencies, clickedFreq } from "@synth/keylistener"
-import NumberUpDown from "@components/editor/NumberUpDown";
-import Key from "@components/synthesizer/Key";
+import NumberUpDown from "@components/editor/utility/NumberUpDown";
+import Key from "@components/editor/midi/Key";
 import ProjectContext from "@src/context/projectcontext";
 import Note from "@models/note";
 import { generateId } from "@network/crypto";
@@ -14,12 +14,11 @@ import { slipFloor } from "@src/scripts/math";
 import Timeline from "./Timeline";
 import ZoomContext from "@src/context/zoomcontext";
 import PositionContext from "@src/context/positioncontext";
-import PositionContainer from "./PositionContainer";
+import PositionContainer from "./utility/PositionContainer";
 import ModalContainer from "@components/modal/ModalContainer";
-import SelectionContainer from "./SelectionContainer";
-import MouseContainer from "./MouseContainer";
+import SelectionContainer from "./utility/SelectionContainer";
+import MouseContainer from "./utility/MouseContainer";
 import ContextContext from "@src/context/contextcontext";
-import { throttle } from "throttle-debounce";
 
 export default function MidiEditor(props: { patternId: string }) {
     const { project, setProject } = useContext(ProjectContext);

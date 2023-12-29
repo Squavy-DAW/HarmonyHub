@@ -10,14 +10,13 @@ import { zoomBase } from "@models/project";
 import { slipFloor } from "@src/scripts/math";
 import { Allotment, LayoutPriority } from "allotment";
 import Timeline from "./Timeline";
-import PositionContainer from "./PositionContainer";
+import PositionContainer from "./utility/PositionContainer";
 import ZoomContext from "@src/context/zoomcontext";
 import PatternPreview from "./PatternPreview";
-import SelectionContainer, { ISelectable } from "./SelectionContainer";
-import SynthEditor from "@components/synthesizer/SynthEditor";
+import SelectionContainer, { ISelectable } from "./utility/SelectionContainer";
+import SynthEditor from "@components/editor/SynthEditor";
 import ModalContext from "@src/context/modalcontext";
-import { createSynth } from "@synth/synth";
-import MouseContainer from "./MouseContainer";
+import MouseContainer from "./utility/MouseContainer";
 import ContextContext from "@src/context/contextcontext";
 
 export default function TrackEditor() {
@@ -126,7 +125,7 @@ export default function TrackEditor() {
     function handleOpenSynthEditor(ev: React.MouseEvent) {
         const id = ev.currentTarget.getAttribute('data-id')!;
         setModalContent(
-            <SynthEditor synth={createSynth()}/* TODO: pass 'trackId' */ />
+            <SynthEditor trackId={id} />
         )
     }
 
