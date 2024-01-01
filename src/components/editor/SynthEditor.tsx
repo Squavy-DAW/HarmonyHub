@@ -276,7 +276,6 @@ export default function SynthEditor(props:{trackId: string}){
                                         value={prop.default} 
                                         onChange={(val)=>{
                                             setProject(produce(draft => {
-                                                //change a value
                                                 AudioEngine.changeValue(prop.type, val, audioNode.id!);
                                             }));
                                         }} 
