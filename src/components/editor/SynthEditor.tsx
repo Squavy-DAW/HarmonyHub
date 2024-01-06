@@ -276,7 +276,8 @@ export default function SynthEditor(props:{trackId: string}){
                                         value={prop.default} 
                                         onChange={(val)=>{
                                             setProject(produce(draft => {
-                                                AudioEngine.changeValue(prop.type, val, audioNode.id!);
+                                                const synth = draft.data.tracks[props.trackId].instrument;
+                                                AudioEngine.changeValue(synth, audioNode.type, prop.type, val, audioNode.id!);
                                             }));
                                         }} 
                                         max={prop.max} 

@@ -1,7 +1,9 @@
-import { CompressorNodeParams, createCompressorNode } from "@models/synth/compressornode";
-import { Synth } from "../model/synth";
-import { createAudioEndNode, AudioEndNodeParams } from "../model/synth/audioendnode";
+import { CompressorNode, CompressorNodeParams, createCompressorNode } from "@models/synth/compressornode";
+import { AdvancedAudioNode, AdvancedAudioNodeParams, Synth } from "../model/synth";
+import { createAudioEndNode, AudioEndNodeParams, AudioEndNode } from "../model/synth/audioendnode";
 import { AdvancedOscillator, createAdvancedOscillator, OscillatorParams } from "../model/synth/oscillatorParams";
+import { AudioNodeType } from "@models/synth/audionode";
+import { ModType } from "@models/synth/modRoM";
 
 export namespace AudioEngine {
     export function init(){
@@ -76,9 +78,109 @@ export namespace AudioEngine {
         console.warn("HEY DEV, the Synth has stopped playing the freq: "+freq); //TEST
     }
 
-    export function changeValue(type: string, value: number, nodeId: string){
-        //TODO: Implement
+    export function changeValue(synth: Synth, nodetype: AudioNodeType, modtype: ModType, value: number, nodeId: string){
+        //TODO: Implement (don't forget to change the active audionodes too!!!)
 
-        console.log("HEY DEV, you are trying to change the value of: "+nodeId+" on "+type+" to "+value);
+        let node:AdvancedAudioNodeParams = {};
+        let allActive = synth.activeAudioNodes;
+        let active:{[id:string]:AdvancedAudioNode} = {};
+
+        switch (nodetype) {
+            case "Oscillator":
+                node = (synth.audioNodes[nodeId].node.params as OscillatorParams);
+                break;
+        
+            case "AudioEndNode":
+                node = (synth.audioNodes[nodeId].node.params as AudioEndNodeParams);
+                break;
+        
+            case "Compressor":
+                node = (synth.audioNodes[nodeId].node.params as CompressorNodeParams);
+                break;
+            
+            case "Envelope":
+                node = {}; //TODO: Implement
+                break;
+                
+            default:
+                break;
+        }
+
+        changeParam(node,modtype,value);
+
+
+        console.log("HEY DEV, you are trying to change the value of: "+nodeId+"("+nodetype+")"+" on "+modtype+" to "+value);
+    }
+
+    function changeParam(node:AdvancedAudioNodeParams, modtype: ModType, value: number){
+        switch (modtype) {
+            case "Detune":
+                if("detune" in node){
+                    node.detune = value;
+                }
+                break;
+
+            case "Gain":
+                if("gain" in node){
+                    node.gain = value;
+                }
+                break;
+
+            case "Pan":
+                if("pan" in node){
+                    node.pan = value;
+                }
+                break;
+
+            case "Phase":
+                if("phase" in node){
+                    node.phase = value;
+                }
+                break;
+
+            case "Ratio":
+                if("ratio" in node){
+                    node.ratio = value;
+                }
+                break;
+
+            case "Threshold":
+                if("threshold" in node){
+                    node.threshold = value;
+                }
+                break;
+
+            case "Unison":
+                if("unison" in node){
+                    node.unison = value;
+                }
+                break;
+
+            case "Waveform":
+                if("waveform" in node){
+                    switch (value) {
+                        case 0:
+                            node.waveform = "sine"
+                            break;
+                        
+                        case 1:
+                            node.waveform = "square"
+                            break;
+                        
+                        case 2:
+                            node.waveform = "triangle"
+                            break;
+                        //TODO: Add all
+                        default:
+                            console.error("ERROR: node.waveform was set to an unkown value");
+                            break;
+                    }
+
+                }
+                break;
+
+            default://TODO: Add all
+                break;
+        }
     }
 }

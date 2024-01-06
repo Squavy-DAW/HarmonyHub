@@ -48,10 +48,10 @@ export function createAdvancedOscillator(
     osc.phase = params.phaseOffset;
     
     let gain = new Gain();
-    gain.gain.setValueAtTime(0.5, ctx.currentTime);
+    gain.gain.setValueAtTime(params.gain, ctx.currentTime);
     
     let pan = new Panner();
-    pan.pan.setValueAtTime(0, ctx.currentTime);
+    pan.pan.setValueAtTime(params.pan, ctx.currentTime);
 
 
     osc.connect(pan);
@@ -59,7 +59,7 @@ export function createAdvancedOscillator(
 
     return {
         params: params,
-        osc: ()=>{
+        osc: ()=>{  //TODO: Warum function? Mach das weg, JETZT, HEUTE!!!
             return osc;
         },
         pan: ()=>{

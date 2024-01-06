@@ -43,7 +43,7 @@ export function defaultOscillatorNode():RoutableAudioNode {
         ],
         node: {
             id: "oscillator",
-            params: createOscillatorParams("sine",0,0,0,0,0,0)
+            params: createOscillatorParams("sine",0.5,0,0,0,0,0)
         }
     }
 }
