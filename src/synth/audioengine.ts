@@ -13,7 +13,8 @@ export namespace AudioEngine {
     export function start(synth:Synth, freq:number, ctx:AudioContext){ 
         //TODO: Expand whenever necessary
 
-        synth.activeAudioNodes[freq] = {};
+        if(!synth.activeAudioNodes[freq])
+            synth.activeAudioNodes[freq] = {};
 
         for(let key in synth.audioNodes){
             let value = synth.audioNodes[key];
@@ -23,17 +24,29 @@ export namespace AudioEngine {
                 osc.osc().frequency.setValueAtTime(freq,ctx.currentTime);
                 osc.osc().start();
 
-                synth.activeAudioNodes[freq][key] = osc;
+                if(synth.activeAudioNodes[freq][key]){
+                    synth.activeAudioNodes[freq][key].push(osc);
+                }
+                else{
+                    synth.activeAudioNodes[freq][key] = [osc];
+                }
+                console.error("startOsc"+synth.activeAudioNodes[freq][value.node.id].length);   //TODO: Error, please fix =( 
             }
             else if(value.node.id == "audioendnode"){
                 let end = createAudioEndNode(value.node.params as AudioEndNodeParams, ctx);
 
-                synth.activeAudioNodes[freq][key] = end;
+                if(synth.activeAudioNodes[freq][key])
+                    synth.activeAudioNodes[freq][key].push(end);
+                else
+                    synth.activeAudioNodes[freq][key] = [end];
             }
             else if(value.node.id == "compressor"){
                 let comp = createCompressorNode(value.node.params as CompressorNodeParams);
 
-                synth.activeAudioNodes[freq][key] = comp;
+                if(synth.activeAudioNodes[freq][key])
+                    synth.activeAudioNodes[freq][key].push(comp);
+                else
+                    synth.activeAudioNodes[freq][key] = [comp];
             }
         }
         //do the routing
@@ -52,7 +65,10 @@ export namespace AudioEngine {
             let parentNode = nodes[parent];
             for(let child in parentNode.children){
                 if(active[parent] && active[child]){
-                    active[parent].connect(active[child]);
+                    for (let i = 0; i < active[parent].length 
+                        && i < active[child].length; i++) {
+                        active[parent][i].connect(active[child][i]);
+                    }
                     console.warn("routed: "+parent+" into "+child);
                 }
                 else{
@@ -65,16 +81,22 @@ export namespace AudioEngine {
     export function stop(synth: Synth, freq:number){
         //TODO: Expand whenever necessary
         //TODO: If there is an envelope, one can't just stop the oscillator, but needs to run through the envelopes release and stop the oscillator AFTER
-        
-        let active = synth.activeAudioNodes[freq];
+
+        if(!synth.activeAudioNodes[freq] || Object.keys(synth.activeAudioNodes[freq]).length === 0)
+            return;
 
         let nodes = synth.audioNodes;
         for(let node in nodes){
             if(nodes[node].type == "Oscillator"){
-                (active[node] as AdvancedOscillator).osc().stop();
+                for (let i = 0; i < synth.activeAudioNodes[freq][node].length; i++) {
+                    console.warn(i+"  -  "+node);
+                    (synth.activeAudioNodes[freq][node][i] as AdvancedOscillator).osc().stop();
+                    console.error("stopOsc"+synth.activeAudioNodes[freq][node].length);
+                }
             }
         }
 
+        synth.activeAudioNodes[freq] = {};
         console.warn("HEY DEV, the Synth has stopped playing the freq: "+freq); //TEST
     }
 
@@ -82,41 +104,49 @@ export namespace AudioEngine {
         //TODO: Implement (don't forget to change the active audionodes too!!!)
 
         let node:AdvancedAudioNodeParams = {};
-        let allActive = synth.activeAudioNodes;
-        let active:{[id:string]:AdvancedAudioNode} = {};
+        let allActive:AdvancedAudioNode[] = [];
+        Object.entries(synth.activeAudioNodes).forEach(([,value]) => {
+            allActive.concat(value[nodeId]);
+        });
 
         switch (nodetype) {
             case "Oscillator":
                 node = (synth.audioNodes[nodeId].node.params as OscillatorParams);
+                changeParam(node,modtype,value,allActive);
                 break;
         
             case "AudioEndNode":
                 node = (synth.audioNodes[nodeId].node.params as AudioEndNodeParams);
+                changeParam(node,modtype,value,allActive);
                 break;
         
             case "Compressor":
                 node = (synth.audioNodes[nodeId].node.params as CompressorNodeParams);
+                changeParam(node,modtype,value,allActive);
                 break;
             
             case "Envelope":
-                node = {}; //TODO: Implement
+                //TODO: Implement
                 break;
                 
             default:
                 break;
         }
 
-        changeParam(node,modtype,value);
-
 
         console.log("HEY DEV, you are trying to change the value of: "+nodeId+"("+nodetype+")"+" on "+modtype+" to "+value);
     }
 
-    function changeParam(node:AdvancedAudioNodeParams, modtype: ModType, value: number){
+    function changeParam(node:AdvancedAudioNodeParams, modtype: ModType, value: number, audioNodes:AdvancedAudioNode[]){
         switch (modtype) {
             case "Detune":
                 if("detune" in node){
                     node.detune = value;
+                    audioNodes.forEach(n => {
+                        if(n && "detune" in n){
+                            //TODO: WON'T WORK, so restructure the AdvancedAudioNode to make these accessable!!!
+                        }
+                    });
                 }
                 break;
 
@@ -170,6 +200,11 @@ export namespace AudioEngine {
                         case 2:
                             node.waveform = "triangle"
                             break;
+                        
+                        case 3:
+                            node.waveform = "sawtooth"
+                            break;
+                        
                         //TODO: Add all
                         default:
                             console.error("ERROR: node.waveform was set to an unkown value");

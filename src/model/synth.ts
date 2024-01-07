@@ -17,7 +17,7 @@ export interface AdvancedAudioNodeParams{}
 export interface Synth{ //TODO: Use immer and usestate, whenever values from the synth are changed from outside.
     //audionode pool
     audioNodes:{[id:string]:RoutableAudioNode};
-    activeAudioNodes:{[freq:number]:{[id:string]:AdvancedAudioNode}};
+    activeAudioNodes:{[freq:number]:{[id:string]:AdvancedAudioNode[]}};
 
     //AudioNode routing
     routes:ModRoM;

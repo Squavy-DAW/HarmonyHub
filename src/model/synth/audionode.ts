@@ -40,6 +40,9 @@ export function defaultOscillatorNode():RoutableAudioNode {
         modifiableproperties: [
             {top:45, left:40,type:"Gain",default:0.5,max:1,min:0,step:0.1},
             {top:95, left:40,type:"Pan",default:0,max:1,min:-1,step:0.1},
+            {top:145, left:40,type:"Detune",default:0,max:1200,min:-1200,step:5},
+            {top:195, left:40,type:"Phase",default:0,max:360,min:0,step:1},
+            {top:195, left:40,type:"Waveform",default:0,max:3,min:0,step:1},
         ],
         node: {
             id: "oscillator",
@@ -65,12 +68,12 @@ export function defaultAudioEndNode():RoutableAudioNode {
         ],
         node: {
             id: "audioendnode",
-            params: createAudioEndNodeParams(1)
+            params: createAudioEndNodeParams(0.5)
         }
     }
 }
 
-export function defaultCompressorNode():RoutableAudioNode {
+export function defaultCompressorNode():RoutableAudioNode { //TODO: Add attack and release!
     return{
         type: "Compressor",
         name: "Default Compressor",

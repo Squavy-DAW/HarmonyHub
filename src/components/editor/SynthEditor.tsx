@@ -12,6 +12,7 @@ import { produce } from "immer";
 import { AudioEngine } from "@synth/audioengine";
 import ProjectContext from "@src/context/projectcontext";
 import Knob from "@src/components/editor/synthesizer/Knob";
+import Piano from "./midi/Piano";
 
 export default function SynthEditor(props:{trackId: string}){
     const { ctx } = useContext(SoundContext);
@@ -339,13 +340,17 @@ export default function SynthEditor(props:{trackId: string}){
                         TEST Start SYNTH A4
                     </button>
                     <button onClick={() => {
-                        AudioEngine.stop(synth,440);
+                        setProject(produce(draft => {
+                            const synth = draft.data.tracks[props.trackId].instrument;
+                            AudioEngine.stop(synth,440);
+                        }))
                     }}>
                         TEST Stop SYNTH A4
                     </button>
                 </li>
             </ul>
         </div>
+        <Piano trackId={props.trackId}></Piano>
         <svg className="connection-lines" width="100%" height="100%">
             {svgDragLine && <line className="dragged-connection-line" x1={svgDragLine.x1} y1={svgDragLine.y1} x2={svgDragLine.x2} y2={svgDragLine.y2} stroke="black" strokeWidth="5"/>}
             {svgLines.map((l,i) => (

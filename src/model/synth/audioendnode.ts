@@ -20,7 +20,7 @@ export function createAudioEndNode(
     ctx: AudioContext
     ):AudioEndNode {
     let outGain = new Gain();
-    outGain.gain.setValueAtTime(1, ctx.currentTime);
+    outGain.gain.setValueAtTime(params.gain, ctx.currentTime);
     outGain.connect(ctx.destination);
     
     return {
