@@ -1,6 +1,6 @@
 import Music from "@components/Music";
 import { importKey } from "@network/crypto";
-import { createCryptoSocket, createSocket, joinSession } from "@network/sockets";
+import { createCryptoSocket, createSocket } from "@network/sockets";
 import TabsContext from "@src/context/tabscontext";
 import { useContext, useState } from "react";
 import ModalContainer from "./ModalContainer";
@@ -18,14 +18,12 @@ export default function ConnectModal({ room, jwkKey, onClose }: ConnectModalProp
 
     async function handleJoinSession() {
         let key = await importKey(jwkKey);
-        let typedSocket = createSocket();
+        let typedSocket = createSocket(room);
         if (!typedSocket) return;
-        let socket = createCryptoSocket(typedSocket, key);
-    
-        let success = await joinSession(socket, room);
-        if (!success) return;
 
-        socket.broadcast('hh:user-joined', { name: userName });
+        let socket = createCryptoSocket(typedSocket, key);
+
+        socket.broadcast('sqw:user-joined', { name: userName });
 
         onClose();
 

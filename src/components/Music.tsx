@@ -20,6 +20,7 @@ import TabsContext from '@src/context/tabscontext';
 import ZoomContext from '@src/context/zoomcontext';
 import PositionContext from '@src/context/positioncontext';
 import UserContext from '@src/context/usercontext';
+import { checkServerUp } from '@network/sockets';
 
 export default function Music(props: { project: Project, network: Network, username?: string }) {
 
@@ -36,6 +37,7 @@ export default function Music(props: { project: Project, network: Network, usern
     const [socket, setSocket] = useState(props.network.socket);
     const [username, setUsername] = useState<string>(props.username ?? '');
     const _username = useRef<string>(props.username ?? '');
+    const [serverUp, setServerUp] = useState<boolean>(true);
     
     const [usernames, setUsernames] = useState<{ [id: string]: string }>({});
     
@@ -47,8 +49,25 @@ export default function Music(props: { project: Project, network: Network, usern
         setSocket(undefined);
     }
 
+    async function handleCheckServerStatus() {
+        const serverUp = await checkServerUp();
+        if (!serverUp) {
+            setRoom(undefined);
+            socket?.disconnect();
+            setSocket(undefined);
+        }
+        setServerUp(serverUp);
+    }
+
     useEffect(() => {
         init();
+
+        const interval = setInterval(handleCheckServerStatus, 5000);
+        handleCheckServerStatus();
+
+        return () => {
+            clearInterval(interval);
+        }
     }, []);
 
     useEffect(() => {
@@ -68,55 +87,55 @@ export default function Music(props: { project: Project, network: Network, usern
     }, [username]);
 
     useEffect(() => {
-        socket?.request('hh:request-project', null).then((project: Project) => {
+        socket?.request('sqw:request-project', null).then((project: Project) => {
             setProject(project);
         });
 
         console.log("Requesting usernames");
-        socket?.broadcast('hh:request-username', null, (id: string, username: string) => {
+        socket?.broadcast('sqw:request-username', null, (id: string, username: string) => {
             console.log(`> Received username ${username} with id=${id}`);
             setUsernames(produce(draft => {
                 draft[id] = username;
             }))
         });
 
-        socket?.on('hh:user-disconnected', ({ id }) => {
+        socket?.on('sqw:user-disconnected', ({ id }) => {
             console.debug(`User with id=${id} disconnected`);
             setUsernames(produce(draft => {
                 delete draft[id];
             }))
         });
 
-        socket?.addEventListener('hh:user-joined', (id, { name }) => {
+        socket?.addEventListener('sqw:user-joined', (id, { name }) => {
             console.debug(`${name} with id=${id} joined the session`);
             setUsernames(produce(draft => {
                 draft[id] = name;
             }))
         });
 
-        socket?.addEventListener('hh:request-project', () => {
+        socket?.addEventListener('sqw:request-project', () => {
             console.debug("Requested project");
             return _project.current;
         });
 
-        socket?.addEventListener('hh:request-username', () => {
+        socket?.addEventListener('sqw:request-username', () => {
             console.debug("Requested username: " + _username.current);
             return _username.current;
         })
 
-        socket?.addEventListener('hh:note-update', (_id, { patternId, id, note }) => {
+        socket?.addEventListener('sqw:note-update', (_id, { patternId, id, note }) => {
             setProject(produce(draft => {
                 draft.data.patterns[patternId].notes[id] = note;
             }));
         })
 
-        socket?.addEventListener('hh:note-deleted', (_id, { patternId, id }) => {
+        socket?.addEventListener('sqw:note-deleted', (_id, { patternId, id }) => {
             setProject(produce(draft => {
                 delete draft.data.patterns[patternId].notes[id];
             }))
         })
 
-        socket?.addEventListener('hh:username-update', (id, { name }) => {
+        socket?.addEventListener('sqw:username-update', (id, { name }) => {
             console.debug(`${name} with id=${id} updated their username to ${name}`);
             
             setUsernames(produce(draft => {
@@ -133,7 +152,7 @@ export default function Music(props: { project: Project, network: Network, usern
                 project, setProject
             }}>
                 <NetworkContext.Provider value={{
-                    socket, setSocket, room, setRoom, username, setUsername
+                    socket, setSocket, room, setRoom, username, setUsername, serverUp
                 }}>
                     <ModalContext.Provider value={{
                         modalContent, setModalContent

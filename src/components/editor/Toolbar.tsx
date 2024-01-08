@@ -15,7 +15,7 @@ import EditIcon from '@src/assets/toolbar/edit.png';
 import UndoIcon from '@src/assets/toolbar/undo.png';
 import RedoIcon from '@src/assets/toolbar/redo.png';
 import CollaborationIcon from '@src/assets/toolbar/collaboration.png';
-
+import CollaborationIconNotAvailable from '@src/assets/toolbar/collaboration-notavailable.png';
 
 export default function Toolbar() {
 
@@ -73,6 +73,7 @@ export default function Toolbar() {
 
     const { socket } = useContext(NetworkContext);
     const { setModalContent } = useContext(ModalContext);
+    const { serverUp } = useContext(NetworkContext);
 
     async function handleCollaborateClick() {
         setModalContent((
@@ -143,8 +144,8 @@ export default function Toolbar() {
                 </li>
             )}
             <li style={{ flex: 1 }} />
-            <li className={["toolbar-item collaboration", socket && 'active'].join(' ')} onClick={handleCollaborateClick}>
-                <img src={CollaborationIcon} alt="collaboration" height={16} />
+            <li className={["toolbar-item collaboration", serverUp && socket && 'active', !serverUp && 'error'].join(' ')} onClick={handleCollaborateClick}>
+                <img src={serverUp ? CollaborationIcon : CollaborationIconNotAvailable} alt="collaboration" height={16} />
                 <span>{socket ? 'Collaborating' : 'Collaborate...'}</span>
             </li>
         </ul>

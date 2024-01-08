@@ -29,7 +29,7 @@
 }
 
 .track-layout .content .track-sidebar.hidden {
-    display: none;
+    visibility: hidden;
 }
 
 .track-layout .content .track-sidebar .track {

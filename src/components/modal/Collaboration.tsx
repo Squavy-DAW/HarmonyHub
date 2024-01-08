@@ -1,5 +1,5 @@
 import { extract, generateKey } from '@network/crypto';
-import { createCryptoSocket, createSession, createSocket } from '@network/sockets';
+import { checkServerUp, createCryptoSocket, createSession, createSocket } from '@network/sockets';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import '@styles/modal/Collaboration.css'
 import NetworkContext from '@src/context/networkcontext';
@@ -9,12 +9,12 @@ import { debounce } from 'throttle-debounce';
 export default function CollaborationModal() {
     const [inviteLink, setInviteLink] = useState<string>();
 
-    const { socket, setSocket, room, setRoom, username, setUsername } = useContext(NetworkContext);
+    const { socket, setSocket, room, setRoom, username, setUsername, serverUp } = useContext(NetworkContext);
 
     useEffect(() => {
         if (socket?.key) {
             handleExtractKey(socket.key).then((key) => {
-                let inviteLink = `${import.meta.env.VITE_HARMONYHUB}/?session=${room}#key=${key}`;
+                const inviteLink = `${import.meta.env.VITE_HARMONYHUB}/?session=${room}#key=${key}`;
                 window.history.pushState({}, '', inviteLink);
                 setInviteLink(inviteLink);
             });
@@ -22,16 +22,18 @@ export default function CollaborationModal() {
     }, [socket, room]);
 
     async function handleStartCollaboration() { // todo add error handling
-        let key = await generateKey();
-        if (!key) return;
+        if (!await checkServerUp()) return;
 
-        let socket = await createSocket();
+        const ns = await createSession();
+        if (!ns) return;
+
+        const socket = await createSocket(ns);
         if (!socket) return;
 
-        let room = await createSession(socket);
-        if (!room) return;
+        const key = await generateKey();
+        if (!key) return;
 
-        setRoom(room);
+        setRoom(ns);
         setSocket(createCryptoSocket(socket, key));
     }
 
@@ -55,7 +57,7 @@ export default function CollaborationModal() {
     }
 
     const sendUsernameUpdate = useCallback(debounce(1000, function (name: string) {
-        socket?.broadcast('hh:username-update', {
+        socket?.broadcast('sqw:username-update', {
             name: name
         })
     }), [socket])
@@ -66,25 +68,32 @@ export default function CollaborationModal() {
     }
 
     return (
-        <ModalContainer className={['collaboration-modal', socket ? 'active' : null].join(' ')} mode='center'>
+        <ModalContainer className={['collaboration-modal', serverUp && socket && 'active', !serverUp && 'error'].join(' ')} mode='center'>
             <div className='collaboration-lock' />
-            {socket && <button className='stop-collaboration' onClick={handleStopCollaboration} />}
-            <div>
-                <h1 className='title' style={{ margin: 0, lineHeight: 0.9 }}>Collaborate</h1>
-                <p>Securely via E2E encryption - <a href={/*TODO*/ ""}>Learn more</a></p>
-            </div>
-            <div>
-                {socket ? <>
-                    <p>Share this link with your friends to collaborate on this project:</p>
-                    <pre className='invite-link' onClick={handleCopyInviteLink}>{inviteLink}</pre>
+            {serverUp ?
+                <>
+                    {socket && <button className='stop-collaboration' onClick={handleStopCollaboration} />}
+                    <div>
+                        <h1 className='title'>Collaborate</h1>
+                        <p>Securely via E2E encryption - <a href={/*TODO*/ ""}>Learn more</a></p>
+                    </div>
+                    <div>
+                        {socket ? <>
+                            <p>Share this link with your friends to collaborate on this project:</p>
+                            <pre className='invite-link' onClick={handleCopyInviteLink}>{inviteLink}</pre>
+                        </> : <>
+                            <p>To start collaborating, click the button below to generate an invitation:</p>
+                            <button className='start-collaboration' onClick={handleStartCollaboration}>Start collaboration</button>
+                        </>}
+                    </div>
+                    <div className='username-input'>
+                        <input type='text' placeholder='Username' value={username} onChange={handleSetUsername} />
+                    </div>
                 </> : <>
-                    <p>To start collaborating, click the button below to generate an invitation:</p>
-                    <button className='start-collaboration' onClick={handleStartCollaboration}>Start collaboration</button>
-                </>}
-            </div>
-            <div className='username-input'>
-                <input type='text' placeholder='Username' value={username} onChange={handleSetUsername} />
-            </div>
+                    <h1 className='title'>Collaborate</h1>
+                    <p>Sorry, the server is currently offline. Please try again later.</p>
+                </>
+            }
         </ModalContainer>
     );
 };

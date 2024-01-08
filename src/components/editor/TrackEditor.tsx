@@ -139,7 +139,7 @@ export default function TrackEditor() {
 
     useEffect(() => {
         if (socket) {
-            // socket.on('hh:user-disconnected', ({ id }) => {
+            // socket.on('sqw:user-disconnected', ({ id }) => {
             //     setMousePositions((prevMousePositions) => {
             //         const updatedMousePositions = { ...prevMousePositions };
             //         delete updatedMousePositions[id];
@@ -147,14 +147,14 @@ export default function TrackEditor() {
             //     });
             // });
 
-            // handle(socket, cryptoKey!, 'hh:user-joined', (id) => {
+            // handle(socket, cryptoKey!, 'sqw:user-joined', (id) => {
             //     setMousePositions({
             //         ...mousePositions,
             //         [id]: { x: 0, y: 0 }
             //     });
             // });
 
-            // handle(socket, cryptoKey!, 'hh:mouse-position', async (id, { x, y }) => {
+            // handle(socket, cryptoKey!, 'sqw:mouse-position', async (id, { x, y }) => {
             //     setMousePositions({
             //         ...mousePositions,
             //         [id]: { x, y }

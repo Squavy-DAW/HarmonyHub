@@ -51,11 +51,11 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
         }));
 
         // notify other clients that a new pattern has been created
-        socket?.broadcast('hh:pattern-created', { id: id, pattern: pattern });
+        socket?.broadcast('sqw:pattern-created', { id: id, pattern: pattern });
     }
 
     useEffect(() => {
-        socket?.addEventListener('hh:pattern-created', (_id, { id, pattern }) => {
+        socket?.addEventListener('sqw:pattern-created', (_id, { id, pattern }) => {
             setProject(produce(draft => {
                 draft.data.patterns[id] = pattern;
             }));

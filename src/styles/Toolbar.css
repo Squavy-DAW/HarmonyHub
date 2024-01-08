@@ -35,6 +35,10 @@
     border-image-source: url("/src/assets/toolbar-item-active.png");
 }
 
+.toolbar li.collaboration.error {
+    border-image-source: url("/src/assets/toolbar-item-error.png");
+}
+
 .toolbar ul.toolbar-items-container-toplevel {
     margin: 0;
     padding: 0;
