@@ -1,53 +1,108 @@
-import { useEffect, useState } from 'react';
-import "@src/styles/synthesizer/Knob.css"
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import "@styles/synthesizer/Knob.css";
 import useMouse from '@src/hooks/mouse';
 
-
-export interface KnobProps extends Omit<React.HTMLProps<HTMLInputElement>, "onChange"> {
-    value: number;
+interface KnobProps extends Omit<React.HTMLProps<HTMLInputElement>, "onChange">{
+    min: number;
+    max: number;
+    steps?: number[];
+    snappingSensitivity?: number;
+    stepping: boolean;
     onChange: (value: number) => void;
-    min?: number;
-    max?: number;
-    step?: number;
 }
 
+export default function Knob({ min, max, steps, onChange, stepping, snappingSensitivity, ...rest }: KnobProps) {
+    const [value, setValue] = useState(min);
+    const [rawValue, setRawValue] = useState(min);
+    const [isDragging, setIsDragging] = useState(false);
+    const [initialY, setInitialY] = useState(0);
 
-export default function Knob({value, onChange, min, max, step, ...rest} : KnobProps) {
-  const [mousePositionOrigin, setMousePositionOrigin] = useState({ x:0, y:0 });
-  const [isMouseDown, setIsMouseDown] = useState(false);
-  const [_value, _setValue] = useState(value);
-  
-  const { mousePosition, mouseDown } = useMouse();
-  
-  const clamp = (num: number, min: number, max: number) => Math.min(Math.max(num, min), max)
+    const { mousePosition, mouseDelta, mouseDown } = useMouse();
 
-  useEffect(() => {
-    onChange(_value); 
-  }, [_value]);
-    
-  useEffect(() => {
-    if(!mouseDown){
-      setIsMouseDown(false);
+    if(steps && snappingSensitivity && stepping) snappingSensitivity = Math.min(findClosestDistance(steps) ? (findClosestDistance(steps)! - 1) / 10 : 1, snappingSensitivity);
+
+    if(!steps?.includes(min)) steps?.push(min);
+    if(!steps?.includes(max)) steps?.push(max);
+
+    useEffect(() => {
+      if (isDragging) {
+        const delta = mousePosition.y - initialY;
+        //POI: Magic number that just works.
+        const sensitivity = (max-min) *.01
+
+        if (stepping && steps) {
+            const newValue = Math.max(min, Math.min(rawValue - delta, max));
+            let roundedValue = value;
+            
+
+            steps.forEach(element => {
+                if(Math.abs(newValue - element) <= (10 * (snappingSensitivity ? snappingSensitivity : 1))){
+                    roundedValue = element;
+                }
+            });
+
+            setRawValue(newValue);
+
+            if(roundedValue != value){
+                setValue(Number(roundedValue.toFixed(3)));
+                onChange(Number(roundedValue.toFixed(3)));
+            }
+            setInitialY(mousePosition.y);
+        } else {
+            const newValue = Math.max(min, Math.min(value - delta * sensitivity, max));
+            setValue(Number(newValue.toFixed(3)));
+            onChange(Number(newValue.toFixed(3)));
+            setInitialY(mousePosition.y);
+        }
     }
-  }, [mouseDown])  
-  
-  useEffect(() => {
-    if(!isMouseDown) return;
-    let tval = _value - (mousePosition.y - mousePositionOrigin.y) / 360;
-    
-    _setValue(clamp(tval, min ? min : 0, max ? max : 1)) 
-    setMousePositionOrigin({x: mousePosition.x, y: mousePosition.y});
-  }, [mousePosition])
+    }, [mousePosition.y])
 
-  return (
-    <div {...rest} onMouseDown={
-      (e) => {
-        e.stopPropagation();
-        setMousePositionOrigin({x: e.clientX, y: e.clientY});  
-        setIsMouseDown(true);
+    function findClosestDistance(numbers: number[]): number | null {
+        if (numbers.length < 2) {
+          return null;
+        }
+      
+        const sortedNumbers = numbers.slice().sort((a, b) => a - b);
+        let minDistance = sortedNumbers[1] - sortedNumbers[0];
+      
+        for (let i = 2; i < sortedNumbers.length; i++) {
+          const currentDistance = sortedNumbers[i] - sortedNumbers[i - 1];
+          minDistance = Math.min(minDistance, currentDistance);
+        }
+      
+        return minDistance;
       }
-    } className='knob' style={{transform: `rotate(${_value * 360}deg)`}}>
-      <p>{_value}</p>
-    </div>
-  );
-}
+
+    const handleMouseDown = (event: React.MouseEvent) => {
+        setIsDragging(true);
+        setInitialY(event.clientY);
+        document.body.style.userSelect = 'none';
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+        document.body.style.userSelect = '';
+    };
+
+    useEffect(() => {
+      if(!mouseDown){
+        handleMouseUp();
+      }
+    }, [mouseDown])
+
+    return (
+        <div
+            className="knob"
+            onMouseDown={handleMouseDown}
+            style={{
+                transform: `rotate(${((value - min) / (max - min)) * 180 + 45}deg)`,
+            }}
+            {...rest}
+        >
+            {/*Quick fix to stop the text from rotating*/}
+            <div className="knob-handle" style={{transform: `rotate(-${((value - min) / (max - min)) * 180 + 45}deg)`}}>
+              <p>{value.toFixed(2)}</p>
+            </div>
+        </div>
+    );
+};
