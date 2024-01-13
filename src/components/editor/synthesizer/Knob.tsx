@@ -1,8 +1,9 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import "@styles/synthesizer/Knob.css";
 import useMouse from '@src/hooks/mouse';
 
 interface KnobProps extends Omit<React.HTMLProps<HTMLInputElement>, "onChange">{
+    startingValue: number;
     min: number;
     max: number;
     steps?: number[];
@@ -11,13 +12,13 @@ interface KnobProps extends Omit<React.HTMLProps<HTMLInputElement>, "onChange">{
     onChange: (value: number) => void;
 }
 
-export default function Knob({ min, max, steps, onChange, stepping, snappingSensitivity, ...rest }: KnobProps) {
-    const [value, setValue] = useState(min);
-    const [rawValue, setRawValue] = useState(min);
+export default function Knob({ startingValue, min, max, steps, onChange, stepping, snappingSensitivity, ...rest }: KnobProps) {
+    const [value, setValue] = useState(startingValue);
+    const [rawValue, setRawValue] = useState(startingValue);
     const [isDragging, setIsDragging] = useState(false);
     const [initialY, setInitialY] = useState(0);
 
-    const { mousePosition, mouseDelta, mouseDown } = useMouse();
+    const { mousePosition, mouseDown } = useMouse();
 
 
     if(steps && snappingSensitivity && stepping) snappingSensitivity = Math.min(findClosestDistance(steps) ? (findClosestDistance(steps)! - 1) / 10 : 1, snappingSensitivity);
