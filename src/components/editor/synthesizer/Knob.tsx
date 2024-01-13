@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import "@styles/synthesizer/Knob.css";
 import useMouse from '@src/hooks/mouse';
 
-interface KnobProps extends Omit<React.HTMLProps<HTMLInputElement>, "onChange">{
+interface KnobProps extends Omit<React.HTMLProps<HTMLInputElement>, "onChange"> {
     startingValue: number;
     min: number;
     max: number;
@@ -19,61 +19,61 @@ export default function Knob({ startingValue, min, max, steps, onChange, steppin
     const [initialY, setInitialY] = useState(0);
     const [grabbing, setGrabbing] = useState('grab');
 
-    const { mousePosition, mouseDown } = useMouse();
+    const { mousePosition } = useMouse();
 
-    if(steps && snappingSensitivity && stepping) snappingSensitivity = Math.min(findClosestDistance(steps) ? (findClosestDistance(steps)! - 1) / 10 : 1, snappingSensitivity);
+    if (steps && snappingSensitivity && stepping) snappingSensitivity = Math.min(findClosestDistance(steps) ? (findClosestDistance(steps)! - 1) / 10 : 1, snappingSensitivity);
 
-    if(!steps?.includes(min)) steps?.push(min);
-    if(!steps?.includes(max)) steps?.push(max);
+    if (!steps?.includes(min)) steps?.push(min);
+    if (!steps?.includes(max)) steps?.push(max);
 
     useEffect(() => {
-      if (isDragging) {
-        const delta = mousePosition.y - initialY;
-        //POI: Magic number that just works.
-        const sensitivity = (max-min) *.01
+        if (isDragging) {
+            const delta = mousePosition.y - initialY;
+            //POI: Magic number that just works.
+            const sensitivity = (max - min) * .01
 
-        if (stepping && steps) {
-            const newValue = Math.max(min, Math.min(rawValue - delta, max));
-            let roundedValue = value;
-            
+            if (stepping && steps) {
+                const newValue = Math.max(min, Math.min(rawValue - delta, max));
+                let roundedValue = value;
 
-            steps.forEach(element => {
-                if(Math.abs(newValue - element) <= (10 * (snappingSensitivity ? snappingSensitivity : 1))){
-                    roundedValue = element;
+
+                steps.forEach(element => {
+                    if (Math.abs(newValue - element) <= (10 * (snappingSensitivity ? snappingSensitivity : 1))) {
+                        roundedValue = element;
+                    }
+                });
+
+                setRawValue(newValue);
+
+                if (roundedValue != value) {
+                    setValue(Number(roundedValue.toFixed(3)));
+                    onChange(Number(roundedValue.toFixed(3)));
                 }
-            });
-
-            setRawValue(newValue);
-
-            if(roundedValue != value){
-                setValue(Number(roundedValue.toFixed(3)));
-                onChange(Number(roundedValue.toFixed(3)));
+                setInitialY(mousePosition.y);
+            } else {
+                const newValue = Math.max(min, Math.min(value - delta * sensitivity, max));
+                setValue(Number(newValue.toFixed(3)));
+                onChange(Number(newValue.toFixed(3)));
+                setInitialY(mousePosition.y);
             }
-            setInitialY(mousePosition.y);
-        } else {
-            const newValue = Math.max(min, Math.min(value - delta * sensitivity, max));
-            setValue(Number(newValue.toFixed(3)));
-            onChange(Number(newValue.toFixed(3)));
-            setInitialY(mousePosition.y);
         }
-    }
     }, [mousePosition.y])
 
     function findClosestDistance(numbers: number[]): number | null {
         if (numbers.length < 2) {
-          return null;
+            return null;
         }
-      
+
         const sortedNumbers = numbers.slice().sort((a, b) => a - b);
         let minDistance = sortedNumbers[1] - sortedNumbers[0];
-      
+
         for (let i = 2; i < sortedNumbers.length; i++) {
-          const currentDistance = sortedNumbers[i] - sortedNumbers[i - 1];
-          minDistance = Math.min(minDistance, currentDistance);
+            const currentDistance = sortedNumbers[i] - sortedNumbers[i - 1];
+            minDistance = Math.min(minDistance, currentDistance);
         }
-      
+
         return minDistance;
-      }
+    }
 
     const handleMouseDown = (event: React.MouseEvent) => {
         setIsDragging(true);
@@ -90,11 +90,11 @@ export default function Knob({ startingValue, min, max, steps, onChange, steppin
     };
 
     useEffect(() => {
-      if(isDragging){
-        document.addEventListener('mouseup', handleMouseUp)
-      }else {
-        document.removeEventListener('mouseup', handleMouseUp)
-      }
+        if (isDragging) {
+            document.addEventListener('mouseup', handleMouseUp)
+        } else {
+            document.removeEventListener('mouseup', handleMouseUp)
+        }
     }, [isDragging])
 
     return (
@@ -108,8 +108,8 @@ export default function Knob({ startingValue, min, max, steps, onChange, steppin
             {...rest}
         >
             {/*Quick fix to stop the text from rotating*/}
-            <div className="knob-handle" style={{transform: `rotate(-${((value - min) / (max - min)) * 180 + 45}deg)`}}>
-              <p>{value.toFixed(2)}</p>
+            <div className="knob-handle" style={{ transform: `rotate(-${((value - min) / (max - min)) * 180 + 45}deg)` }}>
+                <p>{value.toFixed(2)}</p>
             </div>
         </div>
     );
