@@ -17,9 +17,9 @@ export default function Knob({ startingValue, min, max, steps, onChange, steppin
     const [rawValue, setRawValue] = useState(startingValue);
     const [isDragging, setIsDragging] = useState(false);
     const [initialY, setInitialY] = useState(0);
+    const [grabbing, setGrabbing] = useState('grab');
 
     const { mousePosition, mouseDown } = useMouse();
-
 
     if(steps && snappingSensitivity && stepping) snappingSensitivity = Math.min(findClosestDistance(steps) ? (findClosestDistance(steps)! - 1) / 10 : 1, snappingSensitivity);
 
@@ -79,18 +79,23 @@ export default function Knob({ startingValue, min, max, steps, onChange, steppin
         setIsDragging(true);
         setInitialY(event.clientY);
         document.body.style.userSelect = 'none';
+        setGrabbing('grabbing');
+        event.stopPropagation();
     };
 
     const handleMouseUp = () => {
         setIsDragging(false);
+        setGrabbing('grab');
         document.body.style.userSelect = '';
     };
 
     useEffect(() => {
-      if(!mouseDown){
-        handleMouseUp();
+      if(isDragging){
+        document.addEventListener('mouseup', handleMouseUp)
+      }else {
+        document.removeEventListener('mouseup', handleMouseUp)
       }
-    }, [mouseDown])
+    }, [isDragging])
 
     return (
         <div
@@ -98,6 +103,7 @@ export default function Knob({ startingValue, min, max, steps, onChange, steppin
             onMouseDown={handleMouseDown}
             style={{
                 transform: `rotate(${((value - min) / (max - min)) * 180 + 45}deg)`,
+                cursor: `${grabbing}`,
             }}
             {...rest}
         >

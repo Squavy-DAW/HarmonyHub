@@ -280,7 +280,9 @@ export default function SynthEditor(props:{trackId: string}){
                                                 const synth = draft.data.tracks[props.trackId].instrument;
                                                 AudioEngine.changeValue(synth, audioNode.type, prop.type, val, audioNode.id!);
                                             }));
-                                        }} 
+                                        }}
+                                        //temporary fix (change it fabi)
+                                        startingValue={prop.min}
                                         max={prop.max} 
                                         min={prop.min}
                                         stepping={false}>
