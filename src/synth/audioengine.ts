@@ -212,7 +212,8 @@ export namespace AudioEngine {
                 break;
         }
         audioNodes.forEach(n => {
-            n.changeValue(modtype, value);
+            if(n)
+                n.changeValue(modtype, value);
         });
     }
 }
