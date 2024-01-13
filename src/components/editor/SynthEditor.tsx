@@ -281,8 +281,7 @@ export default function SynthEditor(props:{trackId: string}){
                                                 AudioEngine.changeValue(synth, audioNode.type, prop.type, val, audioNode.id!);
                                             }));
                                         }}
-                                        //temporary fix (change it fabi)
-                                        startingValue={prop.min}
+                                        startingValue={prop.default}
                                         max={prop.max} 
                                         min={prop.min}
                                         stepping={false}>

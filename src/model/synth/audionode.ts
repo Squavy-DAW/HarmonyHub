@@ -87,7 +87,7 @@ export function defaultCompressorNode():RoutableAudioNode { //TODO: Add attack a
             {top:-10, left:40, id:"out", type:""},
         ],
         modifiableproperties: [
-            {bottom:-10,left:0,type:"Threshold",default:-30,max:90,min:-100,step:10},
+            {bottom:-10,left:0,type:"Threshold",default:-30,max:0,min:-100,step:10},
             {bottom:-10,left:80,type:"Ratio",default:3,max:10,min:1,step:1},
         ],
         node: {
