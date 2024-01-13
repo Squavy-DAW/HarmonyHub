@@ -19,6 +19,7 @@ export default function Knob({ min, max, steps, onChange, stepping, snappingSens
 
     const { mousePosition, mouseDelta, mouseDown } = useMouse();
 
+
     if(steps && snappingSensitivity && stepping) snappingSensitivity = Math.min(findClosestDistance(steps) ? (findClosestDistance(steps)! - 1) / 10 : 1, snappingSensitivity);
 
     if(!steps?.includes(min)) steps?.push(min);

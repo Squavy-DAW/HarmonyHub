@@ -18,9 +18,26 @@ export function createCompressorNodeParams(threshold:number, ratio:number):Compr
 }
 
 export function createCompressorNode(
-    params: CompressorNodeParams
+    params: CompressorNodeParams,
+    ctx: AudioContext
     ):CompressorNode {
         let comp = new Compressor(params.threshold, params.ratio);
+
+        function changeValue(type:string, value:number){
+            switch (type) {
+                case "Threshold":
+                    comp.threshold.linearRampToValueAtTime(value, ctx.currentTime+0.255);
+                    break;
+
+                case "Ratio":
+                    comp.ratio.linearRampToValueAtTime(value, ctx.currentTime+0.255);
+                    break;
+            
+                default:
+                    break;
+            }
+        }
+
     return {
         params: params,
         out: comp,
@@ -29,6 +46,7 @@ export function createCompressorNode(
         },
         disconnect: ()=>{
             comp.disconnect();
-        }
+        },
+        changeValue: changeValue
     };
 }

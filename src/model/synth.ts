@@ -7,6 +7,7 @@ export interface AdvancedAudioNode{
     out:ToneAudioNode,
     connect:(node:AdvancedAudioNode) => void,
     disconnect:() => void,
+    changeValue:(type:string, value:number) => void,
 }
 //this interface includes the set of items in the synth. Things like oscillators, that need to be created are stored as values and only created 
 //on demand, while things like envelopes or effects, that are custom made are stored as are. This interfaces purpose is to give them the same "appearance" in code, 

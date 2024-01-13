@@ -1,6 +1,6 @@
-import { CompressorNode, CompressorNodeParams, createCompressorNode } from "@models/synth/compressornode";
+import { CompressorNodeParams, createCompressorNode } from "@models/synth/compressornode";
 import { AdvancedAudioNode, AdvancedAudioNodeParams, Synth } from "../model/synth";
-import { createAudioEndNode, AudioEndNodeParams, AudioEndNode } from "../model/synth/audioendnode";
+import { createAudioEndNode, AudioEndNodeParams } from "../model/synth/audioendnode";
 import { AdvancedOscillator, createAdvancedOscillator, OscillatorParams } from "../model/synth/oscillatorParams";
 import { AudioNodeType } from "@models/synth/audionode";
 import { ModType } from "@models/synth/modRoM";
@@ -28,9 +28,8 @@ export namespace AudioEngine {
                     synth.activeAudioNodes[freq][key].push(osc);
                 }
                 else{
-                    synth.activeAudioNodes[freq][key] = [osc];
+                    synth.activeAudioNodes[freq][key] = [osc,];
                 }
-                console.error("startOsc"+synth.activeAudioNodes[freq][value.node.id].length);   //TODO: Error, please fix =( 
             }
             else if(value.node.id == "audioendnode"){
                 let end = createAudioEndNode(value.node.params as AudioEndNodeParams, ctx);
@@ -41,7 +40,7 @@ export namespace AudioEngine {
                     synth.activeAudioNodes[freq][key] = [end];
             }
             else if(value.node.id == "compressor"){
-                let comp = createCompressorNode(value.node.params as CompressorNodeParams);
+                let comp = createCompressorNode(value.node.params as CompressorNodeParams, ctx);
 
                 if(synth.activeAudioNodes[freq][key])
                     synth.activeAudioNodes[freq][key].push(comp);
@@ -106,7 +105,7 @@ export namespace AudioEngine {
         let node:AdvancedAudioNodeParams = {};
         let allActive:AdvancedAudioNode[] = [];
         Object.entries(synth.activeAudioNodes).forEach(([,value]) => {
-            allActive.concat(value[nodeId]);
+            allActive = allActive.concat(value[nodeId]);
         });
 
         switch (nodetype) {
@@ -142,11 +141,6 @@ export namespace AudioEngine {
             case "Detune":
                 if("detune" in node){
                     node.detune = value;
-                    audioNodes.forEach(n => {
-                        if(n && "detune" in n){
-                            //TODO: WON'T WORK, so restructure the AdvancedAudioNode to make these accessable!!!
-                        }
-                    });
                 }
                 break;
 
@@ -217,5 +211,8 @@ export namespace AudioEngine {
             default://TODO: Add all
                 break;
         }
+        audioNodes.forEach(n => {
+            n.changeValue(modtype, value);
+        });
     }
 }

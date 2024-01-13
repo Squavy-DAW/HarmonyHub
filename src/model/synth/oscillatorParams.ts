@@ -57,6 +57,28 @@ export function createAdvancedOscillator(
     osc.connect(pan);
     pan.connect(gain);
 
+    function changeValue(type:string, value:number){
+        switch (type) {
+            case "Detune":
+                osc.detune.linearRampToValueAtTime(value, ctx.currentTime+0.255);
+                break;
+
+            case "Gain":
+                gain.gain.linearRampToValueAtTime(value, ctx.currentTime+0.255);
+                break;
+            
+            case "Pan":
+                pan.pan.linearRampToValueAtTime(value, ctx.currentTime+0.255);
+                break;
+                
+            //TODO: Extend
+        
+            default:
+                break;
+        }
+        console.error("OscillatorParams: "+type+"   -    "+value);
+    }
+
     return {
         params: params,
         osc: ()=>{  //TODO: Warum function? Mach das weg, JETZT, HEUTE!!!
@@ -71,6 +93,7 @@ export function createAdvancedOscillator(
         disconnect: ()=>{
             gain.disconnect();
         },
-        out: gain
+        out: gain,
+        changeValue: changeValue
     }
 }
