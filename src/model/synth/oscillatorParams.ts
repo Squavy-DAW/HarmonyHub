@@ -71,12 +71,38 @@ export function createAdvancedOscillator(
                 pan.pan.linearRampToValueAtTime(value, ctx.currentTime+0.255);
                 break;
                 
-            //TODO: Extend
-        
+            case "Phase":
+                osc.phase = value;
+                break;
+
+            case "Waveform":
+                switch (value) {
+                    case 0:
+                        osc.type = "sine"
+                        break;
+                    
+                    case 1:
+                        osc.type = "square"
+                        break;
+                    
+                    case 2:
+                        osc.type = "triangle"
+                        break;
+                    
+                    case 3:
+                        osc.type = "sawtooth"
+                        break;
+                    
+                    //TODO: Add all
+                    default:
+                        console.error("ERROR: node.waveform was set to an unkown value");
+                        break;
+                }
+                break;
+
             default:
                 break;
         }
-        console.error("OscillatorParams: "+type+"   -    "+value);
     }
 
     return {

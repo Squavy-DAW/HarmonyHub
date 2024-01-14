@@ -90,7 +90,6 @@ export namespace AudioEngine {
                 for (let i = 0; i < synth.activeAudioNodes[freq][node].length; i++) {
                     console.warn(i+"  -  "+node);
                     (synth.activeAudioNodes[freq][node][i] as AdvancedOscillator).osc().stop();
-                    console.error("stopOsc"+synth.activeAudioNodes[freq][node].length);
                 }
             }
         }

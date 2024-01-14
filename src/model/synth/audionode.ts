@@ -38,11 +38,11 @@ export function defaultOscillatorNode():RoutableAudioNode {
             {top:100, left:20, id:"mod", type:"Pan"},
         ],
         modifiableproperties: [
-            {top:45, left:40,type:"Gain",default:0.5,max:1,min:0,step:0.1},
-            {top:95, left:40,type:"Pan",default:0,max:1,min:-1,step:0.1},
-            {top:145, left:40,type:"Detune",default:0,max:1200,min:-1200,step:5},
-            {top:195, left:40,type:"Phase",default:0,max:360,min:0,step:1},
-            {top:195, left:40,type:"Waveform",default:0,max:3,min:0,step:1},
+            {top:45, left:40,type:"Gain",default:0.5,max:1,min:0,stepping:false},
+            {top:95, left:40,type:"Pan",default:0,max:1,min:-1,stepping:false},
+            {top:145, left:40,type:"Detune",default:0,max:1200,min:-1200,step:5,stepping:true},
+            {top:195, left:40,type:"Phase",default:0,max:360,min:0,stepping:false},
+            {top:195, left:40,type:"Waveform",default:0,max:3,min:0,step:1,stepping:true},
         ],
         node: {
             id: "oscillator",
@@ -64,7 +64,7 @@ export function defaultAudioEndNode():RoutableAudioNode {
             {bottom:-10, left:40, id:"in", type:""},
         ],
         modifiableproperties: [
-            {bottom:-10,left:60,type:"Gain",default:0.5,max:1,min:0,step:0.1},
+            {bottom:-10,left:60,type:"Gain",default:0.5,max:1,min:0,stepping:false},
         ],
         node: {
             id: "audioendnode",
@@ -87,8 +87,8 @@ export function defaultCompressorNode():RoutableAudioNode { //TODO: Add attack a
             {top:-10, left:40, id:"out", type:""},
         ],
         modifiableproperties: [
-            {bottom:-10,left:0,type:"Threshold",default:-30,max:0,min:-100,step:10},
-            {bottom:-10,left:80,type:"Ratio",default:3,max:10,min:1,step:1},
+            {bottom:-10,left:0,type:"Threshold",default:-30,max:0,min:-100,stepping:false},
+            {bottom:-10,left:80,type:"Ratio",default:3,max:10,min:1,stepping:false},
         ],
         node: {
             id: "compressor",

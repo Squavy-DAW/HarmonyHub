@@ -284,7 +284,8 @@ export default function SynthEditor(props:{trackId: string}){
                                         startingValue={prop.default}
                                         max={prop.max} 
                                         min={prop.min}
-                                        stepping={false}>
+                                        stepping={prop.stepping}
+                                        step={prop.step}>
                                         </Knob>
                                     </div>
                                 )
