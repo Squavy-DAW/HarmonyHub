@@ -9,6 +9,6 @@ export default interface ModifiableProperty {
     default: number,
     max: number,
     min: number,
-    step?: number,
+    steps?: number[],
     stepping: boolean
 }

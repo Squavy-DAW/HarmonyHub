@@ -40,9 +40,9 @@ export function defaultOscillatorNode():RoutableAudioNode {
         modifiableproperties: [
             {top:45, left:40,type:"Gain",default:0.5,max:1,min:0,stepping:false},
             {top:95, left:40,type:"Pan",default:0,max:1,min:-1,stepping:false},
-            {top:145, left:40,type:"Detune",default:0,max:1200,min:-1200,step:5,stepping:true},
+            {top:145, left:40,type:"Detune",default:0,max:1200,min:-1200,stepping:false},
             {top:195, left:40,type:"Phase",default:0,max:360,min:0,stepping:false},
-            {top:195, left:40,type:"Waveform",default:0,max:3,min:0,step:1,stepping:true},
+            {top:195, left:40,type:"Waveform",default:0,max:3,min:0,steps:[0,1,2,3],stepping:true},
         ],
         node: {
             id: "oscillator",
