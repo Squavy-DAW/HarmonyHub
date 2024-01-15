@@ -60,6 +60,9 @@
     height: 36px;
     background-color: #6f282888;
     display: flex;
+    border-color: black;
+    border-style: solid;
+    border-width: 4px;
 }
 
 @keyframes note-select {
