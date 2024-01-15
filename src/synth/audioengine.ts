@@ -57,7 +57,7 @@ export namespace AudioEngine {
     export function routeTree(synth: Synth, freq:number){
         let active = synth.activeAudioNodes[freq];
 
-        console.warn(active);
+        //console.warn(active);
 
         let nodes = synth.routes.routes;
         for(let parent in nodes){
