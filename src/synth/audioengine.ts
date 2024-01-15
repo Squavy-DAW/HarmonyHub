@@ -107,6 +107,10 @@ export namespace AudioEngine {
 
         let node:AdvancedAudioNodeParams = {};
         let allActive:AdvancedAudioNode[] = [];
+
+        if(!activeAudioNodes[trackId])
+            activeAudioNodes[trackId] = {};
+
         Object.entries(activeAudioNodes[trackId]).forEach(([,value]) => {
             allActive = allActive.concat(value[nodeId]);
         });
