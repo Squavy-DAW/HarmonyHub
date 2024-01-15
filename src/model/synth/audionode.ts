@@ -58,13 +58,13 @@ export function defaultAudioEndNode():RoutableAudioNode {
         id: undefined,
         x: 0,
         y: 0,
-        height: 50,
-        width: 100,
+        height: 140,
+        width: 200,
         connectionpoints: [
-            {bottom:-10, left:40, id:"in", type:""},
+            {top:-2, left:90, id:"in", type:""},
         ],
         modifiableproperties: [
-            {bottom:-10,left:60,type:"Gain",default:0.5,max:1,min:0,stepping:false},
+            {top:35,left:20,type:"Gain",default:0.5,max:1,min:0,stepping:false},
         ],
         node: {
             id: "audioendnode",
@@ -80,15 +80,15 @@ export function defaultCompressorNode():RoutableAudioNode { //TODO: Add attack a
         id: undefined,
         x: 0,
         y: 0,
-        height: 50,
-        width: 100,
+        height: 140,
+        width: 200,
         connectionpoints: [
-            {bottom:-10, left:40, id:"in", type:""},
-            {top:-10, left:40, id:"out", type:""},
+            {top:-2, left:90, id:"in", type:""},
+            {bottom:52, right:14, id:"out", type:""},
         ],
         modifiableproperties: [
-            {bottom:-10,left:0,type:"Threshold",default:-30,max:0,min:-100,stepping:false},
-            {bottom:-10,left:80,type:"Ratio",default:3,max:10,min:1,stepping:false},
+            {top:35,left:20,type:"Threshold",default:-30,max:0,min:-100,stepping:false},
+            {top:35,left:80,type:"Ratio",default:3,max:10,min:1,stepping:false},
         ],
         node: {
             id: "compressor",

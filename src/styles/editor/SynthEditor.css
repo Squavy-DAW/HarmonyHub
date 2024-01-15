@@ -47,10 +47,11 @@
 }
 
 .synth-editor .audionode[data-type= "AudioEndNode"]{
-    background-color: rgb(245, 157, 248);
-    border-color: black;
-    border-width: 3px;
-    border-style: solid;
+    background-image: url('/src/assets/synth-editor/GenericBox.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    filter: drop-shadow(16px 18px 14px rgba(0, 0, 10, 0.566));
     
 }
 
@@ -63,10 +64,11 @@
 }
 
 .synth-editor .audionode[data-type= "Compressor"]{
-    background-color: rgb(252, 225, 87);
-    border-color: black;
-    border-width: 3px;
-    border-style: solid;
+    background-image: url('/src/assets/synth-editor/GenericBox.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    filter: drop-shadow(16px 18px 14px rgba(0, 0, 10, 0.566));
 }
 
 .synth-editor .audionode[data-type= "Envelope"]{
@@ -161,4 +163,5 @@
     position: absolute;
     width: 50px;
     height: 50px;
+    pointer-events: auto;
 }
