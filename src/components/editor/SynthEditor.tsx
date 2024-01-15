@@ -170,7 +170,7 @@ export default function SynthEditor(props:{trackId: string}){
             }
         }
     
-        console.warn("tried to insert "+element1+" into "+element2 + (type?(" on type: "+type):""));
+        //console.warn("tried to insert "+element1+" into "+element2 + (type?(" on type: "+type):""));
     }
 
     function removeRoute(element1:string, element2:string, type?:ModType){

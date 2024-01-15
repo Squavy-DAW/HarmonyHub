@@ -68,7 +68,7 @@ export namespace AudioEngine {
                         && i < active[child].length; i++) {
                         active[parent][i].connect(active[child][i]);
                     }
-                    console.warn("routed: "+parent+" into "+child);
+                    //console.warn("routed: "+parent+" into "+child);
                 }
                 else{
                     console.error("failed routing: "+parent+" into "+child);
@@ -88,7 +88,6 @@ export namespace AudioEngine {
         for(let node in nodes){
             if(nodes[node].type == "Oscillator"){
                 for (let i = 0; i < synth.activeAudioNodes[freq][node].length; i++) {
-                    console.warn(i+"  -  "+node);
                     (synth.activeAudioNodes[freq][node][i] as AdvancedOscillator).osc().stop();
                 }
             }
@@ -132,7 +131,7 @@ export namespace AudioEngine {
         }
 
 
-        console.log("HEY DEV, you are trying to change the value of: "+nodeId+"("+nodetype+")"+" on "+modtype+" to "+value);
+        //console.log("HEY DEV, you are trying to change the value of: "+nodeId+"("+nodetype+")"+" on "+modtype+" to "+value);
     }
 
     function changeParam(node:AdvancedAudioNodeParams, modtype: ModType, value: number, audioNodes:AdvancedAudioNode[]){
