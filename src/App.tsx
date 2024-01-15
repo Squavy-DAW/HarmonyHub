@@ -18,6 +18,7 @@ import SoundContext from './context/soundcontext';
 import TabsContext from './context/tabscontext';
 import Tab from '@models/tab';
 import * as Tone from "tone"
+import { AudioEngine } from '@synth/audioengine';
 
 function App() {
     const [tabs, setTabs] = useState<Tab[]>([]);
@@ -28,6 +29,7 @@ function App() {
 
     const audioCtx = new AudioContext();
     Tone.setContext(audioCtx);
+    AudioEngine.init();
 
     Modal.setAppElement('#root');
 

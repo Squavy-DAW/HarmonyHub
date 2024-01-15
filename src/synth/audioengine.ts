@@ -6,15 +6,20 @@ import { AudioNodeType } from "@models/synth/audionode";
 import { ModType } from "@models/synth/modRoM";
 
 export namespace AudioEngine {
+    let activeAudioNodes: {[synthId:string]:{[freq:number]:{[id:string]:AdvancedAudioNode[]}}};
+
     export function init(){
         //TODO: Implement
+        activeAudioNodes = {};
     }
 
-    export function start(synth:Synth, freq:number, ctx:AudioContext){ 
+    export function start(synth:Synth, trackId:string, freq:number, ctx:AudioContext){ 
         //TODO: Expand whenever necessary
 
-        if(!synth.activeAudioNodes[freq])
-            synth.activeAudioNodes[freq] = {};
+        if(!activeAudioNodes[trackId])
+            activeAudioNodes[trackId] = {};
+        if(!activeAudioNodes[trackId][freq])
+            activeAudioNodes[trackId][freq] = {};
 
         for(let key in synth.audioNodes){
             let value = synth.audioNodes[key];
@@ -24,38 +29,38 @@ export namespace AudioEngine {
                 osc.osc().frequency.setValueAtTime(freq,ctx.currentTime);
                 osc.osc().start();
 
-                if(synth.activeAudioNodes[freq][key]){
-                    synth.activeAudioNodes[freq][key].push(osc);
+                if(activeAudioNodes[trackId][freq][key]){
+                    activeAudioNodes[trackId][freq][key].push(osc);
                 }
                 else{
-                    synth.activeAudioNodes[freq][key] = [osc,];
+                    activeAudioNodes[trackId][freq][key] = [osc,];
                 }
             }
             else if(value.node.id == "audioendnode"){
                 let end = createAudioEndNode(value.node.params as AudioEndNodeParams, ctx);
 
-                if(synth.activeAudioNodes[freq][key])
-                    synth.activeAudioNodes[freq][key].push(end);
+                if(activeAudioNodes[trackId][freq][key])
+                    activeAudioNodes[trackId][freq][key].push(end);
                 else
-                    synth.activeAudioNodes[freq][key] = [end];
+                    activeAudioNodes[trackId][freq][key] = [end];
             }
             else if(value.node.id == "compressor"){
                 let comp = createCompressorNode(value.node.params as CompressorNodeParams, ctx);
 
-                if(synth.activeAudioNodes[freq][key])
-                    synth.activeAudioNodes[freq][key].push(comp);
+                if(activeAudioNodes[trackId][freq][key])
+                    activeAudioNodes[trackId][freq][key].push(comp);
                 else
-                    synth.activeAudioNodes[freq][key] = [comp];
+                    activeAudioNodes[trackId][freq][key] = [comp];
             }
         }
         //do the routing
-        routeTree(synth, freq);
+        routeTree(synth, trackId, freq);
 
         console.warn("HEY DEV, the Synth is playing the freq: "+freq);  //TEST
     }
 
-    export function routeTree(synth: Synth, freq:number){
-        let active = synth.activeAudioNodes[freq];
+    export function routeTree(synth: Synth, trackId:string, freq:number){
+        let active = activeAudioNodes[trackId][freq];
 
         //console.warn(active);
 
@@ -77,32 +82,32 @@ export namespace AudioEngine {
         }
     }
 
-    export function stop(synth: Synth, freq:number){
+    export function stop(synth: Synth, trackId:string, freq:number){
         //TODO: Expand whenever necessary
         //TODO: If there is an envelope, one can't just stop the oscillator, but needs to run through the envelopes release and stop the oscillator AFTER
 
-        if(!synth.activeAudioNodes[freq] || Object.keys(synth.activeAudioNodes[freq]).length === 0)
+        if(!activeAudioNodes[trackId] || !activeAudioNodes[trackId][freq] || Object.keys(activeAudioNodes[trackId][freq]).length === 0)
             return;
 
         let nodes = synth.audioNodes;
         for(let node in nodes){
             if(nodes[node].type == "Oscillator"){
-                for (let i = 0; i < synth.activeAudioNodes[freq][node].length; i++) {
-                    (synth.activeAudioNodes[freq][node][i] as AdvancedOscillator).osc().stop();
+                for (let i = 0; i < activeAudioNodes[trackId][freq][node].length; i++) {
+                    (activeAudioNodes[trackId][freq][node][i] as AdvancedOscillator).osc().stop();
                 }
             }
         }
 
-        synth.activeAudioNodes[freq] = {};
+        activeAudioNodes[trackId][freq] = {};
         console.warn("HEY DEV, the Synth has stopped playing the freq: "+freq); //TEST
     }
 
-    export function changeValue(synth: Synth, nodetype: AudioNodeType, modtype: ModType, value: number, nodeId: string){
+    export function changeValue(synth: Synth, trackId:string, nodetype: AudioNodeType, modtype: ModType, value: number, nodeId: string){
         //TODO: Implement (don't forget to change the active audionodes too!!!)
 
         let node:AdvancedAudioNodeParams = {};
         let allActive:AdvancedAudioNode[] = [];
-        Object.entries(synth.activeAudioNodes).forEach(([,value]) => {
+        Object.entries(activeAudioNodes[trackId]).forEach(([,value]) => {
             allActive = allActive.concat(value[nodeId]);
         });
 

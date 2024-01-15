@@ -92,7 +92,7 @@ export default function Piano(props:{trackId: string}){
             }
             setProject(produce(draft => {
                 const synth = draft.data.tracks[props.trackId].instrument;
-                AudioEngine.stop(synth,freq);
+                AudioEngine.stop(synth,props.trackId,freq);
             }));
         }
         clickedFreq.value = null;
@@ -117,7 +117,7 @@ export default function Piano(props:{trackId: string}){
                             if (!pressedFrequencies.includes(value)) {
                                 setProject(produce(draft => {
                                     const synth = draft.data.tracks[props.trackId].instrument;
-                                    AudioEngine.start(synth,value,ctx);
+                                    AudioEngine.start(synth,props.trackId,value,ctx);
                                 }));
                                 e.currentTarget.classList.add(key.includes('#') ? "pressed-black" : "pressed-white");
                             }

@@ -278,7 +278,7 @@ export default function SynthEditor(props:{trackId: string}){
                                         onChange={(val)=>{
                                             setProject(produce(draft => {
                                                 const synth = draft.data.tracks[props.trackId].instrument;
-                                                AudioEngine.changeValue(synth, audioNode.type, prop.type, val, audioNode.id!);
+                                                AudioEngine.changeValue(synth, props.trackId, audioNode.type, prop.type, val, audioNode.id!);
                                             }));
                                         }}
                                         startingValue={prop.default}
@@ -334,7 +334,7 @@ export default function SynthEditor(props:{trackId: string}){
                         // AudioEngine.start(synth,523.251,ctx);
                         setProject(produce(draft => {
                             const synth = draft.data.tracks[props.trackId].instrument;
-                            AudioEngine.start(synth,440,ctx);
+                            AudioEngine.start(synth,props.trackId,440,ctx);
                         }))
                         //synth.start(659.255,ctx);
                         //synth.start(783.991,ctx);
@@ -344,7 +344,7 @@ export default function SynthEditor(props:{trackId: string}){
                     <button onClick={() => {
                         setProject(produce(draft => {
                             const synth = draft.data.tracks[props.trackId].instrument;
-                            AudioEngine.stop(synth,440);
+                            AudioEngine.stop(synth,props.trackId,440);
                         }))
                     }}>
                         TEST Stop SYNTH A4
