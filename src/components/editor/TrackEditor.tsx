@@ -148,32 +148,41 @@ export default function TrackEditor() {
     }
 
     function handlePatternMouseDown(ev: React.MouseEvent) {
-        ev.stopPropagation();
-        let rect = contentRef.current!.getBoundingClientRect();
-        let x = ev.clientX - rect.left;
-        let start = slipFloor((x + _position.current) / factor, 1 / project.snap);
+        if (ev.button == 2) {
+            const trackId = ev.currentTarget.getAttribute('data-track-id')!
+            const patternId = ev.currentTarget.getAttribute('data-id')!
 
-        const id = ev.currentTarget.getAttribute("data-id")!
-        const trackId = ev.currentTarget.getAttribute("data-track-id")!
-        const track = project.data.tracks[trackId].index;
-
-        if (ev.shiftKey) {
-            if (selectedPatterns.has(id)) {
-                selectedPatterns.delete(id);
-                setSelectedPatterns(new Set(selectedPatterns));
-            }
-            else {
-                selectedPatterns.add(id);
-                setSelectedPatterns(new Set(selectedPatterns));
-            }
-            return;
-        }
-
-        _mouseDownOrigin.current = { x: start, track: track };
-        if (selectedPatterns.has(id)) {
-            setSelectedPatterns(new Set([...selectedPatterns, id]));
+            setProject(produce(draft => {
+                delete draft.data.tracks[trackId].patterns[patternId];
+            }))
         } else {
-            setSelectedPatterns(new Set([id]));
+            ev.stopPropagation();
+            let rect = contentRef.current!.getBoundingClientRect();
+            let x = ev.clientX - rect.left;
+            let start = slipFloor((x + _position.current) / factor, 1 / project.snap);
+
+            const id = ev.currentTarget.getAttribute("data-id")!
+            const trackId = ev.currentTarget.getAttribute("data-track-id")!
+            const track = project.data.tracks[trackId].index;
+
+            if (ev.shiftKey) {
+                if (selectedPatterns.has(id)) {
+                    selectedPatterns.delete(id);
+                    setSelectedPatterns(new Set(selectedPatterns));
+                }
+                else {
+                    selectedPatterns.add(id);
+                    setSelectedPatterns(new Set(selectedPatterns));
+                }
+                return;
+            }
+
+            _mouseDownOrigin.current = { x: start, track: track };
+            if (selectedPatterns.has(id)) {
+                setSelectedPatterns(new Set([...selectedPatterns, id]));
+            } else {
+                setSelectedPatterns(new Set([id]));
+            }
         }
     }
 
