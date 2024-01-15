@@ -1,12 +1,9 @@
-export interface NoteProps {
+interface KeyProps extends React.HTMLAttributes<HTMLLIElement> {
     keyName: string,
-    frequency: number,
-    onMouseEnter: (e: React.MouseEvent) => void,
-    onMouseLeave: (e: React.MouseEvent) => void,
-    onMouseDown: (e: React.MouseEvent) => void,
+    frequency: number
 }
 
-export default function Key(props: NoteProps) {
+export default function Key({ keyName, frequency, ...rest }: KeyProps) {
 
     function getClassName(kname: string) {
         if (kname.endsWith("#"))
@@ -15,17 +12,11 @@ export default function Key(props: NoteProps) {
     }
 
     return (
-        <div onMouseLeave={props.onMouseLeave}
-            onMouseEnter={props.onMouseEnter}
-            onMouseUp={props.onMouseLeave}
-            onMouseDown={props.onMouseDown}
-            data-key-name={props.keyName}
-            className={
-                getClassName(props.keyName) + " key " + ((props.keyName.charAt(0) == 'C' || props.keyName.charAt(0) == 'F') ? "c-f" :
-                    (props.keyName.charAt(0) == 'E' || props.keyName.charAt(0) == 'B') ? "e-b" : "general")
-            }
-            id={"freq:" + props.frequency}>
+        <li className={
+            getClassName(keyName) + " key " + ((keyName.charAt(0) == 'C' || keyName.charAt(0) == 'F') ? "c-f" :
+                (keyName.charAt(0) == 'E' || keyName.charAt(0) == 'B') ? "e-b" : "general")}
+            id={"freq:" + frequency} {...rest}>
             {/* TODO: Change to data-id */}
-        </div>
+        </li>
     )
 }

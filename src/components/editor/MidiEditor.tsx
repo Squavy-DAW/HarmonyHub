@@ -4,7 +4,6 @@ import { startFreq, stopFreq } from "@synth/engineOLD";
 import '@styles/editor/MidiEditor.css';
 import { onKeyPressed, onKeyUp, pressedFrequencies, clickedFreq } from "@synth/keylistener"
 import NumberUpDown from "@components/editor/utility/NumberUpDown";
-import Key from "@components/editor/midi/Key";
 import ProjectContext from "@src/context/projectcontext";
 import Note from "@models/note";
 import { generateId } from "@network/crypto";
@@ -19,15 +18,20 @@ import ModalContainer from "@components/modal/ModalContainer";
 import SelectionContainer from "./utility/SelectionContainer";
 import MouseContainer from "./utility/MouseContainer";
 import ContextContext from "@src/context/contextcontext";
+import PlaybackContext from "@src/context/playbackcontext";
+import PlaybackHead from "./PlaybackHead";
+import Piano from "./midi/Piano";
 
-export default function MidiEditor(props: { patternId: string }) {
+export default function MidiEditor(props: { patternId: string, trackId?: string }) {
     const { project, setProject } = useContext(ProjectContext);
     const { socket } = useContext(NetworkContext);
+    const { time, ...rest } = useContext(PlaybackContext);
 
     const [snap, setSnap] = useState(project.data.patterns[props.patternId].snap);
     const [tact, setTact] = useState(project.data.patterns[props.patternId].tact);
+    const [selectedTrack, setSelectedTrack] = useState(props.trackId);
 
-    const mode = useRef<{ x: 'move' | 'resize_right' | 'resize_left' | undefined, y: 'move' | undefined }>()
+    const mode = useRef<{ x?: 'move' | 'resize_right' | 'resize_left', y?: 'move' }>();
 
     const contentRef = createRef<HTMLDivElement>();
     const editorRef = createRef<HTMLDivElement>();
@@ -85,6 +89,7 @@ export default function MidiEditor(props: { patternId: string }) {
         setMouseMoveRelative({ x: 0, y: 0 });
     }
 
+    // todo: refactor this
     function handleEditorWheel(ev: WheelEvent) {
         if (ev.ctrlKey) {
             ev.preventDefault();
@@ -133,13 +138,11 @@ export default function MidiEditor(props: { patternId: string }) {
             draft.data.patterns[props.patternId].notes[id] = note
         }))
 
-        if (socket) {
-            socket.broadcast('hh:note-update', {
-                patternId: props.patternId,
-                id: id,
-                note: note
-            });
-        }
+        socket?.broadcast('hh:note-update', {
+            patternId: props.patternId,
+            id: id,
+            note: note
+        });
 
         _mouseDownOrigin.current = { x: start, y: pitch };
         setSelectedNotes(new Set([id]));
@@ -238,7 +241,6 @@ export default function MidiEditor(props: { patternId: string }) {
             return;
         }
 
-        mode.current = { x: 'move', y: 'move' }
         _mouseDownOrigin.current = { x: start, y: pitch };
         if (selectedNotes.has(id)) {
             setSelectedNotes(new Set([...selectedNotes, id]));
@@ -266,17 +268,15 @@ export default function MidiEditor(props: { patternId: string }) {
     }
 
     function handleResizeRightMouseDown(_ev: React.MouseEvent) {
-        // bubble up the event to the note, but set the mode to resize_right
-        setTimeout(() => {
-            mode.current = { x: 'resize_right', y: undefined }
-        })
+        mode.current = { x: 'resize_right' }
     }
 
     function handleResizeLeftMouseDown(_ev: React.MouseEvent) {
-        // bubble up the event to the note, but set the mode to resize_left
-        setTimeout(() => {
-            mode.current = { x: 'resize_left', y: undefined }
-        })
+        mode.current = { x: 'resize_left' }
+    }
+
+    function handleResizeMiddleMouseDown(_ev: React.MouseEvent) {
+        mode.current = { x: 'move', y: 'move' }
     }
 
     function genNoteName(idx: number) {
@@ -311,7 +311,6 @@ export default function MidiEditor(props: { patternId: string }) {
     }
 
     useEffect(() => {
-        contentRef.current!.scrollTop = contentRef.current!.children[0].clientHeight / 2 - contentRef.current!.clientHeight * 0.8;
         editorRef.current?.addEventListener('wheel', handleEditorWheel);
         return () => {
             editorRef.current?.removeEventListener('wheel', handleEditorWheel);
@@ -341,37 +340,27 @@ export default function MidiEditor(props: { patternId: string }) {
         }
     }, []);
 
-    function onNoteStart(e: React.MouseEvent, freq: number, key: string) {
-        e.preventDefault();
-
-        if (_mouseDown.current) {
-            clickedFreq.value = freq;
-            // console.warn(clickedFreq.value);
-            if (!pressedFrequencies.includes(freq)) {
-                startFreq(freq);
-                if (key.includes('#')) {
-                    e.currentTarget.classList.add("pressed-black");
-                }
-                else {
-                    e.currentTarget.classList.add("pressed-white");
-                }
-            }
+    function handleTrackOnChange(ev: React.ChangeEvent<HTMLSelectElement>) {
+        if (ev.target.value == "generic") {
+            setSelectedTrack(undefined);
+        }
+        else {
+            setSelectedTrack(ev.target.value);
         }
     }
 
-    function onNoteStop(e: React.MouseEvent, freq: number, key: string) {
-        e.preventDefault();
-        if (!pressedFrequencies.includes(freq)) {
-            if (key.includes('#')) {
-                e.currentTarget.classList.remove("pressed-black");
-            }
-            else {
-                e.currentTarget.classList.remove("pressed-white");
-            }
-            stopFreq(freq);
+    function calculateTimeOffset(time: number): number {
+        if (!selectedTrack) {
+            return 0;
         }
-        clickedFreq.value = null;
-        // console.warn(clickedFreq.value);
+        const pattern = Object
+            .keys(project.data.tracks[selectedTrack].patterns)
+            .map(id => project.data.tracks[selectedTrack].patterns[id])
+            .find(pattern => pattern.start <= time && pattern.start + pattern.length >= time);
+        if (!pattern) {
+            return 0;
+        }
+        return time - pattern.start;
     }
 
     return (
@@ -384,118 +373,112 @@ export default function MidiEditor(props: { patternId: string }) {
                 <PositionContext.Provider value={{
                     position
                 }}>
-                    <ModalContainer mode="fill" className="piano-roll overlay-fill">
-                        <div className="toolbar">
-                            <span>Notes / Beat: </span>
-                            <NumberUpDown
-                                value={tact}
-                                onChange={(value) => setTact(value)}
-                                min={1}
-                                max={16}
-                                step={1} />
-                            <span>Snapping: </span>
-                            <NumberUpDown
-                                value={snap}
-                                onChange={(value) => setSnap(value)}
-                                min={1}
-                                max={8}
-                                step={1} />
-                            <button onClick={handleSnapNotes}>Snap notes to rythm</button>
-                        </div>
+                    <PlaybackContext.Provider value={{
+                        time: calculateTimeOffset(time), ...rest
+                    }}>
+                        <ModalContainer mode="fill" className="piano-roll overlay-fill">
+                            <div className="toolbar">
+                                <span>Notes / Beat: </span>
+                                <NumberUpDown
+                                    value={tact}
+                                    onChange={(value) => setTact(value)}
+                                    min={1}
+                                    max={16}
+                                    step={1} />
+                                <span>Snapping: </span>
+                                <NumberUpDown
+                                    value={snap}
+                                    onChange={(value) => setSnap(value)}
+                                    min={1}
+                                    max={8}
+                                    step={1} />
+                                <button onClick={handleSnapNotes}>Snap notes to rythm</button>
 
-                        <Timeline offset={170} />
+                                <select onChange={handleTrackOnChange} value={props.trackId}>
+                                    <option value="generic">Generic</option>
+                                    {Object.keys(project.data.tracks).map((id, i) => {
+                                        const track = project.data.tracks[id];
+                                        return <option key={id} value={id}>{`${i}. ${track.name}`}</option>
+                                    })}
+                                </select>
+                            </div>
 
-                        <div className="content" ref={contentRef}>
-                            <ul className="octaves">
-                                {noteList.map(([key, value]) => key.split("-")[1] == 'C' && <li key={key + value + "octave"} className={"octave " + (key.split("-")[0] == '4' ? "base-octave" : "")}>
-                                    {key.split("-")[0]}
-                                </li>
-                                )}
-                            </ul>
-                            <ul className="keys">
-                                {noteList.map(([key, value]) =>
-                                    <li key={key + value + "key"}>
-                                        <Key
-                                            onMouseEnter={(e: React.MouseEvent) => onNoteStart(e, value, key)}
-                                            onMouseLeave={(e: React.MouseEvent) => onNoteStop(e, value, key)}
-                                            onMouseDown={(e: React.MouseEvent) => {
-                                                clickedFreq.value = value;
-                                                if (!pressedFrequencies.includes(value)) {
-                                                    startFreq(value);
-                                                    e.currentTarget.classList.add(key.includes('#') ? "pressed-black" : "pressed-white");
-                                                }
-                                            }}
-                                            keyName={key.split("-")[1]}
-                                            frequency={value} />
-                                    </li>
-                                )}
-                            </ul>
+                            <Timeline offset={170} />
 
-                            <ZoomContext.Consumer>{({ factor }) => (
-                                <section
-                                    className="midi-editor"
-                                    ref={editorRef}
-                                    style={{
-                                        backgroundSize: `${factor}px 72px`,
-                                        backgroundPositionX: -position,
-                                        backgroundImage: ` \
+                            <PlaybackHead />
+
+                            <div className="content" ref={contentRef}>
+                                <Piano
+                                    trackId={selectedTrack!}
+                                    disabled={!selectedTrack}
+                                    orientation="vertical" />
+
+                                <ZoomContext.Consumer>{({ factor }) => (
+                                    <section
+                                        className="midi-editor"
+                                        ref={editorRef}
+                                        style={{
+                                            backgroundSize: `${factor}px 72px`,
+                                            backgroundPositionX: -position,
+                                            backgroundImage: ` \
                                         linear-gradient(0deg,#00000000 50%,#00000044 50%), \
                                         linear-gradient(90deg,#6e6e6e 0px,#6e6e6e 4px,#00000000 4px), \
                                         linear-gradient(90deg, ${(function () {
-                                                let result = [];
-                                                for (let i = 0; i < tact; i++) {
-                                                    let percent = 100 / tact * i;
-                                                    result.push(`#00000000 ${percent}%,#a0a0a0 ${percent}%,#a0a0a0 ${percent + 1}%,#00000000 ${percent + 1}%`)
-                                                }
-                                                return result.join(',');
-                                            })()})`
-                                    }}
-                                    onMouseDown={handleEditorMouseDown}
-                                    onMouseMove={handleEditorMouseMove}
-                                    onMouseUp={handleEditorMouseUp}
-                                    onContextMenu={ev => ev.preventDefault()}>
+                                                    let result = [];
+                                                    for (let i = 0; i < tact; i++) {
+                                                        let percent = 100 / tact * i;
+                                                        result.push(`#00000000 ${percent}%,#a0a0a0 ${percent}%,#a0a0a0 ${percent + 1}%,#00000000 ${percent + 1}%`)
+                                                    }
+                                                    return result.join(',');
+                                                })()})`
+                                        }}
+                                        onMouseDown={handleEditorMouseDown}
+                                        onMouseMove={handleEditorMouseMove}
+                                        onMouseUp={handleEditorMouseUp}
+                                        onContextMenu={ev => ev.preventDefault()}>
 
-                                    <MouseContainer>
-                                        <SelectionContainer
-                                            onSelectionChange={handleSelectionChange}
-                                            onSelectionStart={() => setSelecting(true)}
-                                            onSelectionEnd={() => setSelecting(false)}
-                                            selection={Object.keys(project.data.patterns[props.patternId].notes).map(id => {
-                                                const note = project.data.patterns[props.patternId].notes[id];
-                                                return { id: id, x: note.start, y: note.pitch, width: note.length, height: 36 } // note height, todo: make this dynamic
-                                            })}>
-                                            <PositionContainer style={{ pointerEvents: selecting ? "none" : undefined }}>
-                                                {Object.keys(project.data.patterns[props.patternId].notes).map(id => {
+                                        <MouseContainer>
+                                            <SelectionContainer
+                                                onSelectionChange={handleSelectionChange}
+                                                onSelectionStart={() => setSelecting(true)}
+                                                onSelectionEnd={() => setSelecting(false)}
+                                                selection={Object.keys(project.data.patterns[props.patternId].notes).map(id => {
                                                     const note = project.data.patterns[props.patternId].notes[id];
-                                                    const style: React.CSSProperties = {
-                                                        width: `${Math.abs(note.length) < Number.EPSILON
-                                                            ? factor * 0.2
-                                                            : factor * Math.abs(note.length)}px`,
-                                                        left: `${Math.abs(note.length) < Number.EPSILON
-                                                            ? factor * note.start - factor * 0.2 / 2
-                                                            : note.length < 0
-                                                                ? factor * (note.start + note.length)
-                                                                : factor * note.start}px`,
-                                                        top: `${note.pitch * 36}px`,
-                                                    };
-                                                    return (
-                                                        <li key={`note-[${id}]`} data-id={id} style={style}
-                                                            className={["note", selectedNotes.has(id) ? "selected" : undefined].join(" ")}
-                                                            onMouseDown={handleNoteMouseDown}
-                                                            onMouseMove={handleNoteMouseMove}>
-                                                            <div onMouseDown={handleResizeLeftMouseDown} />
-                                                            <div />
-                                                            <div onMouseDown={handleResizeRightMouseDown} />
-                                                        </li>
-                                                    )
-                                                })}
-                                            </PositionContainer>
-                                        </SelectionContainer>
-                                    </MouseContainer>
-                                </section>
-                            )}</ZoomContext.Consumer>
-                        </div>
-                    </ModalContainer>
+                                                    return { id: id, x: note.start, y: note.pitch, width: note.length, height: 36 } // note height, todo: make this dynamic
+                                                })}>
+                                                <PositionContainer style={{ pointerEvents: selecting ? "none" : undefined }}>
+                                                    {Object.keys(project.data.patterns[props.patternId].notes).map(id => {
+                                                        const note = project.data.patterns[props.patternId].notes[id];
+                                                        const style: React.CSSProperties = {
+                                                            width: `${Math.abs(note.length) < Number.EPSILON
+                                                                ? factor * 0.2
+                                                                : factor * Math.abs(note.length)}px`,
+                                                            left: `${Math.abs(note.length) < Number.EPSILON
+                                                                ? factor * note.start - factor * 0.2 / 2
+                                                                : note.length < 0
+                                                                    ? factor * (note.start + note.length)
+                                                                    : factor * note.start}px`,
+                                                            top: `${note.pitch * 36}px`,
+                                                        };
+                                                        return (
+                                                            <li key={`note-[${id}]`} data-id={id} style={style}
+                                                                className={["note", selectedNotes.has(id) ? "selected" : undefined].join(" ")}
+                                                                onMouseDown={handleNoteMouseDown}
+                                                                onMouseMove={handleNoteMouseMove}>
+                                                                <div onMouseDown={handleResizeLeftMouseDown} />
+                                                                <div onMouseDown={handleResizeMiddleMouseDown} />
+                                                                <div onMouseDown={handleResizeRightMouseDown} />
+                                                            </li>
+                                                        )
+                                                    })}
+                                                </PositionContainer>
+                                            </SelectionContainer>
+                                        </MouseContainer>
+                                    </section>
+                                )}</ZoomContext.Consumer>
+                            </div>
+                        </ModalContainer>
+                    </PlaybackContext.Provider>
                 </PositionContext.Provider>
             </ZoomContext.Provider>
         </ContextContext.Provider>

@@ -25,7 +25,7 @@ export const defaultProject: Project = {
     createDate: new Date(),
     zoom: -1,
     position: 0,
-    snap: 8,
+    snap: 2,
     data: {
         patterns: {
             [generateId()]: { ...defaultPattern },

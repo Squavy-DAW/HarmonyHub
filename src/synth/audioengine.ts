@@ -88,7 +88,7 @@ export namespace AudioEngine {
 
         if(!activeAudioNodes[trackId] || !activeAudioNodes[trackId][freq] || Object.keys(activeAudioNodes[trackId][freq]).length === 0)
             return;
-
+    
         let nodes = synth.audioNodes;
         for(let node in nodes){
             if(nodes[node].type == "Oscillator"){

@@ -10,8 +10,8 @@ export interface TimelineProps extends React.HTMLAttributes<HTMLUListElement> {
 
 export default function Timeline(props: TimelineProps) {
 
-    const { factor } = useContext(ZoomContext);
     const { position } = useContext(PositionContext);
+    const { factor } = useContext(ZoomContext);
 
     const offset = (props.offset ?? 0);
 
