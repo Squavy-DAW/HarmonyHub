@@ -253,10 +253,8 @@ export default function MidiEditor(props: { patternId: string, trackId?: string 
         if (ev.button != 2) return;
         ev.stopPropagation();
 
+        const id = ev.currentTarget.getAttribute('data-id')!;
         setProject(produce(draft => {
-            if (ev.currentTarget === null) return; // idk why this is needed, but it is
-            const id = ev.currentTarget.getAttribute("data-id")!;
-            
             if(socket){
               socket.broadcast('hh:note-deleted', {patternId: props.patternId, id});
             }
