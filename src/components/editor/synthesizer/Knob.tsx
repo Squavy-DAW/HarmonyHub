@@ -20,8 +20,9 @@ export default function Knob({ startingValue, min, max, steps, onChange, steppin
     const [grabbing, setGrabbing] = useState('grab');
 
     const { mousePosition } = useMouse();
+    const closestDist = findClosestDistance(steps ? steps : [0]);
 
-    if (steps && snappingSensitivity && stepping) snappingSensitivity = Math.min(findClosestDistance(steps) ? (findClosestDistance(steps)! - 1) / 10 : 1, snappingSensitivity);
+    if (steps && stepping) snappingSensitivity = Math.min(closestDist ? (closestDist! - closestDist/10) / 10 : 1, snappingSensitivity ? snappingSensitivity : 1);
 
     if (!steps?.includes(min)) steps?.push(min);
     if (!steps?.includes(max)) steps?.push(max);
@@ -33,15 +34,18 @@ export default function Knob({ startingValue, min, max, steps, onChange, steppin
             const sensitivity = (max - min) * .01
 
             if (stepping && steps) {
-                const newValue = Math.max(min, Math.min(rawValue - delta, max));
+                const newValue = Math.max(min, Math.min(rawValue - delta * sensitivity, max));
                 let roundedValue = value;
 
 
                 steps.forEach(element => {
+                    //console.log(`element: ${element}, distance: ${Math.abs(newValue - element)}, requiredDist: ${(10 * (snappingSensitivity ? snappingSensitivity : 1))}, sens: ${snappingSensitivity} `)
                     if (Math.abs(newValue - element) <= (10 * (snappingSensitivity ? snappingSensitivity : 1))) {
                         roundedValue = element;
                     }
                 });
+
+                //console.log(`rawVal: ${newValue}, roundedVal: ${roundedValue}`)
 
                 setRawValue(newValue);
 
@@ -78,14 +82,16 @@ export default function Knob({ startingValue, min, max, steps, onChange, steppin
     const handleMouseDown = (event: React.MouseEvent) => {
         setIsDragging(true);
         setInitialY(event.clientY);
-        document.body.style.userSelect = 'none';
+        
         setGrabbing('grabbing');
         event.stopPropagation();
+        document.body.style.userSelect = 'none';
     };
 
     const handleMouseUp = () => {
         setIsDragging(false);
         setGrabbing('grab');
+
         document.body.style.userSelect = '';
     };
 
