@@ -284,7 +284,10 @@ export default function SynthEditor(props: { trackId: string }) {
                                         <Knob className="knob" key={`node-knob[${id}${j}]`}
                                             value={prop.default}
                                             onChange={(val) => {
-                                                AudioEngine.changeValue(project.data.tracks[props.trackId].instrument, props.trackId, audioNode.type, prop.type, val, audioNode.id!);
+                                                setProject(produce(draft => {
+                                                    const synth = draft.data.tracks[props.trackId].instrument;
+                                                    AudioEngine.changeValue(synth, props.trackId, audioNode.type, prop.type, val, audioNode.id!)
+                                                }));
                                             }}
                                             startingValue={prop.default}
                                             max={prop.max}
