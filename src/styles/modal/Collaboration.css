@@ -10,22 +10,52 @@
 
 .collaboration-modal .collaboration-lock {
     background-image: url('/src/assets/collaboration-lock.png');
+    grid-row: 1 / 4;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    grid-row: 1 / 4;
     justify-self: center;
     height: 100%;
     width: 100%;
 }
 
-.collaboration-modal.active .title {
+.collaboration-modal .title {
     grid-column: 1 / 2;
+    margin: 0;
+    line-height: 0.9;
+}
+
+.collaboration-modal.active .title {
     color: aquamarine !important;
+}
+
+.collaboration-modal.error .title {
+    color: lightcoral !important;
 }
 
 .collaboration-modal.active .title::after {
     content: ' [active]';
+    color: white;
+}
+
+.collaboration-modal.error {
+    padding: 8px;
+    display: grid;
+    grid-template-rows: auto auto 12rem;
+    width: 18rem;
+    grid-template-columns: auto;
+    image-rendering: pixelated;
+    gap: 1rem;
+    overflow: hidden;
+}
+
+.collaboration-modal.error .collaboration-lock {
+    background-image: url('/src/assets/collaboration-lock.png');
+    grid-row: 3 / 4;
+}
+
+.collaboration-modal.error .title::after {
+    content: ' [not available]';
     color: white;
 }
 

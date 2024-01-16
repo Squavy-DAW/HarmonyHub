@@ -135,7 +135,7 @@ export default function MidiEditor(props: { patternId: string }) {
         }))
 
         if (socket) {
-            socket.broadcast('hh:note-update', {
+            socket.broadcast('sqw:note-update', {
                 patternId: props.patternId,
                 id: id,
                 note: note
@@ -207,7 +207,7 @@ export default function MidiEditor(props: { patternId: string }) {
                 }
                 
                 if(socket && (note.start != oldValues.start || note.length != oldValues.length || note.pitch != oldValues.pitch)){
-                    socket!.broadcast('hh:note-update', {patternId: props.patternId, id: selectedNote, note}) 
+                    socket!.volatile.broadcast('sqw:note-update', {patternId: props.patternId, id: selectedNote, note}) 
                 }
             });
         }));
@@ -257,7 +257,7 @@ export default function MidiEditor(props: { patternId: string }) {
             const id = ev.currentTarget.getAttribute("data-id")!;
             
             if(socket){
-              socket.broadcast('hh:note-deleted', {patternId: props.patternId, id});
+              socket.broadcast('sqw:note-deleted', {patternId: props.patternId, id});
             }
 
             delete draft.data.patterns[props.patternId].notes[id];

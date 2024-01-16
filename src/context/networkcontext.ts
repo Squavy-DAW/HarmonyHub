@@ -8,6 +8,7 @@ interface NetworkContextProps {
     setSocket: React.Dispatch<React.SetStateAction<CryptoSocket | undefined>>;
     username: string;
     setUsername: React.Dispatch<React.SetStateAction<string>>;
+    readonly serverUp: boolean;
 }
 
 const NetworkContext = React.createContext<NetworkContextProps>(undefined!);

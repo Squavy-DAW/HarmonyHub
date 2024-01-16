@@ -34,7 +34,7 @@ export default function ({ ...rest }: React.HTMLAttributes<HTMLDivElement>) {
 
     const throttledSendMousePosition = useCallback(throttle(100, 
         function (mousePosition: { x: number, y: number }, position: number, factor: number) {
-            socket?.broadcast('hh:mouse-position', {
+            socket?.volatile.broadcast('sqw:mouse-position', {
                 context: context,
                 x: (mousePosition.x + position) / factor,
                 y: mousePosition.y,
@@ -49,14 +49,14 @@ export default function ({ ...rest }: React.HTMLAttributes<HTMLDivElement>) {
     // const handleReceiveMousePosition = 
 
     useEffect(() => {
-        socket?.addEventListener('hh:mouse-position', (id, { context: c, x, y }) => {
+        socket?.addEventListener('sqw:mouse-position', (id, { context: c, x, y }) => {
             if (c != context) return;
             setMousePositions(produce(draft => {
                 draft[id] = { x, y };
             }));
         })
 
-        socket?.on('hh:user-disconnected', ({ id }) => {
+        socket?.on('sqw:user-disconnected', ({ id }) => {
             console.debug(`User with id=${id} disconnected`);
             setMousePositions(produce(draft => {
                 delete draft[id];
