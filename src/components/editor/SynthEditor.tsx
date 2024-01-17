@@ -209,6 +209,14 @@ export default function SynthEditor(props: { trackId: string }) {
             draggedNode.style.top = `${top}px`;
             draggedNode.style.rotate = `${Math.min(Math.max(mouseDelta.x, -30), 30)}deg`;
 
+            setProject(produce(draft => {
+                let id = draggedNode.getAttribute('data-synth-id');
+                if(id){
+                    draft.data.tracks[props.trackId].instrument.audioNodes[id].x = left;
+                    draft.data.tracks[props.trackId].instrument.audioNodes[id].y = top;
+                }
+            }));
+
             //update lines
             const connectors = Array.from(draggedNode.querySelectorAll(".audio-connection-node"));
             svgLines.forEach((l, idx) => {
@@ -260,9 +268,10 @@ export default function SynthEditor(props: { trackId: string }) {
                         const audioNode = synth.audioNodes[id];
                         return <li key={`node[${id}]`} className='audionode'
                             onMouseDown={handleNodeMouseDown}
-                            style={{ width: audioNode.width + "px", height: audioNode.height + "px" }}
+                            style={{ width: audioNode.width + "px", height: audioNode.height + "px", top: audioNode.y + "px", left: audioNode.x +"px"}}
                             data-type={audioNode.type}
-                            data-drag="none">
+                            data-drag="none"
+                            data-synth-id={audioNode.id}>
                             {
                                 audioNode.connectionpoints.map((connector, j) =>
                                     <div className="audio-connection-node" key={`node-connector[${id}${j}]`}
