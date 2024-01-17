@@ -1,0 +1,8 @@
+.container {
+    background-image: url('/src/assets/synth-editor/adsr.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 12rem;
+    height: 10rem;
+    image-rendering: pixelated;
+}
