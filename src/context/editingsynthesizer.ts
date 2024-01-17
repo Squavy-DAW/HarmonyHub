@@ -1,4 +1,4 @@
-import { Synth } from "@synth/synth";
+import { Synth } from "@models/synth";
 import React from "react";
 
 interface EditingSynthesizerContextProps {

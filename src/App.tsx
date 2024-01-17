@@ -15,9 +15,10 @@ import Modal from 'react-modal';
 import ConnectModal from '@components/modal/Connect';
 import TabContext from './context/tabcontext';
 import SoundContext from './context/soundcontext';
-import { createAudioEngine } from '@synth/audioengine';
 import TabsContext from './context/tabscontext';
 import Tab from '@models/tab';
+import * as Tone from "tone"
+import { AudioEngine } from '@synth/audioengine';
 
 function App() {
     const [tabs, setTabs] = useState<Tab[]>([]);
@@ -27,7 +28,8 @@ function App() {
     const _effectsEnabled = useRef(effectsEnabled);
 
     const audioCtx = new AudioContext();
-    const audioEngine = createAudioEngine();
+    Tone.setContext(audioCtx);
+    AudioEngine.init();
 
     Modal.setAppElement('#root');
 
@@ -67,7 +69,7 @@ function App() {
             </>}
 
             <TabsContext.Provider value={{ tabs, setTabs, tabIndex, setTabIndex }}>
-                <SoundContext.Provider value={{ ctx: audioCtx, engine: audioEngine }}>
+                <SoundContext.Provider value={{ ctx: audioCtx }}>
                     <Tabs style={{ "display": "contents" }} onSelect={setTabIndex} selectedIndex={tabIndex} forceRenderTabPanel={true}>
                         <TabList>
                             <TabItem key={"home"}>

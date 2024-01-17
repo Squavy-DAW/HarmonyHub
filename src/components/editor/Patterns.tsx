@@ -64,11 +64,10 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
 
     useEffect(() => {
         if (!mouseDown && draggedPattern) {
-            setDraggedPattern(undefined);
-            // setDraggedPattern(produce(draft => {
-            //     if (!draft) return;
-            //     draft.dropped = true;
-            // }));
+            setDraggedPattern(produce(draft => {
+                if (!draft) return;
+                draft.dropped = true;
+            }));
         }
     }, [mouseDown])
 

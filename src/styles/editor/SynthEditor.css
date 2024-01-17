@@ -1,22 +1,38 @@
 .synth-editor{
     position: relative;
-    background-image: url("/src/assets/infinite-background-tile-center-cross-dark.png");
+    background-image: url("/src/assets/infinite-background-tile-center-cross.png");
     background-repeat: repeat;
-    background-size: 56px;
+    background-size: 88px;
     image-rendering: pixelated;
     width: 100%;
     height: 100%;
     overflow: hidden;
 }
 
-.synth-editor ul{
-    z-index: 20;
+.synth-editor .content {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    grid-template-areas: 'main'
+                         'piano';
+}
+
+.synth-editor .piano {
+    grid-area: piano;
+}
+
+.synth-editor .connection-lines {
+    grid-area: main;
+    pointer-events: auto;
+    width: 100%;
+    height: 100%;
+}
+
+.synth-editor ul {
+    grid-area: main;
     position: relative;
-    left: 0;
-    top: 0;
     list-style-type: none;
-    margin: 0;
     padding: 0;
+    margin: 0;
 }
 
 .synth-editor .audionode{
@@ -25,13 +41,17 @@
     width: 100px;
     height: 100px;
     left: 50%;
-    background-repeat: no-repeat;
-    background-size: cover;
     image-rendering: pixelated;
+
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    image-rendering: pixelated;
+    filter: drop-shadow(16px 18px 14px rgba(0, 0, 10, 0.566));
 
     animation: pattern-drag-begin 1s cubic-bezier(.13,1.3,.1,1) forwards;
     transition: rotate 0.1s ease-out;
-    transform-origin: left top;
+    transform-origin: center;
 }
 
 .synth-editor .audionode:hover{
@@ -47,22 +67,19 @@
 }
 
 .synth-editor .audionode[data-type= "AudioEndNode"]{
-    background-color: rgb(245, 157, 248);
-    border-color: black;
-    border-width: 3px;
-    border-style: solid;
-    
+    background-image: url('/src/assets/synth-editor/GenericBox.png');
 }
 
 .synth-editor .audionode[data-type= "Oscillator"]{
-    background-color: rgb(201, 248, 157);
-    border-color: black;
-    border-width: 3px;
-    border-style: solid;
+    background-image: url('/src/assets/synth-editor/oscillator_back.png');
+}
+
+.synth-editor .audionode[data-type= "Compressor"]{
+    background-image: url('/src/assets/synth-editor/GenericBox.png');
 }
 
 .synth-editor .audionode[data-type= "Envelope"]{
-    background-color: rgb(157, 222, 248);
+    background-color: rgb(248, 157, 157);
     border-color: black;
     border-width: 3px;
     border-style: solid;
@@ -127,24 +144,22 @@
     border-style: solid;
 }
 
-.synth-editor .connection-lines{
-    position: absolute;
-    pointer-events: none;
-    top: 0;
-    left: 0;
-}
-
-.synth-editor .connection-lines > .placed-line{
-    pointer-events: auto;
-}
-
 .synth-editor .controls{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    overflow-y: auto;
+    padding: 1rem;
+    border-image-source: url("/src/assets/audionodes-container.png");
+    border-image-slice: 1 fill;
+    border-image-repeat: repeat;
+    border-image-width: 8px;
+}
+
+.synth-editor .knob{
     position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    
-    background-color: aquamarine;
-    padding-right: 10px;
-    border-right: 4px solid black;
+    width: 50px;
+    height: 50px;
+    pointer-events: auto;
 }

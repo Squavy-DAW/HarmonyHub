@@ -1,6 +1,6 @@
 import ModalContext from "@src/context/modalcontext";
 import NetworkContext from "@src/context/networkcontext";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import CollaborationModal from "../modal/Collaboration";
 import '@styles/Toolbar.css'
 import FileIcon from '@src/assets/toolbar/file.png';
@@ -90,7 +90,7 @@ export default function Toolbar() {
         }
     }, [toolbarOpen])
 
-    function ToolbarItem(props: { item: ToolbarItem }) {
+    const ToolbarItem = useCallback((props: { item: ToolbarItem }) => {
         const [open, setOpen] = useState(false);
 
         return (
@@ -107,8 +107,7 @@ export default function Toolbar() {
                     setOpen(false);
                 }
             }}>
-                { props.item.icon &&
-                    <img src={props.item.icon} alt={props.item.name} height={16} /> }
+                {props.item.icon && <img src={props.item.icon} alt={props.item.name} height={16} />}
                 <span>{props.item.name}{props.item.items && "..."}</span>
                 {open && <ul className="toolbar-items-container">
                     {props.item.items?.map(child =>
@@ -117,7 +116,7 @@ export default function Toolbar() {
                 </ul>}
             </li>
         )
-    }
+    }, []);
 
     return <>
         <ul className={["toolbar", toolbarOpen ? "active" : null].join(' ')}>

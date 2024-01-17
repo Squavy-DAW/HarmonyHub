@@ -1,0 +1,31 @@
+.playback-head {
+    pointer-events: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.playback-head .head {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 20px;
+    background-image: url("/src/assets/playback-head.png"),
+        linear-gradient(90deg, #00000000 0px, #00000000 8px, #00ff008e 8px, #00ff008e 12px, #00000000 12px, #00000000 20px);
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-size: contain;
+    image-rendering: pixelated;
+    transition: box-shadow 0.2s ease;
+    translate: -50%;
+}
+
+.playback-head .head.playing::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 50%;
+    width: 40px;
+    background-image: linear-gradient(90deg, #00ff0000 10%, #00ff0033 100%);
+}
