@@ -1,6 +1,7 @@
 import { ModRoM, defaultModRoM } from "./synth/modRoM";
 import RoutableAudioNode from "@models/synth/audionode";
 import { ToneAudioNode } from "tone"
+import LinePosition from "./synth/lineposition";
 
 //base interface for advanced nodes
 export interface AdvancedAudioNode{
@@ -19,6 +20,7 @@ export interface Synth{ //TODO: Use immer and usestate, whenever values from the
     //audionode pool
     audioNodes:{[id:string]:RoutableAudioNode};
     activeAudioNodes:{[freq:number]:{[id:string]:AdvancedAudioNode[]}};
+    svgLines:{[id:string]:LinePosition}
 
     //AudioNode routing
     routes:ModRoM;
@@ -27,5 +29,6 @@ export interface Synth{ //TODO: Use immer and usestate, whenever values from the
 export const defaultSynth: Synth = {
     audioNodes: {},
     activeAudioNodes: {},
-    routes: { ...defaultModRoM }
+    routes: { ...defaultModRoM },
+    svgLines: {}
 }
