@@ -55,8 +55,6 @@ export namespace AudioEngine {
         }
         //do the routing
         routeTree(synth, trackId, freq);
-
-        console.warn("HEY DEV, the Synth is playing the freq: "+freq);  //TEST
     }
 
     export function routeTree(synth: Synth, trackId:string, freq:number){
@@ -99,7 +97,6 @@ export namespace AudioEngine {
         }
 
         activeAudioNodes[trackId][freq] = {};
-        console.warn("HEY DEV, the Synth has stopped playing the freq: "+freq); //TEST
     }
 
     export function changeValue(synth: Synth, trackId:string, nodetype: AudioNodeType, modtype: ModType, value: number, nodeId: string){

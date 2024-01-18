@@ -328,7 +328,6 @@ export default function SynthEditor(props: { trackId: string }) {
 
                 <Piano
                     trackId={props.trackId}
-                    disabled={false}
                     orientation="horizontal" />
             </Allotment.Pane>
 

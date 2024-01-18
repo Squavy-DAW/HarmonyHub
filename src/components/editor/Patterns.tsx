@@ -22,7 +22,7 @@ export default function Patterns(props: { overlay: React.RefObject<HTMLDivElemen
     function handlePatternClick(ev: React.MouseEvent) {
         const id = ev.currentTarget.getAttribute('data-id')!;
         setModalContent(
-            <MidiEditor patternId={id} />
+            <MidiEditor patternId={id} trackId={Object.keys(project.data.tracks)[0]} />
         )
     }
 
