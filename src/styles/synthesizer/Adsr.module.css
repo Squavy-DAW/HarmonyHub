@@ -1,8 +1,34 @@
 .container {
-    background-image: url('/src/assets/synth-editor/adsr.png');
+    background-image: url('/src/assets/synth-editor/adsr.gif');
     background-size: contain;
     background-repeat: no-repeat;
     width: 12rem;
     height: 10rem;
+    padding: 0.48rem;
     image-rendering: pixelated;
+    display: grid;
+    grid-template-rows: 1fr 5rem 0.5rem 2rem;
+    grid-template-columns: 1fr;
+    grid-template-areas: "."
+                         "graph"
+                         "."
+                         "knobs";
+}
+
+.knobs {
+    grid-area: knobs;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.graph {
+    grid-area: graph;
+    width: 100%;
+    height: 100%;
+}
+
+.knob {
+    width: 2rem !important;
+    height: 2rem !important;
 }

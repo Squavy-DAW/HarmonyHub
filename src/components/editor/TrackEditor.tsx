@@ -457,7 +457,7 @@ export default function TrackEditor() {
 
                 <div className="misc">
                     <div style={{margin: 100}}>
-                    <Adsr />
+                        <Adsr />
                     </div>
                 </div>
             </section>

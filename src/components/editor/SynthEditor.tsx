@@ -295,10 +295,10 @@ export default function SynthEditor(props: { trackId: string }) {
                                             onChange={(val) => {
                                                 setProject(produce(draft => {
                                                     const synth = draft.data.tracks[props.trackId].instrument;
+                                                    // @ts-ignore
                                                     AudioEngine.changeValue(synth, props.trackId, audioNode.type, prop.type, val, audioNode.id!)
                                                 }));
                                             }}
-                                            startingValue={prop.default}
                                             max={prop.max}
                                             min={prop.min}
                                             stepping={prop.stepping}
