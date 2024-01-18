@@ -25,7 +25,6 @@ export default function SynthEditor(props: { trackId: string }) {
     const nodeOrigin = useRef({ x: 0, y: 0 });
     const nodesDragOverlay = createRef<HTMLUListElement>();
     const { mousePosition, mouseDelta, mouseDown } = useMouse();
-    const [svgLines, setSvgLines] = useState<LinePosition[]>([]);
     const [svgDragLine, setSvgDragLine] = useState<LinePosition>();
     const _svgDragLine = useRef(svgDragLine);
 
@@ -79,7 +78,7 @@ export default function SynthEditor(props: { trackId: string }) {
                 return;
             }
 
-            if (!svgLines.find(e => (e.a == _svgDragLine.current?.a && e.b == target.getAttribute("data-key")!)
+            if (!Object.values(project.data.tracks[props.trackId].instrument.svgLines).find(e => (e.a == _svgDragLine.current?.a && e.b == target.getAttribute("data-key")!)
                 || (e.a == target.getAttribute("data-synth-id")! && e.b == _svgDragLine.current?.a))) {
                 //add synth-route
                 let node2 = synth.audioNodes[target.getAttribute("data-synth-id")!].id;
@@ -92,16 +91,6 @@ export default function SynthEditor(props: { trackId: string }) {
                 }
 
                 //add svg-line
-                setSvgLines([...svgLines, {
-                    x1: _svgDragLine.current.x1,
-                    y1: _svgDragLine.current.y1,
-                    x2: x - offsetX + target.clientWidth / 2,
-                    y2: y - offsetY + target.clientHeight / 2,
-                    a: _svgDragLine.current.a,
-                    b: target.getAttribute("data-key")!,
-                    synth: target.getAttribute("data-synth-id")!
-                }]);
-
                 let key = _svgDragLine.current.a+"-"+target.getAttribute("data-key");
                 let line = {
                     x1: _svgDragLine.current.x1,
@@ -198,8 +187,6 @@ export default function SynthEditor(props: { trackId: string }) {
 
     useEffect(() => {
         //Do stuff on first load
-
-        setSvgLines(Object.values(project.data.tracks[props.trackId].instrument.svgLines));
     }, []);
 
     useEffect(() => {
@@ -214,11 +201,9 @@ export default function SynthEditor(props: { trackId: string }) {
 
     useEffect(() => {
         if (mouseDown && hoverOverLine) {
-            let line = svgLines.find(x => x.a == hoverOverLine.getAttribute("data-a") || x.b == hoverOverLine.getAttribute("data-b"));
             setProject(produce(draft => {
-                delete draft.data.tracks[props.trackId].instrument.svgLines[(line!.a +"-"+ line!.b)];
+                delete draft.data.tracks[props.trackId].instrument.svgLines[(hoverOverLine.getAttribute("data-a") +"-"+ hoverOverLine.getAttribute("data-b"))];
             }));
-            setSvgLines(svgLines.filter(x => x.a != line?.a || x.b != line?.b));
         }
 
         if (mouseDown && draggedNode) {
@@ -240,24 +225,8 @@ export default function SynthEditor(props: { trackId: string }) {
 
             //update lines
             const connectors = Array.from(draggedNode.querySelectorAll(".audio-connection-node"));
-            setSvgLines(produce(draft => {
-                svgLines.forEach((l, idx) => {  //TODO: Optimize, so that not the svgLines are looped through, but the connectors are!!!
-                    const connectorA = connectors.find(c => c.getAttribute('data-key') == l.a);
-                    const connectorB = connectors.find(c => c.getAttribute('data-key') == l.b);
-                    if (connectorA) {
-                        const { x, y } = connectorA.getBoundingClientRect();
-                        draft[idx].x1 = x - offsetX + connectorA.clientWidth / 2;
-                        draft[idx].y1 = y - offsetY + connectorA.clientHeight / 2;
-                    }
-                    if (connectorB) {
-                        const { x, y } = connectorB?.getBoundingClientRect();
-                        draft[idx].x2 = x - offsetX + connectorB.clientWidth / 2;
-                        draft[idx].y2 = y - offsetY + connectorB.clientHeight / 2;
-                    }
-                });
-            }));
             setProject(produce(draft => {
-                svgLines.forEach((l, idx) => {  //TODO: Optimize, so that not the svgLines are looped through, but the connectors are!!!
+                Object.values(project.data.tracks[props.trackId].instrument.svgLines).forEach((l, idx) => {
                     const connectorA = connectors.find(c => c.getAttribute('data-key') == l.a);
                     const connectorB = connectors.find(c => c.getAttribute('data-key') == l.b);
                     if (connectorA) {
@@ -350,7 +319,7 @@ export default function SynthEditor(props: { trackId: string }) {
                 </ul>
                 <svg className="connection-lines">
                     {svgDragLine && <line className="dragged-connection-line" x1={svgDragLine.x1} y1={svgDragLine.y1} x2={svgDragLine.x2} y2={svgDragLine.y2} stroke="black" strokeWidth="5" />}
-                    {svgLines.map((l, i) => (
+                    {Object.values(project.data.tracks[props.trackId].instrument.svgLines).map((l, i) => (
                         <line key={`connection-line[${i}]`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke="black" strokeWidth="5" data-a={l.a} data-b={l.b}
                             className="placed-line"
                             onMouseEnter={(e) => {
