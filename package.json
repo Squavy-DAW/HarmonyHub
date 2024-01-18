@@ -12,6 +12,7 @@
   "dependencies": {
     "@ebay/nice-modal-react": "^1.2.13",
     "allotment": "^1.19.3",
+    "bresenham-line-algorithm": "^1.0.3",
     "dotenv": "^16.3.1",
     "immer": "^10.0.3",
     "path": "^0.12.7",

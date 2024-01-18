@@ -20,6 +20,7 @@ import ContextContext from "@src/context/contextcontext";
 import { calculatePatternLength } from "@models/pattern";
 import PlaybackHead from "./PlaybackHead";
 import MidiEditor from "./MidiEditor";
+import Adsr from "./synthesizer/Adsr";
 
 export default function TrackEditor() {
     const { project, setProject } = useContext(ProjectContext);
@@ -455,7 +456,9 @@ export default function TrackEditor() {
                 </div>
 
                 <div className="misc">
-
+                    <div style={{margin: 100}}>
+                        <Adsr />
+                    </div>
                 </div>
             </section>
         </ContextContext.Provider>

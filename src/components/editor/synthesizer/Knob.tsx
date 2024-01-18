@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 import "@styles/synthesizer/Knob.css";
 import useMouse from '@src/hooks/mouse';
 
-interface KnobProps extends Omit<React.HTMLProps<HTMLInputElement>, "onChange"> {
-    startingValue: number;
+interface KnobProps extends Omit<React.HTMLProps<HTMLInputElement>, "onChange" | "value"> {
     min: number;
     max: number;
     steps?: number[];
     snappingSensitivity?: number;
     stepping: boolean;
+    value?: number;
     onChange: (value: number) => void;
 }
 
-export default function Knob({ startingValue, min, max, steps, onChange, stepping, snappingSensitivity, ...rest }: KnobProps) {
-    const [value, setValue] = useState(startingValue);
-    const [rawValue, setRawValue] = useState(startingValue);
+export default function Knob({ value, min, max, steps, onChange, stepping, snappingSensitivity, ...rest }: KnobProps) {
+    const [_value, setValue] = useState(value ?? min);
+    const [rawValue, setRawValue] = useState(value ?? min);
     const [isDragging, setIsDragging] = useState(false);
     const [initialY, setInitialY] = useState(0);
     const [grabbing, setGrabbing] = useState('grab');
@@ -35,7 +35,7 @@ export default function Knob({ startingValue, min, max, steps, onChange, steppin
 
             if (stepping && steps) {
                 const newValue = Math.max(min, Math.min(rawValue - delta * sensitivity, max));
-                let roundedValue = value;
+                let roundedValue = _value;
 
 
                 steps.forEach(element => {
@@ -55,13 +55,17 @@ export default function Knob({ startingValue, min, max, steps, onChange, steppin
                 }
                 setInitialY(mousePosition.y);
             } else {
-                const newValue = Math.max(min, Math.min(value - delta * sensitivity, max));
+                const newValue = Math.max(min, Math.min(_value - delta * sensitivity, max));
                 setValue(Number(newValue.toFixed(3)));
                 onChange(Number(newValue.toFixed(3)));
                 setInitialY(mousePosition.y);
             }
         }
     }, [mousePosition.y])
+
+    useEffect(() => {
+        setValue(value ?? min);
+    }, [value])
 
     function findClosestDistance(numbers: number[]): number | null {
         if (numbers.length < 2) {
@@ -105,17 +109,17 @@ export default function Knob({ startingValue, min, max, steps, onChange, steppin
 
     return (
         <div
-            className="knob"
+            {...rest}
+            className={["knob", rest.className].join(' ')}
             onMouseDown={handleMouseDown}
             style={{
-                transform: `rotate(${((value - min) / (max - min)) * 180 + 45}deg)`,
+                transform: `rotate(${((_value - min) / (max - min)) * 180 + 45}deg)`,
                 cursor: `${grabbing}`,
-            }}
-            {...rest}
-        >
+                ...rest.style
+            }}>
             {/*Quick fix to stop the text from rotating*/}
-            <div className="knob-handle" style={{ transform: `rotate(-${((value - min) / (max - min)) * 180 + 45}deg)` }}>
-                <p>{value.toFixed(2)}</p>
+            <div className="knob-handle" style={{ transform: `rotate(-${((_value - min) / (max - min)) * 180 + 45}deg)` }}>
+                <p>{_value.toFixed(2)}</p>
             </div>
         </div>
     );
