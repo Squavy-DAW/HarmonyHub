@@ -12,21 +12,6 @@ interface PianoProps extends React.HTMLAttributes<HTMLDivElement> {
     orientation?: "vertical" | "horizontal"
 }
 
-// C0
-const rootFrequency = 16.35;
-
-const octaves = 8;
-
-const notes = ["C" , "C#" , "D" , "D#" , "E" , "F" , "F#" , "G" , "G#" , "A" , "A#" , "B"];
-
-function getFrequencyByIndex(index: number) {
-    return rootFrequency * ((2 ** (1 / notes.length)) ** index);
-}
-
-function getNoteNameByIndex(index: number) {
-    return notes[index % 12];
-}
-
 const keyMap: { [key: string]: number } = {
 //    octave 1          octave 2
     "KeyZ":      0,  "KeyQ":        12,
@@ -78,7 +63,7 @@ export default function Piano({ trackId, orientation = "vertical", ...rest }: Pi
 
         const index = keyMap[event.code];
         if (index === undefined) return;
-        const freq = getFrequencyByIndex(index + octave * notes.length);
+        const freq = AudioEngine.getFrequencyByIndex(index + octave * AudioEngine.notes.length);
         if (activeFrequences.current!.has(freq)) return;
         activeFrequences.current!.add(freq);
         AudioEngine.start(project.data.tracks[trackId].instrument, trackId, freq, ctx);
@@ -87,7 +72,7 @@ export default function Piano({ trackId, orientation = "vertical", ...rest }: Pi
     function onKeyUp(event: KeyboardEvent) {
         const index = keyMap[event.code];
         if (index === undefined) return;
-        const freq = getFrequencyByIndex(index + octave * notes.length);
+        const freq = AudioEngine.getFrequencyByIndex(index + octave * AudioEngine.notes.length);
         activeFrequences.current!.delete(freq);
         AudioEngine.stop(project.data.tracks[trackId].instrument, trackId, freq);
     }
@@ -144,16 +129,16 @@ export default function Piano({ trackId, orientation = "vertical", ...rest }: Pi
     return (
         <div ref={pianoRef} className="piano" data-orientation={orientation.toString()} {...rest}>
             <ul className="octaves">
-                {Array.from({ length: octaves }).map((_, i) => {
-                    return <li key={`octave[${octaves-1-i}]`} className={["octave", octave == octaves-1-i && "selected"].join(' ')}>
-                        { octaves-1-i }
+                {Array.from({ length: AudioEngine.octaves }).map((_, i) => {
+                    return <li key={`octave[${AudioEngine.octaves-1-i}]`} className={["octave", octave == AudioEngine.octaves-1-i && "selected"].join(' ')}>
+                        { AudioEngine.octaves-1-i }
                     </li>
                 })}
             </ul>
             <ul className="keys" ref={keysRef}>
-                {Array.from({ length: notes.length * octaves }).map((_, i) => {
-                    const freq = getFrequencyByIndex(i);
-                    const name = getNoteNameByIndex(i);
+                {Array.from({ length: AudioEngine.notes.length * AudioEngine.octaves }).map((_, i) => {
+                    const freq = AudioEngine.getFrequencyByIndex(i);
+                    const name = AudioEngine.getNoteNameByIndex(i);
                     return <Key key={`key[${name}:${freq}]`}
                         className={activeFrequences.current.has(freq) ? "pressed" : undefined}
                         onMouseEnter={onNoteEnter}
@@ -162,7 +147,7 @@ export default function Piano({ trackId, orientation = "vertical", ...rest }: Pi
                         onMouseUp={onNoteStop}
                         data-value={freq}
                         data-name={name}
-                        data-octave={Math.floor(i / notes.length)}
+                        data-octave={Math.floor(i / AudioEngine.notes.length)}
                         keyName={name}
                         frequency={freq} />
                 })}

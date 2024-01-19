@@ -22,11 +22,15 @@ import PositionContext from '@src/context/positioncontext';
 import UserContext from '@src/context/usercontext';
 import PlaybackContext from '@src/context/playbackcontext';
 import { checkServerUp } from '@network/sockets';
+import Note from '@models/note';
+import { AudioEngine } from '@synth/audioengine';
+import SoundContext from '@src/context/soundcontext';
 
 export default function Music(props: { project: Project, network: Network, username?: string }) {
 
     const { tabs } = useContext(TabsContext);
     const { tab } = useContext(TabContext);
+    const { ctx } = useContext(SoundContext);
 
     const [project, setProject] = useState<Project>(props.project);
     const _project = useRef<Project>(props.project);
@@ -38,13 +42,18 @@ export default function Music(props: { project: Project, network: Network, usern
     const [socket, setSocket] = useState(props.network.socket);
 
     const [playback, setPlayback] = useState(0.0);
-    const [isPlaying, setIsPlaying] = useState(true);
+    const _playback = useRef(0.0);
+
+    const [isPlaying, setIsPlaying] = useState(false);
+    const _isPlaying = useRef(false);
 
     const [username, setUsername] = useState<string>(props.username ?? '');
     const _username = useRef<string>(props.username ?? '');
-    const [serverUp, setServerUp] = useState<boolean>(true);
-    
+    const [serverUp, setServerUp] = useState<boolean>(false);
+
     const [usernames, setUsernames] = useState<{ [id: string]: string }>({});
+
+    const activeNotes = useRef<{ [id: string]: { [id: string]: Note } }>({});
 
     const patternDragOverlay = createRef<HTMLDivElement>();
     const id = useRef(generateId());
@@ -64,28 +73,91 @@ export default function Music(props: { project: Project, network: Network, usern
         setServerUp(serverUp);
     }
 
-    useEffect(() => {
-        var last = performance.now()
-        const loopHandle = window.requestAnimationFrame(function loop(now) {
-            var delta = (now - last) / 1000.0;
+    function updatePlayback(delta: number) {
+        setPlayback(playback => playback + delta);
 
-            setPlayback(playback => playback + delta);
-
-            last = now
-
-            window.requestAnimationFrame(loop)
+        Object.keys(_project.current.data.tracks).forEach(trackId => {
+            const track = _project.current.data.tracks[trackId];
+            const synth = track.instrument;
+            Object.keys(track.patterns).forEach(patternId => {
+                const pattern = track.patterns[patternId];
+                // check if pattern is in range or currently active
+                if (activeNotes.current[patternId] || _playback.current >= pattern.start && _playback.current <= pattern.start + pattern.length) {
+                    Object.keys(_project.current.data.patterns[pattern.patternId].notes).forEach(noteId => {
+                        const note = _project.current.data.patterns[pattern.patternId].notes[noteId];
+                        const freq = AudioEngine.getFrequencyByIndex(AudioEngine.notes.length * AudioEngine.octaves - note.pitch - 1);
+                        
+                        // check if note is in range
+                        if (_playback.current >= pattern.start + note.start && _playback.current <= pattern.start + note.start + note.length) {
+                            if (activeNotes.current[patternId]?.[noteId] !== note) {
+                                activeNotes.current[patternId] = { ...activeNotes.current[patternId], [noteId]: note }
+                                AudioEngine.start(synth, trackId, freq, ctx);
+                                console.log("Starting note");
+                            }
+                        } else {
+                            if (activeNotes.current[patternId]?.[noteId] === note) {
+                                delete activeNotes.current[patternId][noteId];
+                                if (Object.keys(activeNotes.current[patternId]).length === 0) {
+                                    delete activeNotes.current[patternId];
+                                }
+                                AudioEngine.stop(synth, trackId, freq);
+                                console.log("Stopping note");
+                            }
+                        }
+                    });
+                }
+            });
         });
+    }
 
+    function stopActiveNotes() {
+        // Todo: stop active notes
+        // Object.keys(activeNotes.current).forEach(patternId => {
+        //     Object.keys(activeNotes.current[patternId]).forEach(noteId => {
+        //         const note = activeNotes.current[patternId][noteId];
+        //         const freq = AudioEngine.getFrequencyByIndex(AudioEngine.notes.length * AudioEngine.octaves - note.pitch - 1);
+        //     });
+        // });
+        // activeNotes.current = {};
+    }
+
+    useEffect(() => {
         init();
 
         const interval = setInterval(handleCheckServerStatus, 5000);
         handleCheckServerStatus();
+
+        var last = performance.now()
+        console.log("Starting audio engine");
+
+        let loopHandle = window.requestAnimationFrame(function loop(now) {
+            var delta = (now - last) / 1000.0;
+
+            _isPlaying.current && updatePlayback(delta);
+
+            last = now
+
+            loopHandle = window.requestAnimationFrame(loop)
+        });
 
         return () => {
             clearInterval(interval);
             window.cancelAnimationFrame(loopHandle);
         }
     }, []);
+
+    useEffect(() => {
+        _playback.current = playback;
+    }, [playback]);
+
+    useEffect(() => {
+        _isPlaying.current = isPlaying;
+
+        if (!isPlaying) {
+            stopActiveNotes();
+            setPlayback(0.0);
+        }
+    }, [isPlaying]);
 
     useEffect(() => {
         return () => {
@@ -184,7 +256,7 @@ export default function Music(props: { project: Project, network: Network, usern
                                     position: project.position
                                 }}>
                                     <PlaybackContext.Provider value={{
-                                        time: playback, setTime: setPlayback, isPlaying
+                                        time: playback, setTime: setPlayback, isPlaying, setIsPlaying
                                     }}>
                                         <section className="music-layout" id={id.current}>
                                             <Toolbar />

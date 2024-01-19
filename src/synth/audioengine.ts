@@ -13,6 +13,21 @@ export namespace AudioEngine {
         activeAudioNodes = {};
     }
 
+    // C0
+    const rootFrequency = 16.35;
+
+    export const octaves = 8;
+
+    export const notes = ["C" , "C#" , "D" , "D#" , "E" , "F" , "F#" , "G" , "G#" , "A" , "A#" , "B"];
+
+    export function getFrequencyByIndex(index: number) {
+        return rootFrequency * ((2 ** (1 / notes.length)) ** index);
+    }
+
+    export function getNoteNameByIndex(index: number) {
+        return notes[index % 12];
+    }
+
     export function start(synth:Synth, trackId:string, freq:number, ctx:AudioContext){ 
         //TODO: Expand whenever necessary
 

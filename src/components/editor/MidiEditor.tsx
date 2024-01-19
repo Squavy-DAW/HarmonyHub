@@ -34,9 +34,6 @@ export default function MidiEditor(props: { patternId: string, trackId: string }
     const contentRef = createRef<HTMLDivElement>();
     const editorRef = createRef<HTMLDivElement>();
 
-    //Freq = note x 2^(N/12)
-    const noteList = Array.from(genLookupTable()).sort(([, v1], [, v2]) => v2 - v1);
-
     const [zoom, setZoom] = useState(project.data.patterns[props.patternId].zoom);
     const _zoom = useRef(zoom);
 
@@ -176,7 +173,7 @@ export default function MidiEditor(props: { patternId: string, trackId: string }
             selectedNotes.forEach(selectedNote => {
                 const note = draft.data.patterns[props.patternId].notes[selectedNote];
                 if (!note) return;
-                
+
                 var oldValues = {length: note.length, start: note.start, pitch: note.pitch};
 
                 if (mode.current?.x == 'resize_left') {
@@ -274,25 +271,6 @@ export default function MidiEditor(props: { patternId: string, trackId: string }
 
     function handleResizeMiddleMouseDown(_ev: React.MouseEvent) {
         mode.current = { x: 'move', y: 'move' }
-    }
-
-    function genNoteName(idx: number) {
-        let arr = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-        return arr[idx % arr.length];
-    }
-
-    function genLookupTable() {
-        let map = new Map<string, number>()
-        const root = { name: "C0", freq: 16.35 };
-        for (let index = 0; index < 12 * 8; index++) {
-            let value: number = root.freq;
-            value = root.freq * ((2 ** (1 / 12)) ** index);
-
-            let key: string = Math.floor(index / 12) + "-" + genNoteName(index)
-            map.set(key, value);
-        }
-
-        return map;
     }
 
     const [mouseDown, setMouseDown] = useState(false);

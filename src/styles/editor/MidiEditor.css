@@ -25,7 +25,6 @@
 }
 
 .music-layout .piano-roll .playback-head {
-    z-index: 5;
     grid-column: 2 / 3;
     grid-row: 2 / 4;
 }
