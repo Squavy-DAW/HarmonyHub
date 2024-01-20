@@ -11,12 +11,14 @@ export default interface Track {
     name: string,
     patterns: { [id: string]: TimedPattern },
     instrument: Synth,
-    octave: number
+    octave: number,
+    length: number,
 }
 
 export const defaultTrack: Omit<Track, 'index'> = {
     name: "New Track",
     patterns: {},
     instrument: { ...defaultSynth },
-    octave: 4
+    octave: 4,
+    length: 4,
 }

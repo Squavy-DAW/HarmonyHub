@@ -5,6 +5,7 @@ interface PlaybackContextProps {
     setTime: React.Dispatch<React.SetStateAction<number>>;
     isPlaying: boolean;
     setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
+    songLength: number
 }
 
 const PlaybackContext = React.createContext<PlaybackContextProps>(undefined!);

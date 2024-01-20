@@ -3,7 +3,7 @@ import { createRef, useContext, useEffect, useRef, useState } from "react";
 import "@styles/editor/TrackEditor.css";
 import { produce } from "immer";
 import { generateId } from "@network/crypto";
-import { defaultTrack } from "@models/track";
+import Track, { defaultTrack } from "@models/track";
 import DraggedPatternContext from "@src/context/draggedpatterncontext";
 import { zoomBase } from "@models/project";
 import { slipFloor } from "@src/scripts/math";
@@ -42,6 +42,18 @@ export default function TrackEditor() {
     const _zoom = useRef(project.zoom);
     const _position = useRef(project.position);
 
+    function calculateTrackLength(track: Track): number {
+        let max = 0.0
+        Object.keys(track.patterns).forEach((patternId, i) => {
+            const pattern = track.patterns[patternId]
+            const length = pattern.start + pattern.length;
+            if (i == 0 || length > max) {
+                max = length;
+            }
+        })
+        return max;
+    }
+
     function correctPatternErrors() {
         setProject(produce(draft => {
             Object.keys(draft.data.tracks).forEach(trackId => {
@@ -60,6 +72,8 @@ export default function TrackEditor() {
                         pattern.start = 0;
                     }
                 });
+
+                track.length = calculateTrackLength(track as Track);
             });
         }))
     }
@@ -126,6 +140,8 @@ export default function TrackEditor() {
                     length: calculatePatternLength(draft.data.patterns[draggedPattern.id]),
                 }
             }
+
+            track.length = calculateTrackLength(track as Track);
         }))
     }
 
@@ -154,7 +170,9 @@ export default function TrackEditor() {
             const patternId = ev.currentTarget.getAttribute('data-id')!
 
             setProject(produce(draft => {
-                delete draft.data.tracks[trackId].patterns[patternId];
+                const track = draft.data.tracks[trackId];
+                delete track.patterns[patternId];
+                track.length = calculateTrackLength(track as Track);
             }))
         } else {
             ev.stopPropagation();
@@ -241,7 +259,8 @@ export default function TrackEditor() {
                     const pattern = track.patterns[patternId];
                     if (!pattern) return;
                     pattern.length = calculatePatternLength(draft.data.patterns[pattern.patternId]);
-                })
+                });
+                track.length = calculateTrackLength(track as Track);
             });
         }));
     }

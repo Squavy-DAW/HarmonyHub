@@ -47,6 +47,8 @@ export default function Music(props: { project: Project, network: Network, usern
     const [isPlaying, setIsPlaying] = useState(false);
     const _isPlaying = useRef(false);
 
+    const [songLength, setSongLength] = useState(16.0);
+
     const [username, setUsername] = useState<string>(props.username ?? '');
     const _username = useRef<string>(props.username ?? '');
     const [serverUp, setServerUp] = useState<boolean>(false);
@@ -86,7 +88,6 @@ export default function Music(props: { project: Project, network: Network, usern
                     Object.keys(_project.current.data.patterns[pattern.patternId].notes).forEach(noteId => {
                         const note = _project.current.data.patterns[pattern.patternId].notes[noteId];
                         const freq = AudioEngine.getFrequencyByIndex(AudioEngine.notes.length * AudioEngine.octaves - note.pitch - 1);
-                        
                         // check if note is in range
                         if (_playback.current >= pattern.start + note.start && _playback.current <= pattern.start + note.start + note.length) {
                             if (activeNotes.current[patternId]?.[noteId] !== note) {
@@ -111,14 +112,29 @@ export default function Music(props: { project: Project, network: Network, usern
     }
 
     function stopActiveNotes() {
-        // Todo: stop active notes
-        // Object.keys(activeNotes.current).forEach(patternId => {
-        //     Object.keys(activeNotes.current[patternId]).forEach(noteId => {
-        //         const note = activeNotes.current[patternId][noteId];
-        //         const freq = AudioEngine.getFrequencyByIndex(AudioEngine.notes.length * AudioEngine.octaves - note.pitch - 1);
-        //     });
-        // });
-        // activeNotes.current = {};
+        Object.keys(_project.current.data.tracks).forEach(trackId => {
+            const track = _project.current.data.tracks[trackId];
+            const synth = track.instrument;
+            Object.keys(track.patterns).forEach(patternId => {
+                const pattern = track.patterns[patternId];
+                // check if pattern is in range or currently active
+                if (activeNotes.current[patternId]) {
+                    Object.keys(_project.current.data.patterns[pattern.patternId].notes).forEach(noteId => {
+                        const note = _project.current.data.patterns[pattern.patternId].notes[noteId];
+                        const freq = AudioEngine.getFrequencyByIndex(AudioEngine.notes.length * AudioEngine.octaves - note.pitch - 1);
+                        
+                        if (activeNotes.current[patternId]?.[noteId] === note) {
+                            delete activeNotes.current[patternId][noteId];
+                            if (Object.keys(activeNotes.current[patternId]).length === 0) {
+                                delete activeNotes.current[patternId];
+                            }
+                            AudioEngine.stop(synth, trackId, freq);
+                            console.log("Stopping note");
+                        }
+                    });
+                }
+            });
+        });
     }
 
     useEffect(() => {
@@ -169,6 +185,16 @@ export default function Music(props: { project: Project, network: Network, usern
 
     useEffect(() => {
         _project.current = project;
+
+        let max = 16.0;
+        Object.keys(project.data.tracks).map(trackId => {
+            const track = project.data.tracks[trackId];
+            if (track.length > max) {
+                max = track.length;
+            }
+        })
+
+        setSongLength(max);
     }, [project]);
 
     useEffect(() => {
@@ -256,7 +282,7 @@ export default function Music(props: { project: Project, network: Network, usern
                                     position: project.position
                                 }}>
                                     <PlaybackContext.Provider value={{
-                                        time: playback, setTime: setPlayback, isPlaying, setIsPlaying
+                                        time: playback, setTime: setPlayback, isPlaying, setIsPlaying, songLength
                                     }}>
                                         <section className="music-layout" id={id.current}>
                                             <Toolbar />

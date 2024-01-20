@@ -1,4 +1,4 @@
-import { createRef, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createRef, useContext, useEffect, useRef, useState } from "react";
 import Key from "./Key";
 import { AudioEngine } from "@synth/audioengine";
 import SoundContext from "@src/context/soundcontext";
@@ -46,7 +46,8 @@ export default function Piano({ trackId, orientation = "vertical", ...rest }: Pi
     const pianoRef = createRef<HTMLDivElement>();
     const keysRef = createRef<HTMLUListElement>();
 
-    const activeFrequences = useRef(new Set<number>());
+    const [activeFrequences, setActiveFrequencies] = useState<Set<number>>(new Set())
+    const _activeFrequences = useRef<Set<number>>(new Set())
 
     const octave = project.data.tracks[trackId].octave;
 
@@ -64,8 +65,8 @@ export default function Piano({ trackId, orientation = "vertical", ...rest }: Pi
         const index = keyMap[event.code];
         if (index === undefined) return;
         const freq = AudioEngine.getFrequencyByIndex(index + octave * AudioEngine.notes.length);
-        if (activeFrequences.current!.has(freq)) return;
-        activeFrequences.current!.add(freq);
+        if (_activeFrequences.current!.has(freq)) return;
+        setActiveFrequencies(produce(draft => { draft.add(freq) }));
         AudioEngine.start(project.data.tracks[trackId].instrument, trackId, freq, ctx);
     }
 
@@ -73,7 +74,7 @@ export default function Piano({ trackId, orientation = "vertical", ...rest }: Pi
         const index = keyMap[event.code];
         if (index === undefined) return;
         const freq = AudioEngine.getFrequencyByIndex(index + octave * AudioEngine.notes.length);
-        activeFrequences.current!.delete(freq);
+        setActiveFrequencies(produce(draft => { draft.delete(freq) }));
         AudioEngine.stop(project.data.tracks[trackId].instrument, trackId, freq);
     }
 
@@ -82,8 +83,8 @@ export default function Piano({ trackId, orientation = "vertical", ...rest }: Pi
 
         if (_mouseDown.current) {
             const freq = parseFloat(e.currentTarget.getAttribute("data-value")!);
-            if (activeFrequences.current!.has(freq)) return;
-            activeFrequences.current!.add(freq);
+            if (_activeFrequences.current!.has(freq)) return;
+            setActiveFrequencies(produce(draft => { draft.add(freq) }));
             AudioEngine.start(project.data.tracks[trackId].instrument, trackId, freq, ctx);
         }
     }
@@ -92,7 +93,7 @@ export default function Piano({ trackId, orientation = "vertical", ...rest }: Pi
         e.preventDefault();
 
         const freq = parseFloat(e.currentTarget.getAttribute("data-value")!);
-        activeFrequences.current!.add(freq);
+        setActiveFrequencies(produce(draft => { draft.add(freq) }));
         AudioEngine.start(project.data.tracks[trackId].instrument, trackId, freq, ctx);
     }
 
@@ -100,7 +101,7 @@ export default function Piano({ trackId, orientation = "vertical", ...rest }: Pi
         e.preventDefault();
 
         const freq = parseFloat(e.currentTarget.getAttribute("data-value")!);
-        activeFrequences.current!.delete(freq);
+        setActiveFrequencies(produce(draft => { draft.delete(freq) }));
         AudioEngine.stop(project.data.tracks[trackId].instrument, trackId, freq);
     }
 
@@ -112,6 +113,10 @@ export default function Piano({ trackId, orientation = "vertical", ...rest }: Pi
         pianoRef.current!.scrollTop = pianoRef.current!.children[0].clientHeight / 2 - pianoRef.current!.clientHeight / 2;
         pianoRef.current!.scrollLeft = pianoRef.current!.children[0].clientWidth / 2 - pianoRef.current!.clientWidth / 2;
     }, []);
+
+    useEffect(() => {
+        _activeFrequences.current = activeFrequences;
+    }, [activeFrequences]);
 
     useEffect(() => {
         document.addEventListener("keydown", onKeyDown);
@@ -140,7 +145,7 @@ export default function Piano({ trackId, orientation = "vertical", ...rest }: Pi
                     const freq = AudioEngine.getFrequencyByIndex(i);
                     const name = AudioEngine.getNoteNameByIndex(i);
                     return <Key key={`key[${name}:${freq}]`}
-                        className={activeFrequences.current.has(freq) ? "pressed" : undefined}
+                        className={activeFrequences.has(freq) ? "pressed" : undefined}
                         onMouseEnter={onNoteEnter}
                         onMouseDown={onNoteStart}
                         onMouseLeave={onNoteStop}

@@ -110,6 +110,17 @@
     cursor: pointer;
 }
 
+.toolbar li.playback-controls div.progress-bar div.progress {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    max-width: 100%;
+    border-image-source: url("/src/assets/toolbar/progress-bar-fill.png");
+    border-image-slice: 1 fill;
+    border-image-width: 3px;
+}
+
 .toolbar li.playback-controls div.progress-bar div.selection-timestamp {
     position: absolute;
     top: 0;
@@ -128,7 +139,7 @@
     top: 0;
     height: 100%;
     image-rendering: pixelated;
-    border-image-source: url("/src/assets/toolbar/progress-bar-fill.png");
+    border-image-source: url("/src/assets/toolbar/progress-bar-loop.png");
     border-image-slice: 1 fill;
     border-image-width: 3px;
     margin-left: 4px;
