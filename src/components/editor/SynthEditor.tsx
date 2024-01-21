@@ -2,7 +2,7 @@
 
 import "@src/styles/editor/SynthEditor.css"
 import { createRef, useContext, useEffect, useRef, useState } from "react";
-import RoutableAudioNode, { defaultAudioEndNode, defaultCompressorNode, defaultOscillatorNode } from "@models/synth/audionode";
+import RoutableAudioNode, { defaultAudioEndNode, defaultCompressorNode, defaultEnvelopeNode, defaultOscillatorNode } from "@models/synth/audionode";
 import useMouse from "@src/hooks/mouse";
 import LinePosition from "@models/synth/lineposition";
 import { generateId } from "@network/crypto";
@@ -14,6 +14,7 @@ import ProjectContext from "@src/context/projectcontext";
 import Knob from "@src/components/editor/synthesizer/Knob";
 import Piano from "./midi/Piano";
 import { Allotment, LayoutPriority } from "allotment";
+import Adsr from "./synthesizer/Adsr";
 
 export default function SynthEditor(props: { trackId: string }) {
     const { ctx } = useContext(SoundContext);
@@ -135,11 +136,6 @@ export default function SynthEditor(props: { trackId: string }) {
 
     function addRouteToSynth(id1: string, id2: string, type?: ModType) {
         insertRoute(id1, id2, synth.routes, type);
-        /*setSyth(produce(draft => {
-            draft.routes.insert(id1, id2, type);    //ERROR: Maybe make the insert method static? idk...
-                                                    //       Routes can be set, but no methods of it can be executed...
-                                                    //       Even routes.routes can be set...
-        }));*/
     }
 
     function insertRoute(element1: string, element2: string, modRom: ModRoM, type?: ModType) {   //TODO: Try to add this back into modRom!
@@ -200,10 +196,11 @@ export default function SynthEditor(props: { trackId: string }) {
     }, [mouseDown])
 
     useEffect(() => {
-        if (mouseDown && hoverOverLine) {
+        if (mouseDown && hoverOverLine) {   //TODO: Geht net
             setProject(produce(draft => {
                 delete draft.data.tracks[props.trackId].instrument.svgLines[(hoverOverLine.getAttribute("data-a") +"-"+ hoverOverLine.getAttribute("data-b"))];
             }));
+            //TODO: Find connectors and remove route
         }
 
         if (mouseDown && draggedNode) {
@@ -293,25 +290,40 @@ export default function SynthEditor(props: { trackId: string }) {
                                 )
                             }
                             {
-                                audioNode.modifiableproperties.map((prop, j) =>
-                                    <div className="knobWrapper" key={`node-knob-wrappear[${id}${j}]`}
+                                audioNode.modifiableproperties.map((prop, j) => {
+                                    let element = <></>;
+                                    switch (prop.extended) {
+                                        case "Knob":
+                                            element =   <Knob className="knob" key={`node-knob[${id}${j}]`}
+                                                        value={prop.default}
+                                                        onChange={(val) => {
+                                                            setProject(produce(draft => {
+                                                                const synth = draft.data.tracks[props.trackId].instrument;
+                                                                // @ts-ignore
+                                                                AudioEngine.changeValue(synth, props.trackId, audioNode.type, prop.type, val, audioNode.id!)
+                                                            }));
+                                                        }}
+                                                        max={prop.max}
+                                                        min={prop.min}
+                                                        stepping={prop.stepping}
+                                                        steps={prop.steps}>
+                                                    </Knob>
+                                            break;
+
+                                        case "ADSR":
+                                            element = <Adsr onChange={(adsr)=>{
+                                                console.log(adsr);
+                                            }}/>  //TODO: Implement
+                                            break;
+                                    
+                                        default:
+                                            break;
+                                    }
+                                    return <div className="propertyWrapper" key={`node-property-wrappear[${id}${j}]`}
                                         style={{ position: "absolute", top: prop.top + "px", left: prop.left + "px", bottom: prop.bottom + "px", right: prop.right + "px" }}>
-                                        <Knob className="knob" key={`node-knob[${id}${j}]`}
-                                            value={prop.default}
-                                            onChange={(val) => {
-                                                setProject(produce(draft => {
-                                                    const synth = draft.data.tracks[props.trackId].instrument;
-                                                    // @ts-ignore
-                                                    AudioEngine.changeValue(synth, props.trackId, audioNode.type, prop.type, val, audioNode.id!)
-                                                }));
-                                            }}
-                                            max={prop.max}
-                                            min={prop.min}
-                                            stepping={prop.stepping}
-                                            steps={prop.steps}>
-                                        </Knob>
+                                        {element}
                                     </div>
-                                )
+                                })
                             }
                         </li>
                     }
@@ -367,6 +379,16 @@ export default function SynthEditor(props: { trackId: string }) {
                     }}>
                         <div className="audionode" data-type="Oscillator" style={{ position: "unset" }} />
                         Add Oscillator
+                    </button>
+                    <button onClick={() => {
+                        let node = defaultEnvelopeNode();
+                        const id = generateId(new Set(Object.keys(synth.audioNodes)));
+                        node.id = id;
+                        
+                        addElementToSynth(node);
+                    }}>
+                        <div className="audionode" data-type="Envelope" style={{ position: "unset" }} />
+                        Add Envelope
                     </button>
                 </div>
             </Allotment.Pane>

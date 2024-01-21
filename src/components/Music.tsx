@@ -8,7 +8,6 @@ import Toolbar from "./editor/Toolbar";
 import ModalContext from "@src/context/modalcontext";
 import TabContext from "@src/context/tabcontext";
 import { Allotment, LayoutPriority } from "allotment";
-import { init } from '@synth/engineOLD';
 import TrackEditor from './editor/TrackEditor';
 import Patterns, { PatternDragOverlay } from './editor/Patterns';
 import ProjectContext from '@src/context/projectcontext';
@@ -75,8 +74,6 @@ export default function Music(props: { project: Project, network: Network, usern
 
             window.requestAnimationFrame(loop)
         });
-
-        init();
 
         const interval = setInterval(handleCheckServerStatus, 5000);
         handleCheckServerStatus();

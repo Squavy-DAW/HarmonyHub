@@ -1,4 +1,4 @@
-export type ModType = "Pan" | "Gain" | "Unison" | "Phase" | "Detune" | "Waveform" | "Threshold" | "Ratio";
+export type ModType = "Pan" | "Gain" | "Unison" | "Phase" | "Detune" | "Waveform" | "Threshold" | "Ratio" | "None";
 
 interface RouteElement{}
 

@@ -1,5 +1,7 @@
 import { ModType } from "./modRoM";
 
+export type ExtendType = "Knob" | "ADSR" | "Signal";
+
 export default interface ModifiableProperty {
     top?: number,
     bottom?: number,
@@ -10,5 +12,6 @@ export default interface ModifiableProperty {
     max: number,
     min: number,
     steps?: number[],
-    stepping: boolean
+    stepping: boolean,
+    extended: ExtendType
 }
