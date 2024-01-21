@@ -25,8 +25,9 @@ import { checkServerUp } from '@network/sockets';
 import Note from '@models/note';
 import { AudioEngine } from '@synth/audioengine';
 import SoundContext from '@src/context/soundcontext';
+import FileContext from '@src/context/filecontext';
 
-export default function Music(props: { project: Project, network: Network, username?: string }) {
+export default function Music(props: { project: Project, network: Network, username?: string, fileHandle?: FileSystemFileHandle }) {
 
     const { tabs } = useContext(TabsContext);
     const { tab } = useContext(TabContext);
@@ -34,6 +35,7 @@ export default function Music(props: { project: Project, network: Network, usern
 
     const [project, setProject] = useState<Project>(props.project);
     const _project = useRef<Project>(props.project);
+    const [fileHandle, setFileHandle] = useState(props.fileHandle);
 
     const [modalContent, setModalContent] = useState<React.ReactNode>(null);
     const [draggedPattern, setDraggedPattern] = useState<DraggingPattern>();
@@ -284,27 +286,31 @@ export default function Music(props: { project: Project, network: Network, usern
                                     <PlaybackContext.Provider value={{
                                         time: playback, setTime: setPlayback, isPlaying, setIsPlaying, songLength
                                     }}>
-                                        <section className="music-layout" id={id.current}>
-                                            <Toolbar />
+                                        <FileContext.Provider value={{
+                                            fileHandle, setFileHandle
+                                        }}>
+                                            <section className="music-layout" id={id.current}>
+                                                <Toolbar />
 
-                                            <Allotment vertical={false} separator={true} proportionalLayout={false}>
-                                                <Allotment.Pane priority={LayoutPriority.High}>
-                                                    <TrackEditor />
-                                                </Allotment.Pane>
-                                                <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
-                                                    <Patterns overlay={patternDragOverlay} />
-                                                </Allotment.Pane>
-                                            </Allotment>
+                                                <Allotment vertical={false} separator={true} proportionalLayout={false}>
+                                                    <Allotment.Pane priority={LayoutPriority.High}>
+                                                        <TrackEditor />
+                                                    </Allotment.Pane>
+                                                    <Allotment.Pane snap minSize={150} maxSize={300} preferredSize={200}>
+                                                        <Patterns overlay={patternDragOverlay} />
+                                                    </Allotment.Pane>
+                                                </Allotment>
 
-                                            <PatternDragOverlay ref={patternDragOverlay} />
+                                                <PatternDragOverlay ref={patternDragOverlay} />
 
-                                            {<Modal
-                                                isOpen={!!modalContent}
-                                                onRequestClose={() => setModalContent(null)}
-                                                parentSelector={() => document.getElementById(id.current)!}>
-                                                {modalContent}
-                                            </Modal>}
-                                        </section>
+                                                {<Modal
+                                                    isOpen={!!modalContent}
+                                                    onRequestClose={() => setModalContent(null)}
+                                                    parentSelector={() => document.getElementById(id.current)!}>
+                                                    {modalContent}
+                                                </Modal>}
+                                            </section>
+                                        </FileContext.Provider>
                                     </PlaybackContext.Provider>
                                 </PositionContext.Provider>
                             </ZoomContext.Provider>

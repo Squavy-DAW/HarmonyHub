@@ -18,6 +18,7 @@ import CollaborationIcon from '@src/assets/toolbar/collaboration.png';
 import CollaborationIconNotAvailable from '@src/assets/toolbar/collaboration-notavailable.png';
 import PlaybackContext from "@src/context/playbackcontext";
 import ProjectContext from "@src/context/projectcontext";
+import FileContext from "@src/context/filecontext";
 
 export default function Toolbar() {
 
@@ -28,12 +29,45 @@ export default function Toolbar() {
         onClick?: () => void;
     }
 
+    const { socket } = useContext(NetworkContext);
+    const { project } = useContext(ProjectContext);
+    const { fileHandle, setFileHandle } = useContext(FileContext);
+    const { setModalContent } = useContext(ModalContext);
+    const { serverUp } = useContext(NetworkContext);
+    const { time, setTime, isPlaying, setIsPlaying, songLength } = useContext(PlaybackContext);
+
+    async function handleSaveProject() {
+        if (!fileHandle) {
+            const fileHandle = await window.showSaveFilePicker({
+                suggestedName: `${project.name}.harmony`
+            });
+            setFileHandle(fileHandle);
+            await saveProject(fileHandle);
+            return;
+        }
+
+        const state = await fileHandle.requestPermission({ mode: "readwrite" });
+        if (state == "granted") {
+            await saveProject(fileHandle);
+        }
+        else {
+            console.error("Error writing file. Could not create writable");
+        }
+    }
+
+    async function saveProject(fileHandle: FileSystemFileHandle) {
+        const writableFile = await fileHandle.createWritable({ });
+        await writableFile.truncate(0);
+        await writableFile.write(JSON.stringify(project));
+        await writableFile.close();
+    }
+
     const toolbarItems: ToolbarItem[] = [{
         name: 'File',
         icon: FileIcon,
         items: [{
             name: 'New',
-            icon: NewIcon,
+            icon: NewIcon
         }, {
             name: 'Open',
             icon: OpenIcon,
@@ -50,6 +84,7 @@ export default function Toolbar() {
         }, {
             name: 'Save',
             icon: SaveIcon,
+            onClick: handleSaveProject
         }, {
             name: 'Export',
             icon: ExportIcon,
@@ -72,11 +107,6 @@ export default function Toolbar() {
             onClick: () => console.log('redo')
         }]
     }];
-
-    const { socket } = useContext(NetworkContext);
-    const { setModalContent } = useContext(ModalContext);
-    const { serverUp } = useContext(NetworkContext);
-    const { time, setTime, isPlaying, setIsPlaying, songLength } = useContext(PlaybackContext);
 
     async function handleCollaborateClick() {
         setModalContent((

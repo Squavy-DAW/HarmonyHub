@@ -33,26 +33,24 @@ export default function Home() {
         openButton.current?.classList.add('dragging-over');
     }
 
-    function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+    async function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
         event.preventDefault();
         event.stopPropagation();
         openButton.current?.classList.remove('dragging-over');
 
         let file = event.target.files?.item(0);
         if (file && file.name.endsWith('.harmony')) {
-            let reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    let project = JSON.parse(event.target?.result as string) as Project;
-                    // TODO: save project to recent projects
-                    setRecentProjects([project, ...recentProjects ?? []]);
-                    openProject(project);
-                } catch (e) {
-                    console.error("Failed to open project, JSON could not parse.", e);
-                    return false;
-                }
-            };
-            reader.readAsText(file);
+            const project = JSON.parse(await file.text()) as Project;
+            setRecentProjects([project, ...recentProjects ?? []]);
+            setTabs([...tabs, {
+                name: project.name,
+                content: <Music project={project} network={{
+                    name: "",
+                    room: undefined,
+                    socket: undefined,
+                }} fileHandle={undefined /* Todo: get filehandle to save without dialog */} /> // To do this, create custom input field with support for new FileSystem API
+            }]);
+            setTabIndex(tabs.length+1);
         }
         else {
             console.error("Failed to open project, file was not accepted. Valid files are .harmony files");
@@ -63,18 +61,6 @@ export default function Home() {
         }
 
         event.target.value = '';
-    }
-
-    function openProject(project: Project) {
-        setTabs([...tabs, {
-            name: project.name,
-            content: <Music project={defaultProject} network={{
-                name: "",
-                room: undefined,
-                socket: undefined,
-            }} />
-        }]);
-        setTabIndex(tabs.length+1);
     }
 
     function newProject() {
@@ -104,6 +90,7 @@ export default function Home() {
                      ref={openButton}>
                     <input type="file" id="open-project-input"
                            ref={openInput}
+                           accept='.harmony'
                            onDragEnter={handleDragEnter}
                            onDragLeave={handleDragLeave}
                            onChange={handleChange} />
