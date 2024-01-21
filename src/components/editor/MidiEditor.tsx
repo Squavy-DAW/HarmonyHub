@@ -1,8 +1,6 @@
 import React, { createRef, useContext, useEffect, useRef, useState } from "react";
 import { produce } from "immer"
-import { startFreq, stopFreq } from "@synth/engineOLD";
 import '@styles/editor/MidiEditor.css';
-import { onKeyPressed, onKeyUp, pressedFrequencies, clickedFreq } from "@synth/keylistener"
 import NumberUpDown from "@components/editor/utility/NumberUpDown";
 import ProjectContext from "@src/context/projectcontext";
 import Note from "@models/note";
@@ -22,7 +20,7 @@ import PlaybackContext from "@src/context/playbackcontext";
 import PlaybackHead from "./PlaybackHead";
 import Piano from "./midi/Piano";
 
-export default function MidiEditor(props: { patternId: string, trackId?: string }) {
+export default function MidiEditor(props: { patternId: string, trackId: string }) {
     const { project, setProject } = useContext(ProjectContext);
     const { socket } = useContext(NetworkContext);
     const { time, ...rest } = useContext(PlaybackContext);
@@ -35,9 +33,6 @@ export default function MidiEditor(props: { patternId: string, trackId?: string 
 
     const contentRef = createRef<HTMLDivElement>();
     const editorRef = createRef<HTMLDivElement>();
-
-    //Freq = note x 2^(N/12)
-    const noteList = Array.from(genLookupTable()).sort(([, v1], [, v2]) => v2 - v1);
 
     const [zoom, setZoom] = useState(project.data.patterns[props.patternId].zoom);
     const _zoom = useRef(zoom);
@@ -178,7 +173,7 @@ export default function MidiEditor(props: { patternId: string, trackId?: string 
             selectedNotes.forEach(selectedNote => {
                 const note = draft.data.patterns[props.patternId].notes[selectedNote];
                 if (!note) return;
-                
+
                 var oldValues = {length: note.length, start: note.start, pitch: note.pitch};
 
                 if (mode.current?.x == 'resize_left') {
@@ -278,25 +273,6 @@ export default function MidiEditor(props: { patternId: string, trackId?: string 
         mode.current = { x: 'move', y: 'move' }
     }
 
-    function genNoteName(idx: number) {
-        let arr = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-        return arr[idx % arr.length];
-    }
-
-    function genLookupTable() {
-        let map = new Map<string, number>()
-        const root = { name: "C0", freq: 16.35 };
-        for (let index = 0; index < 12 * 8; index++) {
-            let value: number = root.freq;
-            value = root.freq * ((2 ** (1 / 12)) ** index);
-
-            let key: string = Math.floor(index / 12) + "-" + genNoteName(index)
-            map.set(key, value);
-        }
-
-        return map;
-    }
-
     const [mouseDown, setMouseDown] = useState(false);
     const _mouseDown = useRef(mouseDown);
 
@@ -329,29 +305,17 @@ export default function MidiEditor(props: { patternId: string, trackId?: string 
     useEffect(() => {
         document.addEventListener("mousedown", onMouseDown);
         document.addEventListener("mouseup", onMouseUp);
-        document.addEventListener("keydown", onKeyPressed);
-        document.addEventListener("keyup", onKeyUp);
         return () => {
             document.removeEventListener("mousedown", onMouseDown);
             document.removeEventListener("mouseup", onMouseUp);
-            document.removeEventListener("keydown", onKeyPressed);
-            document.removeEventListener("keyup", onKeyUp);
         }
     }, []);
 
     function handleTrackOnChange(ev: React.ChangeEvent<HTMLSelectElement>) {
-        if (ev.target.value == "generic") {
-            setSelectedTrack(undefined);
-        }
-        else {
-            setSelectedTrack(ev.target.value);
-        }
+        setSelectedTrack(ev.target.value);
     }
 
     function calculateTimeOffset(time: number): number {
-        if (!selectedTrack) {
-            return 0;
-        }
         const pattern = Object
             .keys(project.data.tracks[selectedTrack].patterns)
             .map(id => project.data.tracks[selectedTrack].patterns[id])
@@ -393,8 +357,7 @@ export default function MidiEditor(props: { patternId: string, trackId?: string 
                                     step={1} />
                                 <button onClick={handleSnapNotes}>Snap notes to rythm</button>
 
-                                <select onChange={handleTrackOnChange} value={props.trackId}>
-                                    <option value="generic">Generic</option>
+                                <select onChange={handleTrackOnChange} value={selectedTrack}>
                                     {Object.keys(project.data.tracks).map((id, i) => {
                                         const track = project.data.tracks[id];
                                         return <option key={id} value={id}>{`${i}. ${track.name}`}</option>
@@ -408,8 +371,7 @@ export default function MidiEditor(props: { patternId: string, trackId?: string 
 
                             <div className="content" ref={contentRef}>
                                 <Piano
-                                    trackId={selectedTrack!}
-                                    disabled={!selectedTrack}
+                                    trackId={selectedTrack}
                                     orientation="vertical" />
 
                                 <ZoomContext.Consumer>{({ factor }) => (

@@ -5,18 +5,15 @@ interface KeyProps extends React.HTMLAttributes<HTMLLIElement> {
 
 export default function Key({ keyName, frequency, ...rest }: KeyProps) {
 
-    function getClassName(kname: string) {
-        if (kname.endsWith("#"))
-            return "black-key";
-        return "white-key";
-    }
+    /**
+     *  getClassName(keyName) + " key " + )
+     */
 
     return (
-        <li className={
-            getClassName(keyName) + " key " + ((keyName.charAt(0) == 'C' || keyName.charAt(0) == 'F') ? "c-f" :
-                (keyName.charAt(0) == 'E' || keyName.charAt(0) == 'B') ? "e-b" : "general")}
-            id={"freq:" + frequency} {...rest}>
-            {/* TODO: Change to data-id */}
+        <li {...rest} className={["key", keyName.endsWith("#") ? "black-key" : "white-key", 
+            (keyName.charAt(0) == 'C' || keyName.charAt(0) == 'F') ? "c-f" :
+            (keyName.charAt(0) == 'E' || keyName.charAt(0) == 'B') ? "e-b" : "general", rest.className].join(' ')}>
+            {/* Display label when enabled */}
         </li>
     )
 }

@@ -3,7 +3,8 @@
     margin: 0;
     padding: 0;
     background-color: #201010;
-    z-index: 25; /* overlay is on 20 */
+    z-index: 25;
+    /* overlay is on 20 */
 
     border-bottom: 3px solid #2b2b2b;
 }
@@ -52,7 +53,8 @@
     padding: 0;
     position: absolute;
     top: 0;
-    left: 99.5%; /* better safe than sorry */
+    left: 99.5%;
+    /* better safe than sorry */
 }
 
 .toolbar-overlay {
@@ -65,4 +67,81 @@
 .toolbar-overlay.active {
     pointer-events: initial;
     background-color: #00000033;
+}
+
+
+.toolbar li.playback-controls {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+    gap: 8px;
+}
+
+.toolbar li.playback-controls button.toggle-playback {
+    image-rendering: pixelated;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 12px;
+    height: 18px;
+    aspect-ratio: 1 / 1;
+    border: none;
+}
+
+.toolbar li.playback-controls button.toggle-playback.playing {
+    background-image: url("/src/assets/toolbar/pause.png");
+}
+
+.toolbar li.playback-controls button.toggle-playback.paused {
+    background-image: url("/src/assets/toolbar/play.png");
+}
+
+.toolbar li.playback-controls div.progress-bar {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    width: 100%;
+    image-rendering: pixelated;
+    border-image-source: url("/src/assets/toolbar/progress-bar.png");
+    border-image-slice: 1 fill;
+    border-image-width: 3px;
+    cursor: pointer;
+}
+
+.toolbar li.playback-controls div.progress-bar div.progress {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    max-width: 100%;
+    border-image-source: url("/src/assets/toolbar/progress-bar-fill.png");
+    border-image-slice: 1 fill;
+    border-image-width: 3px;
+}
+
+.toolbar li.playback-controls div.progress-bar div.selection-timestamp {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    image-rendering: pixelated;
+    border-image-source: url("/src/assets/toolbar/progress-bar-timestamp.png");
+    border-image-slice: 1 fill;
+    border-image-width: 3px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.toolbar li.playback-controls div.progress-bar div.selection-fill {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    image-rendering: pixelated;
+    border-image-source: url("/src/assets/toolbar/progress-bar-loop.png");
+    border-image-slice: 1 fill;
+    border-image-width: 3px;
+    margin-left: 4px;
+    pointer-events: none;
 }

@@ -16,6 +16,8 @@ import UndoIcon from '@src/assets/toolbar/undo.png';
 import RedoIcon from '@src/assets/toolbar/redo.png';
 import CollaborationIcon from '@src/assets/toolbar/collaboration.png';
 import CollaborationIconNotAvailable from '@src/assets/toolbar/collaboration-notavailable.png';
+import PlaybackContext from "@src/context/playbackcontext";
+import ProjectContext from "@src/context/projectcontext";
 
 export default function Toolbar() {
 
@@ -74,12 +76,38 @@ export default function Toolbar() {
     const { socket } = useContext(NetworkContext);
     const { setModalContent } = useContext(ModalContext);
     const { serverUp } = useContext(NetworkContext);
+    const { time, setTime, isPlaying, setIsPlaying, songLength } = useContext(PlaybackContext);
 
     async function handleCollaborateClick() {
         setModalContent((
             <CollaborationModal />
         ));
     }
+
+    function handleTogglePlayClick() {
+        setIsPlaying(prev => !prev);
+    }
+
+    function handleProgressbarMouseMove(ev: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+        if (ev.buttons == 1) {
+            const progress = ev.nativeEvent.offsetX / ev.currentTarget.clientWidth;
+            setTime(progress * songLength);
+        }
+    }
+
+    function handleKeyDown(ev: KeyboardEvent) {
+        if (ev.code == 'Space') {
+            setIsPlaying(prev => !prev);
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        }
+    }, [])
 
     const [toolbarOpen, setToolbarOpen] = useState(false);
     const [currentToolbarItem, setCurrentToolbarItem] = useState<ToolbarItem | undefined>(undefined);
@@ -142,7 +170,15 @@ export default function Toolbar() {
                     }
                 </li>
             )}
-            <li style={{ flex: 1 }} />
+            <li className="playback-controls">
+                <button className={["toggle-playback", isPlaying ? "playing" : "paused"].join(' ')} onClick={handleTogglePlayClick} />
+                <div className="progress-bar" onMouseMove={handleProgressbarMouseMove}>
+                    <div className="progress" style={{ width: `${time / songLength * 100}%` }} />
+                    <div className="selection-timestamp" style={{ left: "10%" }} />
+                    <div className="selection-fill" style={{ left: "10%", width: "10%" }} />
+                    <div className="selection-timestamp" style={{ left: "20%" }} />
+                </div>
+            </li>
             <li className={["toolbar-item collaboration", serverUp && socket && 'active', !serverUp && 'error'].join(' ')} onClick={handleCollaborateClick}>
                 <img src={serverUp ? CollaborationIcon : CollaborationIconNotAvailable} alt="collaboration" height={16} />
                 <span>{socket ? 'Collaborating' : 'Collaborate...'}</span>
